@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0006: Busca de Custo Uniforme (UCS) — Inteligência Computacional</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <nav class="nav-links">
+      <a href="../index.html">← Painel Principal</a>
+      <a href="0005-aprofundamento-iterativo-4-iteracoes-ids.html">← Lição 0005: IDS</a>
+      <a href="../reference/0001-tabela-comparativa-algoritmos-busca.html">📄 Tabela Comparativa</a>
+    </nav>
+
+    <header>
+      <div class="lesson-meta">Módulo 1: Buscas Não Informadas (Cegas) • Lição 0006</div>
+      <h1>Busca de Custo Uniforme / Busca Ordenada (UCS)</h1>
+      <p class="meta">O algoritmo de menor custo real $g(n)$, a Fila de Prioridades e a regra de ouro do teste de meta na retirada.</p>
+    </header>
+
+    <section class="card-theory">
+      <h2>1. Intuição e Mecanismo em 2 Minutos</h2>
+      <p>
+        A <strong>Busca de Custo Uniforme (Uniform-Cost Search - UCS)</strong> é a generalização da BFS para grafos com custos arbitrários nas arestas (equivalente ao algoritmo de Dijkstra com nó de destino).
+      </p>
+      <ul>
+        <li><strong>Função de Avaliação:</strong> $f(n) = g(n)$, onde $g(n)$ é o custo real acumulado da raiz até o nó $n$.</li>
+        <li><strong>Fronteira:</strong> <strong>Fila de Prioridades (Min-Heap)</strong> ordenada crescentemente por $g(n)$. O nó com menor $g(n)$ fica sempre na frente.</li>
+        <li><strong>Atualização na Fronteira:</strong> Se um nó já está na fila com custo $g_{antigo}$, e encontramos um novo caminho até ele com $g_{novo} < g_{antigo}$, atualizamos seu custo para o menor!</li>
+      </ul>
+
+      <div class="callout exam-tip">
+        <div class="callout-title">⚠️ A Regra Mais Cobrada em Provas: Teste de Meta na RETIRADA!</div>
+        <p>
+          <strong>NUNCA aplique o teste de meta quando o nó é gerado!</strong>
+          Na UCS, um nó meta pode ser inserido na fila por um caminho subótimo (ex: custo 14). Porém, ainda podem existir na fila nós intermediários mais baratos (ex: custo 5) que conduzirão à meta por um caminho de custo total 8. Apenas ao <em>retirar</em> a meta da fila temos a garantia matemática absoluta de que nenhum outro caminho na fronteira poderá ser mais barato.
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">Propriedades Teóricas para Prova</div>
+        <ul>
+          <li><strong>Completude:</strong> Sim, desde que todo passo tenha custo $\ge \epsilon > 0$ (evita ciclos infinitos de custo zero).</li>
+          <li><strong>Otimalidade:</strong> <strong>Sempre Ótima</strong> (encontra o caminho de menor custo total $C^*$).</li>
+          <li><strong>Complexidade de Tempo e Espaço:</strong> $O(b^{1 + \lfloor C^* / \epsilon \rfloor})$, onde $C^*$ é o custo da solução ótima e $\epsilon$ o custo mínimo de uma aresta. Se todos os custos forem iguais a 1, equivale exatamente a $O(b^d)$.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card-theory">
+      <h2>2. Grafo com Custos e Rastreamento de Mesa</h2>
+      <div class="graph-diagram">
+Arestas ponderadas com custos c(u, v):
+  S -> A (custo 2)
+  S -> B (custo 5)
+  S -> D (custo 4)
+  A -> B (custo 2)    [S->A->B custa 4! Mais barato que direto!]
+  A -> C (custo 4)    [S->A->C custa 6]
+  B -> C (custo 1)    [S->A->B->C custa 5!]
+  C -> E (custo 3)    [S->A->B->C->E custa 8]
+  C -> G (custo 6)    [S->A->B->C->G custa 11]
+  D -> E (custo 2)    [S->D->E custa 6]
+  D -> F (custo 4)    [S->D->F custa 8]
+  E -> G (custo 2)    [S->D->E->G custa 8!]
+  F -> G (custo 3)    [S->D->F->G custa 11]
+      </div>
+
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Passo</th>
+              <th>Nó Retirado (Menor $g$)</th>
+              <th>Custo $g(n)$</th>
+              <th>Filhos Gerados (Caminho e Custo)</th>
+              <th>Fronteira Ordenada: [Nó(g), ...]</th>
+              <th>Explorados</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td><code>[S(0)]</code></td>
+              <td><code>{}</code></td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td><strong>S</strong></td>
+              <td>0</td>
+              <td>A(2), B(5), D(4)</td>
+              <td><code>[A(2), D(4), B(5)]</code></td>
+              <td><code>{S}</code></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><strong>A</strong></td>
+              <td>2</td>
+              <td>B(2+2=4 &rarr; <em>atualiza B!</em>), C(2+4=6)</td>
+              <td><code>[B(4), D(4), C(6)]</code></td>
+              <td><code>{S, A}</code></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><strong>B</strong></td>
+              <td>4</td>
+              <td>C(4+1=5 &rarr; <em>atualiza C!</em>), D(4+3=7 &rarr; <em>ignorado, 4<7</em>)</td>
+              <td><code>[D(4), C(5)]</code></td>
+              <td><code>{S, A, B}</code></td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><strong>D</strong></td>
+              <td>4</td>
+              <td>E(4+2=6), F(4+4=8)</td>
+              <td><code>[C(5), E(6), F(8)]</code></td>
+              <td><code>{S, A, B, D}</code></td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><strong>C</strong></td>
+              <td>5</td>
+              <td>E(5+3=8 &rarr; <em>ignorado, 6<8</em>), G(5+6=11)</td>
+              <td><code>[E(6), F(8), G(11)]</code></td>
+              <td><code>{S, A, B, D, C}</code></td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td><strong>E</strong></td>
+              <td>6</td>
+              <td>G(6+2=8 &rarr; <strong>atualiza G de 11 para 8!</strong>)</td>
+              <td><code>[G(8), F(8)]</code></td>
+              <td><code>{S, A, B, D, C, E}</code></td>
+            </tr>
+            <tr class="highlight-step">
+              <td>7</td>
+              <td><strong>G</strong></td>
+              <td><strong>8</strong></td>
+              <td><strong>SIM! Retirado com menor custo!</strong></td>
+              <td><code>[F(8)]</code></td>
+              <td><code>{S, A, B, D, C, E, G}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <strong>Caminho Ótimo Retornado:</strong> <code>S &rarr; D &rarr; E &rarr; G</code> com custo total <strong>$g = 8$</strong>.<br>
+        Note que $G(11)$ foi gerado no passo 5, mas NÃO encerrou a busca! No passo 6, descobriu-se o caminho via $E$ que atualizou $G$ para $8$. Quando $G(8)$ foi retirado no passo 7, a vitória do custo ótimo foi assegurada!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIOS INTERATIVOS -->
+
+    <div class="card-exercise" id="ex-ucs-1">
+      <div class="exercise-header">
+        <span class="question-text">Exercício 1 • Por que Testar a Meta na Retirada?</span>
+        <span class="exercise-tag">Diagnóstico de Erro</span>
+      </div>
+      <p>O que teria acontecido no rastreamento acima se tivéssemos feito o teste de meta logo no momento da geração do nó, no passo 5?</p>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="O algoritmo teria parado antes, mas NÃO com o caminho correto.">
+          O algoritmo teria entrado em loop infinito.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exatamente! No passo 5, o nó G foi gerado a partir de C com custo 11. Se parássemos ali, teríamos retornado o caminho subótimo de custo 11, ignorando o caminho ótimo de custo 8 via D e E!">
+          Teríamos encerrado a busca prematuramente com o caminho subótimo de custo $g=11$, perdendo a solução ótima de custo $g=8$.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="A fila de prioridade ainda continha elementos mais baratos. A busca não falharia por falta de nós.">
+          A fila de prioridades teria estourado a memória RAM.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </div>
+
+    <div class="card-exercise" id="ex-ucs-2">
+      <div class="exercise-header">
+        <span class="question-text">Exercício 2 • Active Recall: Custo Ótimo Final</span>
+        <span class="exercise-tag">Preenchimento Numérico</span>
+      </div>
+      <p>Qual é o valor numérico exato do custo acumulado $g(G)$ da solução ótima encontrada pela UCS no grafo acima? (Digite apenas o número):</p>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 8">
+        <button class="action-btn">Verificar Custo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </div>
+
+    <div class="card-exercise" id="ex-ucs-3">
+      <div class="exercise-header">
+        <span class="question-text">Exercício 3 • Condição de Completude da UCS</span>
+        <span class="exercise-tag">Múltipla Escolha</span>
+      </div>
+      <p>Por que os livros teóricos exigem que cada aresta tenha um custo mínimo estritamente positivo $c(u,v) \ge \epsilon > 0$ para garantir a completude da UCS?</p>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! Se existissem infinitas arestas com custo zero ou tendendo a zero (ex: 1/2, 1/4, 1/8...), a soma dos custos nunca ultrapassaria 1 e o algoritmo ficaria preso expandindo nós desse loop sem avançar em direção à meta.">
+          Para evitar que o algoritmo fique preso explorando uma cadeia infinita de passos com custo zero (ou infinitesimal), impedindo a expansão de atingir o custo da meta.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="A fila de prioridade aceita qualquer número real, positivo ou zero, sem erros aritméticos de divisão.">
+          Porque a fila de prioridades causaria erro de divisão por zero.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="A heurística nem é usada na UCS. A restrição é sobre os custos reais g das arestas.">
+          Porque heurísticas não podem ser negativas.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </div>
+
+    <!-- RESUMO DE TROPEÇOS -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Pontos de Atenção Identificados nesta Sessão</h3>
+      <p>Estes são os conceitos onde você tropeçou nas questões. Revise-os antes da prova:</p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <div class="lesson-nav">
+      <a href="0005-aprofundamento-iterativo-4-iteracoes-ids.html">← Lição Anterior: 0005 — IDS</a>
+      <a href="0007-busca-irrevogavel-hill-climbing.html">Próxima: Lição 0007 — Busca Irrevogável (Hill Climbing) →</a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      initMultipleChoice("ex-ucs-1", "UCS: Teste de meta estritamente na retirada da fila de prioridade");
+      initInputExercise("ex-ucs-2", ["8", "8.0", "g=8", "custo 8"], "UCS: Identificação do custo ótimo g(G)");
+      initMultipleChoice("ex-ucs-3", "UCS: Condição de arestas com custo mínimo epsilon > 0 para completude");
+    });
+  </script>
+</body>
+</html>

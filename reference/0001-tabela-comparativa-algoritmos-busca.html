@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabela Comparativa dos 10 Algoritmos de Busca — Referência Rápida</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+</head>
+<body>
+  <div class="container">
+    <nav class="nav-links">
+      <a href="../index.html">← Painel Principal</a>
+      <a href="0002-formulas-e-heuristicas-guia-rapido.html">📐 Fórmulas e Heurísticas</a>
+      <a href="../lessons/0001-busca-em-largura-bfs.html">📚 Ir para Lição 0001</a>
+    </nav>
+
+    <header>
+      <div class="lesson-meta">Material de Referência • Inteligência Computacional</div>
+      <h1>Quadro Comparativo dos 10 Algoritmos de Busca</h1>
+      <p class="meta">Guia de consulta rápida pré-prova com propriedades teóricas, fronteiras, complexidades e armadilhas.</p>
+    </header>
+
+    <section class="card-theory">
+      <h2>Legenda das Variáveis e Parâmetros</h2>
+      <ul>
+        <li>$b$: Fator de ramificação máximo da árvore/grafo.</li>
+        <li>$d$: Profundidade da solução ótima (mais rasa).</li>
+        <li>$m$: Profundidade máxima do espaço de estados (pode ser $\infty$).</li>
+        <li>$L$: Limite artificial de profundidade estipulado (ex: $L=6$).</li>
+        <li>$C^*$: Custo real da solução ótima.</li>
+        <li>$\epsilon$: Custo mínimo de um passo/aresta ($\epsilon > 0$).</li>
+      </ul>
+    </section>
+
+    <section class="card-theory">
+      <h2>1. Buscas Não Informadas (Cegas)</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Algoritmo</th>
+              <th>Estrutura da Fronteira</th>
+              <th>Teste de Meta</th>
+              <th>Completo?</th>
+              <th>Ótimo?</th>
+              <th>Tempo</th>
+              <th>Espaço</th>
+              <th>Pegadinha de Prova</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. BFS (Largura)</strong></td>
+              <td>Fila FIFO (First-In, First-Out)</td>
+              <td>Na geração (AIMA) ou na retirada (mesa)</td>
+              <td>Sim (se $b < \infty$)</td>
+              <td>Sim (apenas se custos uniformes)</td>
+              <td>$O(b^d)$</td>
+              <td><strong>$O(b^d)$</strong></td>
+              <td>Se as arestas tiverem pesos variáveis, a BFS <strong>não</strong> garante menor custo!</td>
+            </tr>
+            <tr>
+              <td><strong>2. DFS (Profundidade)</strong></td>
+              <td>Pilha LIFO (Last-In, First-Out)</td>
+              <td>Ao desempilhar / expandir</td>
+              <td>Não (loops em árvores)</td>
+              <td>Não</td>
+              <td>$O(b^m)$</td>
+              <td><strong>$O(b \cdot m)$</strong></td>
+              <td>Para desempate alfabético na pilha, deve-se empilhar em ordem inversa ($D, B, A$ para $A$ sair primeiro).</td>
+            </tr>
+            <tr>
+              <td><strong>3. Backtracking</strong></td>
+              <td>Pilha de recursão (1 sucessor por vez)</td>
+              <td>Ao avançar para o estado</td>
+              <td>Não (sem controle de ciclo)</td>
+              <td>Não</td>
+              <td>$O(b^m)$</td>
+              <td><strong>$O(m)$</strong></td>
+              <td>Gera apenas 1 filho por vez; consome menos memória que a DFS clássica ($O(m)$ vs $O(bm)$).</td>
+            </tr>
+            <tr>
+              <td><strong>4. DLS ($L=6$)</strong></td>
+              <td>Pilha LIFO com trava de profundidade $\le 6$</td>
+              <td>Ao retirar nó com $depth \le 6$</td>
+              <td>Não se $d > 6$</td>
+              <td>Não</td>
+              <td>$O(b^L) = O(b^6)$</td>
+              <td>$O(b \cdot 6)$ ou $O(6)$</td>
+              <td>Retorna <code>Cutoff</code> (e não falha definitiva) se a meta estiver além de $L=6$.</td>
+            </tr>
+            <tr>
+              <td><strong>5. IDS (4 Iterações)</strong></td>
+              <td>DLS sucessivos incrementando $L$ ($0, 1, 2, 3$)</td>
+              <td>Mesmo do DLS em cada nível</td>
+              <td>Sim (se $d \le 3$)</td>
+              <td>Sim (custos uniformes)</td>
+              <td>$O(b^d)$</td>
+              <td><strong>$O(b \cdot d)$</strong></td>
+              <td>4 iterações cobrem de $L=0$ a $L=3$. Se a meta estiver em $d=4$, falha por cutoff!</td>
+            </tr>
+            <tr>
+              <td><strong>6. UCS (Custo Uniforme)</strong></td>
+              <td>Fila de Prioridades (ordenada por $g(n)$)</td>
+              <td><strong>ESTRITAMENTE na retirada</strong></td>
+              <td>Sim (se $c \ge \epsilon > 0$)</td>
+              <td><strong>Sempre Ótimo</strong> ($C^*$)</td>
+              <td>$O(b^{1 + \lfloor C^* / \epsilon \rfloor})$</td>
+              <td>$O(b^{1 + \lfloor C^* / \epsilon \rfloor})$</td>
+              <td>Testar meta na geração faz o algoritmo retornar caminhos subótimos caros!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card-theory">
+      <h2>2. Buscas Informadas (Heurísticas)</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Algoritmo</th>
+              <th>Função de Avaliação $f(n)$</th>
+              <th>Fronteira / Memória</th>
+              <th>Completo?</th>
+              <th>Ótimo?</th>
+              <th>Tempo</th>
+              <th>Espaço</th>
+              <th>Ponto Crítico de Prova</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>7. Hill Climbing (Irrevogável)</strong></td>
+              <td>$f(n) =$ melhor vizinho imediato</td>
+              <td>Nenhuma (apenas estado atual)</td>
+              <td>Não</td>
+              <td>Não</td>
+              <td>Rápido ou $O(\infty)$</td>
+              <td><strong>$O(1)$</strong></td>
+              <td>Irrevogável: descarta alternativas para sempre; trava em Máximos Locais, Platôs e Cumes.</td>
+            </tr>
+            <tr>
+              <td><strong>8. Busca Gulosa</strong></td>
+              <td>$f(n) = h(n)$</td>
+              <td>Fila de Prioridades por $h$</td>
+              <td>Não em árvore</td>
+              <td>Não</td>
+              <td>$O(b^m)$ pior caso</td>
+              <td>$O(b^m)$</td>
+              <td>Pode escolher um caminho com $h$ baixo que possui arestas com custo real astronômico.</td>
+            </tr>
+            <tr>
+              <td><strong>9. Busca A*</strong></td>
+              <td>$f(n) = g(n) + h(n)$</td>
+              <td>Fila de Prioridades por $f$</td>
+              <td>Sim (se $\epsilon > 0$)</td>
+              <td><strong>Sim</strong> ($h$ admissível / consistente)</td>
+              <td>$O(b^d)$</td>
+              <td><strong>$O(b^d)$</strong></td>
+              <td>Admissível em árvore ($h \le h^*$) e Consistente em grafo ($h(n) \le c + h(n')$). Gargalo é a memória RAM!</td>
+            </tr>
+            <tr>
+              <td><strong>10. IDA*</strong></td>
+              <td>$f(n) = g(n) + h(n)$ com cortes de patamar</td>
+              <td>Pilha DFS com backtracking</td>
+              <td>Sim</td>
+              <td><strong>Sim</strong> ($h$ admissível)</td>
+              <td>Variável por patamares</td>
+              <td><strong>$O(b \cdot d)$</strong></td>
+              <td>O novo patamar é rigorosamente o <strong>menor $f$ dos nós podados</strong>, e não um incremento arbitrário de $+1$!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="callout exam-tip">
+      <div class="callout-title">Resumo Mnemônico para a Prova</div>
+      <p>
+        • Para <strong>menor número de passos</strong>: BFS (com memória alta) ou IDS (com memória baixa).<br>
+        • Para <strong>menor custo monetário sem heurística</strong>: UCS ($f = g$).<br>
+        • Para <strong>menor custo com heurística rápida</strong>: A* ($f = g + h$).<br>
+        • Quando a <strong>memória RAM acabar</strong>: Substitua BFS por IDS e substitua A* por IDA*!
+      </p>
+    </div>
+  </div>
+</body>
+</html>

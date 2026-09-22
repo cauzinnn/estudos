@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0003: Busca com Retrocesso (Backtracking) — Inteligência Computacional</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <nav class="nav-links">
+      <a href="../index.html">← Painel Principal</a>
+      <a href="0002-busca-em-profundidade-dfs.html">← Lição 0002: DFS</a>
+      <a href="../reference/0001-tabela-comparativa-algoritmos-busca.html">📄 Tabela Comparativa</a>
+    </nav>
+
+    <header>
+      <div class="lesson-meta">Módulo 1: Buscas Não Informadas (Cegas) • Lição 0003</div>
+      <h1>Algoritmo de Busca com Retrocesso (Backtracking)</h1>
+      <p class="meta">A distinção sutil entre DFS e Backtracking: geração de um único filho por vez e memória estrita O(m).</p>
+    </header>
+
+    <section class="card-theory">
+      <h2>1. A Diferença Crucial: DFS vs. Backtracking</h2>
+      <p>
+        Muitos estudantes confundem <strong>DFS clássica</strong> com <strong>Backtracking</strong>. Em termos conceituais de Inteligência Computacional, a diferença reside em <em>como e quando os sucessores são gerados</em>:
+      </p>
+      <ul>
+        <li><strong>DFS Padrão:</strong> Ao expandir um nó, gera <strong>todos</strong> os seus $b$ filhos de uma vez e empilha todos na fronteira. Memória: $O(b \cdot m)$.</li>
+        <li><strong>Backtracking Puro:</strong> Gera <strong>apenas um sucessor por vez</strong>. Se esse ramo falhar (beco sem saída / dead end), o algoritmo <em>desfaz</em> a ação (retrocede ao pai) e tenta a próxima alternativa irmã. Memória: estritamente <strong>$O(m)$</strong> (apenas o caminho atual)!</li>
+      </ul>
+
+      <div class="callout exam-tip">
+        <div class="callout-title">⚠️ Pergunta Clássica de Prova Oral ou Escrita</div>
+        <p>
+          <em>"Qual algoritmo consome menos memória: DFS ou Backtracking?"</em><br>
+          <strong>Resposta correta:</strong> O Backtracking consome menos memória ($O(m)$ vs $O(b \cdot m)$ da DFS), pois não mantém os nós irmãos na memória enquanto explora o primeiro filho. Ele só instancia o próximo irmão quando o anterior fracassa e ocorre o retrocesso.
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">Propriedades Teóricas para Prova</div>
+        <ul>
+          <li><strong>Completude:</strong> Não (em grafos com ciclos ou caminhos infinitos se não houver verificação no caminho atual). Sim em espaços de busca finitos sem ciclos.</li>
+          <li><strong>Otimalidade:</strong> Não. Retorna a primeira solução encontrada no ramo explorado.</li>
+          <li><strong>Tempo:</strong> $O(b^m)$ no pior caso.</li>
+          <li><strong>Espaço:</strong> <strong>$O(m)$</strong> — é a busca de menor pegada de memória entre todas as buscas não triviais!</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card-theory">
+      <h2>2. Rastreamento com Beco Sem Saída (Dead End) e Retrocesso</h2>
+      <p>
+        Considere uma árvore de decisão simples onde partimos de $S$, temos alternativas em ordem alfabética, mas o nó $X$ é um <strong>Dead End</strong> (sem sucessores e sem meta):
+      </p>
+      <div class="graph-diagram">
+            [S]
+           /   \
+         [A]   [B]
+        /   \     \
+      [X]   [C]   [G] (Meta)
+    (beco)   \
+             [G] (Meta)
+
+Ações:
+  1. A partir de S, gera APENAS o primeiro filho: A. Caminho: [S, A]
+  2. A partir de A, gera APENAS o primeiro filho: X. Caminho: [S, A, X]
+  3. X é folha e NÃO é meta (Dead End!).
+  4. RETROCESSO: Desfaz X, volta para A.
+  5. A partir de A, gera o próximo filho: C. Caminho: [S, A, C]
+  6. A partir de C, gera o primeiro filho: G. Caminho: [S, A, C, G] -> META ATINGIDA!
+      </div>
+
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Passo</th>
+              <th>Ação / Estado Atual</th>
+              <th>Caminho Ativo na Memória (Tamanho $\le m$)</th>
+              <th>Condição Encontrada</th>
+              <th>Próximo Movimento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Iniciar em <code>S</code></td>
+              <td><code>[S]</code></td>
+              <td>Não é meta</td>
+              <td>Gerar 1º filho: <code>A</code></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Avançar para <code>A</code></td>
+              <td><code>[S, A]</code></td>
+              <td>Não é meta</td>
+              <td>Gerar 1º filho: <code>X</code></td>
+            </tr>
+            <tr class="highlight-prune">
+              <td>3</td>
+              <td>Avançar para <code>X</code></td>
+              <td><code>[S, A, X]</code></td>
+              <td>Beco sem saída (Falha)</td>
+              <td><strong>RETROCEDER (Backtrack)</strong> para <code>A</code></td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>Retornado em <code>A</code></td>
+              <td><code>[S, A]</code></td>
+              <td>Há alternativa restante: <code>C</code></td>
+              <td>Gerar 2º filho: <code>C</code></td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>Avançar para <code>C</code></td>
+              <td><code>[S, A, C]</code></td>
+              <td>Não é meta</td>
+              <td>Gerar 1º filho: <code>G</code></td>
+            </tr>
+            <tr class="highlight-step">
+              <td>6</td>
+              <td>Avançar para <code>G</code></td>
+              <td><code>[S, A, C, G]</code></td>
+              <td><strong>META ENCONTRADA!</strong></td>
+              <td>Retornar sucesso e caminho</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIOS INTERATIVOS -->
+
+    <div class="card-exercise" id="ex-bt-1">
+      <div class="exercise-header">
+        <span class="question-text">Exercício 1 • Espaço em Memória: DFS vs Backtracking</span>
+        <span class="exercise-tag">Múltipla Escolha</span>
+      </div>
+      <p>Se uma árvore possui profundidade máxima $m = 20$ e fator de ramificação $b = 5$, qual é a quantidade máxima de nós simultaneamente armazenados na memória pelo Backtracking puro em comparação com a DFS tradicional?</p>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Errado. Backtracking não armazena nós exponencialmente; esse seria o consumo da BFS!">
+          Backtracking armazena $5^{20}$ nós e a DFS armazena $20$ nós.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A DFS mantém na pilha todos os irmãos não explorados em cada nível do caminho, ocupando $O(b \cdot m) = 5 \cdot 20 = 100$ nós. Já o Backtracking guarda apenas o caminho corrente, ocupando $O(m) = 20$ nós (ou 1 nó se o estado for modificado in-place!).">
+          Backtracking armazena apenas $O(m) = 20$ nós (o caminho atual), enquanto a DFS armazena $O(b \cdot m) = 5 \cdot 20 = 100$ nós.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Ambos operam em memória linear, porém com coeficientes diferentes: um é $O(m)$ e o outro $O(b \cdot m)$.">
+          Ambos armazenam rigorosamente a mesma quantidade de nós em qualquer situação.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </div>
+
+    <div class="card-exercise" id="ex-bt-2">
+      <div class="exercise-header">
+        <span class="question-text">Exercício 2 • Active Recall: O que acontece no Dead End?</span>
+        <span class="exercise-tag">Preenchimento</span>
+      </div>
+      <p>Quando o algoritmo de Backtracking atinge um estado que não possui sucessores válidos e não é o estado objetivo, qual é a operação obrigatória realizada? (Digite o termo em português ou inglês):</p>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: retrocesso ou backtracking">
+        <button class="action-btn">Enviar Resposta</button>
+      </div>
+      <div class="feedback-box"></div>
+    </div>
+
+    <div class="card-exercise" id="ex-bt-3">
+      <div class="exercise-header">
+        <span class="question-text">Exercício 3 • Detecção de Ciclos no Backtracking</span>
+        <span class="exercise-tag">Diagnóstico</span>
+      </div>
+      <p>Em problemas representados por grafos (onde há arestas de ida e volta, como $A \leftrightarrow B$), como o Backtracking evita entrar em loop infinito sem gastar a memória de uma tabela com todos os nós do universo?</p>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Excelente raciocínio! Para manter a memória em $O(m)$, basta checar se o novo nó gerado já pertence aos ancestrais do caminho atual (comprimento $\le m$). Se já estiver no caminho, é um ciclo e o nó é descartado!">
+          Verificando apenas se o novo estado já existe no <strong>caminho atual</strong> (ancestrais diretos), o que custa no máximo $O(m)$ de memória.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Guardar todos os nós explorados exigiria memória exponencial $O(b^d)$, destruindo a grande vantagem do Backtracking que é $O(m)$.">
+          Salvando uma tabela hash permanente de todos os nós gerados na história da busca.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Heurísticas não são usadas em buscas cegas/não informadas.">
+          Calculando uma heurística $h(n)$ para detectar nós com custo repetido.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </div>
+
+    <!-- RESUMO DE TROPEÇOS -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Pontos de Atenção Identificados nesta Sessão</h3>
+      <p>Estes são os conceitos onde você tropeçou nas questões. Revise-os antes da prova:</p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <div class="lesson-nav">
+      <a href="0002-busca-em-profundidade-dfs.html">← Lição Anterior: 0002 — DFS</a>
+      <a href="0004-busca-profundidade-limite-6-dls.html">Próxima: Lição 0004 — DLS com Limite 6 →</a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      initMultipleChoice("ex-bt-1", "Backtracking: Consumo de memória estrito O(m) vs O(b*m)");
+      initInputExercise("ex-bt-2", [
+        "retrocesso",
+        "backtrack",
+        "backtracking",
+        "retroceder",
+        "desfazer",
+        "poda"
+      ], "Backtracking: Ação de retrocesso ao atingir falha/dead-end");
+      initMultipleChoice("ex-bt-3", "Backtracking: Verificação de ciclo apenas nos ancestrais do caminho atual");
+    });
+  </script>
+</body>
+</html>
