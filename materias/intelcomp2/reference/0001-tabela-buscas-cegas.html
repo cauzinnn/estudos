@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Referência: Buscas Cegas — intelcomp2</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">intelcomp2 • Ficha de Consulta Rápida • Módulo 1</div>
+      <h1>Tabela de Referência: Buscas Não Informadas (Cegas)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Resumo de bolso para provas: fronteiras, momento do teste de meta, completude, otimalidade e complexidades assintóticas.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/0001-busca-em-largura-bfs.html">← Voltar à Lição 0001 (BFS)</a>
+    </div>
+
+    <!-- TABELA COMPARATIVA -->
+    <section class="card-theory">
+      <h2>1. Comparativo dos Algoritmos de Busca Cega</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Algoritmo</th>
+              <th>Estrutura da Fronteira</th>
+              <th>Teste de Meta</th>
+              <th>Completo?</th>
+              <th>Ótimo?</th>
+              <th>Tempo</th>
+              <th>Espaço</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="highlight-step">
+              <td><strong>BFS (Largura)</strong></td>
+              <td>Fila FIFO (First-In, First-Out)</td>
+              <td>Na <strong>geração</strong> do filho</td>
+              <td>Sim (se $b < \infty$)</td>
+              <td>Sim (somente se custos unitários)</td>
+              <td>$O(b^d)$</td>
+              <td>$O(b^d)$ <em>(gargalo)</em></td>
+            </tr>
+            <tr>
+              <td><strong>DFS (Profundidade)</strong></td>
+              <td>Pilha LIFO (Last-In, First-Out)</td>
+              <td>Na geração / expansão</td>
+              <td>Não em grafos infinitos / ciclos</td>
+              <td>Não</td>
+              <td>$O(b^m)$</td>
+              <td>$O(b \cdot m)$ <em>(linear)</em></td>
+            </tr>
+            <tr>
+              <td><strong>Backtracking</strong></td>
+              <td>Chamadas recursivas / 1 filho por vez</td>
+              <td>Na geração do nó</td>
+              <td>Não se houver ramos infinitos</td>
+              <td>Não</td>
+              <td>$O(b^m)$</td>
+              <td>$O(m)$ <em>(estritamente o caminho)</em></td>
+            </tr>
+            <tr>
+              <td><strong>DLS ($L = 6$)</strong></td>
+              <td>Pilha / Recursão limitada</td>
+              <td>Na geração do nó</td>
+              <td>Incompleto se $d > L$</td>
+              <td>Não</td>
+              <td>$O(b^L)$</td>
+              <td>$O(b \cdot L)$</td>
+            </tr>
+            <tr>
+              <td><strong>IDS ($4$ iterações)</strong></td>
+              <td>Chamadas de DLS repetidas ($L=0 \dots 3$)</td>
+              <td>Na geração do nó</td>
+              <td>Sim (até o limite $L$)</td>
+              <td>Sim (se custos unitários)</td>
+              <td>$O(b^d)$</td>
+              <td>$O(b \cdot d)$ <em>(melhor balanço)</em></td>
+            </tr>
+            <tr>
+              <td><strong>UCS (Custo Uniforme)</strong></td>
+              <td>Fila de Prioridades (por menor $g(n)$)</td>
+              <td>Obrigatoriamente na <strong>retirada</strong></td>
+              <td>Sim (se passos $\ge \epsilon > 0$)</td>
+              <td><strong>Sim</strong> (para quaisquer custos)</td>
+              <td>$O(b^{1 + \lfloor C^* / \epsilon \rfloor})$</td>
+              <td>$O(b^{1 + \lfloor C^* / \epsilon \rfloor})$</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+        <em>Convenções:</em> $b$ = fator de ramificação; $d$ = profundidade do objetivo mais raso; $m$ = profundidade máxima do espaço de estados; $L$ = limite de profundidade; $C^*$ = custo do caminho ótimo; $\epsilon$ = custo mínimo positivo de uma aresta.
+      </p>
+    </section>
+
+    <!-- PONTOS ESSENCIAIS DE PROVA -->
+    <section class="card-theory">
+      <h2>2. Regras de Ouro para Provas</h2>
+      
+      <div class="callout exam-tip">
+        <div class="callout-title">Regra 1: A Armadilha da Otimalidade da BFS</div>
+        <p style="margin-bottom: 0;">
+          A BFS <strong>não</strong> encontra a menor rota em quilômetros ou dinheiro; ela encontra a rota com o <strong>menor número de arestas</strong>. Se os custos das arestas forem diferentes, quem garante otimalidade é a <strong>UCS</strong> ($f(n) = g(n)$).
+        </p>
+      </div>
+
+      <div class="callout pitfall">
+        <div class="callout-title">Regra 2: Por que a BFS Falha na Prática em Problemas Reais?</div>
+        <p style="margin-bottom: 0;">
+          Não é por tempo de processador, é por <strong>falta de memória RAM</strong>. Como a fronteira mantém todos os nós do nível folha na memória ($O(b^d)$), com $b=10$ e $d=12$ o algoritmo tentaria armazenar $10^{12}$ nós, exigindo terabytes de RAM.
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">Regra 3: Onde aplicar o teste de meta?</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>BFS:</strong> Aplica-se no momento da <u>geração</u> do filho.</li>
+          <li><strong>UCS:</strong> Aplica-se <u>apenas quando o nó é retirado</u> da fila de prioridade para expansão.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="lesson-nav">
+      <a href="../index.html">← Voltar ao Painel da Matéria</a>
+      <a href="../lessons/0001-busca-em-largura-bfs.html">← Retornar aos Exercícios da Lição 0001</a>
+    </div>
+
+  </div>
+</body>
+</html>

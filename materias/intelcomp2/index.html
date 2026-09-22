@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>intelcomp2 — Trilha Ativa de Algoritmos de Busca</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Ambiente de Aprendizagem Ativa e Orientada pelo Erro</div>
+      <h1>intelcomp2: Algoritmos de Busca</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Trilha progressiva com foco em teoria enxuta (&lt; 5 min), armadilhas conceituais, rastreamento de mesa e diagnóstico imediato em cada erro.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../../index.html">← Portal Principal de Estudos</a>
+      <a href="reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+    </div>
+
+    <!-- METODOLOGIA -->
+    <section class="card-theory">
+      <h2>Como Funciona a Nossa Jornada</h2>
+      <p>
+        Para garantir retenção duradoura sem ilusão de competência, avançaremos <strong>passo a passo</strong>:
+      </p>
+      <ul>
+        <li><strong>Uma lição por vez:</strong> Você estuda a teoria condensada e enfrenta imediatamente os desafios práticos.</li>
+        <li><strong>Diagnóstico no erro:</strong> As opções incorretas apontam exatamente a falácia mental cometida. Nada de respostas prontas sem esforço de recuperação!</li>
+        <li><strong>Evolução com base no domínio:</strong> Cada nova lição é liberada à medida que você consolida os algoritmos anteriores.</li>
+      </ul>
+    </section>
+
+    <!-- MÓDULO 1: BUSCAS NÃO INFORMADAS (CEGAS) -->
+    <section class="card-exercise">
+      <div class="exercise-header">
+        <h2>Módulo 1: Buscas Não Informadas (Cegas)</h2>
+        <span class="exercise-tag">6 Algoritmos</span>
+      </div>
+      <div class="options-list">
+        <a href="lessons/0001-busca-em-largura-bfs.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0001: Busca em Largura (BFS)</strong>
+              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Fila FIFO, exploração por ondas concêntricas, por que menor número de passos não garante otimalidade e o calcanhar de Aquiles da memória RAM $O(b^d)$.
+            </small>
+          </div>
+        </a>
+
+        <div class="option-btn" style="opacity: 0.65; cursor: not-allowed;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <strong>Lição 0002: Busca em Profundidade (DFS)</strong>
+              <span class="exercise-tag" style="background-color: rgba(110, 118, 129, 0.2); color: var(--text-muted);">A Seguir</span>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Pilha LIFO, memória linear $O(b \cdot m)$, e o desempate alfabético invertido no empilhamento de mesa.
+            </small>
+          </div>
+        </div>
+
+        <div class="option-btn" style="opacity: 0.65; cursor: not-allowed;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <strong>Lição 0003: Busca com Retrocesso (Backtracking Search)</strong>
+              <span class="exercise-tag" style="background-color: rgba(110, 118, 129, 0.2); color: var(--text-muted);">Pendente</span>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Geração de 1 filho por vez, consumo estrito de memória $O(m)$ e recuo ao detectar becos sem saída.
+            </small>
+          </div>
+        </div>
+
+        <div class="option-btn" style="opacity: 0.65; cursor: not-allowed;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <strong>Lição 0004: Busca em Profundidade com Limite 6 (DLS L=6)</strong>
+              <span class="exercise-tag" style="background-color: rgba(110, 118, 129, 0.2); color: var(--text-muted);">Pendente</span>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Poda artificial em profundidade 6, nós de fronteira e os três retornos possíveis (Solução, Falha e Cutoff).
+            </small>
+          </div>
+        </div>
+
+        <div class="option-btn" style="opacity: 0.65; cursor: not-allowed;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <strong>Lição 0005: Aprofundamento Iterativo com 4 Iterações (IDS)</strong>
+              <span class="exercise-tag" style="background-color: rgba(110, 118, 129, 0.2); color: var(--text-muted);">Pendente</span>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Execuções incrementais ($L=0, 1, 2, 3$), unindo a garantia ótima da BFS com o espaço econômico da DFS.
+            </small>
+          </div>
+        </div>
+
+        <div class="option-btn" style="opacity: 0.65; cursor: not-allowed;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <strong>Lição 0006: Busca de Custo Uniforme / Busca Ordenada (UCS)</strong>
+              <span class="exercise-tag" style="background-color: rgba(110, 118, 129, 0.2); color: var(--text-muted);">Pendente</span>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Fila de prioridades ordenada pelo custo acumulado $g(n)$, teste de meta na retirada e otimalidade geral.
+            </small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MÓDULO 2: BUSCAS INFORMADAS (HEURÍSTICAS) -->
+    <section class="card-exercise">
+      <div class="exercise-header">
+        <h2>Módulo 2: Buscas Informadas (Heurísticas)</h2>
+        <span class="exercise-tag">4 Algoritmos</span>
+      </div>
+      <div class="options-list">
+        <div class="option-btn" style="opacity: 0.65; cursor: not-allowed;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <strong>Lição 0007: Busca Irrevogável (Hill Climbing)</strong>
+              <span class="exercise-tag" style="background-color: rgba(110, 118, 129, 0.2); color: var(--text-muted);">Pendente</span>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Busca local sem memória de alternativas passadas, espaço $O(1)$ e os algozes: máximos locais, platôs e cumes.
+            </small>
+          </div>
+        </div>
+
+        <div class="option-btn" style="opacity: 0.65; cursor: not-allowed;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <strong>Lição 0008: Busca Gulosa (Greedy Best-First Search)</strong>
+              <span class="exercise-tag" style="background-color: rgba(110, 118, 129, 0.2); color: var(--text-muted);">Pendente</span>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Priorização puramente por $h(n)$ e a vulnerabilidade a armadilhas de caminhos com custo exorbitante.
+            </small>
+          </div>
+        </div>
+
+        <div class="option-btn" style="opacity: 0.65; cursor: not-allowed;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <strong>Lição 0009: Algoritmo de Busca A* (A-Star Search)</strong>
+              <span class="exercise-tag" style="background-color: rgba(110, 118, 129, 0.2); color: var(--text-muted);">Pendente</span>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              $f(n) = g(n) + h(n)$, provas de admissibilidade e consistência e a conservação de eficiência ótima.
+            </small>
+          </div>
+        </div>
+
+        <div class="option-btn" style="opacity: 0.65; cursor: not-allowed;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <strong>Lição 0010: A* com Aprofundamento Iterativo (IDA*)</strong>
+              <span class="exercise-tag" style="background-color: rgba(110, 118, 129, 0.2); color: var(--text-muted);">Pendente</span>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Superando o limite de RAM do A* através de cortes dinâmicos por patamar de $f(n)$ em memória linear.
+            </small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FICHAS DE CONSULTA RÁPIDA -->
+    <section class="card-exercise">
+      <div class="exercise-header">
+        <h2>Fichas de Consulta Rápida (Cheat Sheets)</h2>
+        <span class="exercise-tag">Revisão</span>
+      </div>
+      <div class="options-list">
+        <a href="reference/0001-tabela-buscas-cegas.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <strong style="color: var(--accent);">📄 Tabela Comparativa: Buscas Não Informadas (Cegas)</strong><br>
+            <small style="color: var(--text-muted);">Fronteiras, momentos de teste de meta, garantias e complexidades assintóticas lado a lado.</small>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <footer style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1.5rem 0;">
+      intelcomp2 • Aprendizagem Ativa Orientada pelo Erro • Dark Mode Nativo • Sem Dependências de Build
+    </footer>
+
+  </div>
+</body>
+</html>
