@@ -3,276 +3,221 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lição 0001: Busca em Largura (BFS) — Inteligência Computacional</title>
+  <title>Lição 1: Busca em Largura (BFS) - Inteligência Computacional</title>
   <link rel="stylesheet" href="../assets/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
-    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
-  <script src="../assets/app.js" defer></script>
 </head>
 <body>
-  <div class="container">
-    <nav class="nav-links">
-      <a href="../index.html">← Painel Principal</a>
-      <a href="../reference/0001-tabela-comparativa-algoritmos-busca.html">📄 Tabela Comparativa de Buscas</a>
-      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">📐 Guia de Fórmulas e Critérios</a>
-    </nav>
 
-    <header>
-      <div class="lesson-meta">Módulo 1: Buscas Não Informadas (Cegas) • Lição 0001</div>
-      <h1>Algoritmo de Busca em Largura (BFS)</h1>
-      <p class="meta">Rastreamento manual para provas, fronteira FIFO e armadilhas de otimalidade com custos variáveis.</p>
-    </header>
+  <header>
+    <div class="header-meta">
+      <span class="badge algorithm">Lição 0001</span>
+      <span class="badge exam">Busca Cega</span>
+      <span>Tempo estimado: 10 minutos</span>
+    </div>
+    <h1>Busca em Largura (Breadth-First Search - BFS)</h1>
+    <p>Aprenda a mecânica exata da busca em largura em grafos, a manipulação de fila FIFO e o preenchimento de tabelas de rastreamento para a prova.</p>
+  </header>
 
-    <section class="card-theory">
-      <h2>1. Intuição e Mecanismo em 2 Minutos</h2>
-      <p>
-        A <strong>Busca em Largura (Breadth-First Search - BFS)</strong> explora o grafo em ondas concêntricas de profundidade uniforme: todos os nós no nível $d$ são visitados antes de qualquer nó no nível $d+1$.
-      </p>
+  <nav class="nav-ribbon">
+    <div><strong>Navegação:</strong> <a href="../reference/referencia-rapida-buscas.html">Tabela Geral de Referência</a></div>
+    <div><a href="0002-busca-em-profundidade-dfs.html">Próxima: 2. DFS &rarr;</a></div>
+  </nav>
+
+  <section>
+    <h2>1. O Modelo Mental da Busca em Largura</h2>
+    <p>A <strong>Busca em Largura (BFS)</strong> explora o espaço de estados em camadas concêntricas a partir do nó raiz. Todos os nós na profundidade <code>0</code> são visitados, depois todos os da profundidade <code>1</code>, em seguida profundidade <code>2</code>, e assim por diante.</p>
+    
+    <p>Sua implementação canônica baseia-se em uma estrutura de dados de <strong>Fila (FIFO - First-In, First-Out)</strong>: o primeiro nó a entrar na fronteira é sempre o primeiro a ser retirado para expansão.</p>
+
+    <div class="callout concept">
+      <div class="callout-title">Propriedades Formais para Prova</div>
       <ul>
-        <li><strong>Fronteira:</strong> Fila estrita <strong>FIFO (First-In, First-Out)</strong>. O nó a expandir sai do início (cabeça); novos sucessores entram sempre no final (cauda).</li>
-        <li><strong>Ordem de desempate padrão em provas:</strong> Alfabética para sucessores gerados no mesmo passo.</li>
-        <li><strong>Conjunto de Explorados (Visitados):</strong> Evita loops em grafos mantendo registro dos nós já expandidos.</li>
+        <li><strong>Completude</strong>: Sim. Se existir solução e o fator de ramificação <code>b</code> for finito, BFS sempre encontra.</li>
+        <li><strong>Otimalidade</strong>: Sim, desde que <em>todas as arestas tenham o mesmo custo unitário</em> (ou seja, custo do caminho = profundidade). Se os custos forem variáveis, BFS não é ótima!</li>
+        <li><strong>Complexidade de Tempo</strong>: <code>O(b<sup>d</sup>)</code>, onde <code>b</code> é o fator de ramificação e <code>d</code> é a profundidade da meta mais rasa.</li>
+        <li><strong>Complexidade de Espaço</strong>: <code>O(b<sup>d</sup>)</code>. <em>Atenção de prova:</em> O consumo de memória é o calcanhar de Aquiles do BFS. Ele mantém todos os nós do nível atual e do próximo na memória.</li>
       </ul>
+    </div>
+  </section>
 
-      <div class="callout exam-tip">
-        <div class="callout-title">⚠️ Pegadinha Crítica de Prova: Teste de Meta</div>
-        <p>
-          No livro clássico de Russell &amp; Norvig (AIMA), a BFS otimizada testa se o nó é objetivo <strong>no momento em que ele é gerado</strong> (economiza a expansão de um nível inteiro). Porém, na maioria das provas universitárias brasileiras, adota-se a convenção genérica de árvore/grafo de busca: o teste é feito <strong>ao retirar o nó da fronteira</strong>. Sempre leia atentamente o enunciado da sua avaliação!
-        </p>
-      </div>
+  <section>
+    <h2>2. Grafo de Exemplo para Rastreamento</h2>
+    <p>Considere o grafo direcionado abaixo. O estado inicial é <strong>S</strong> e o objetivo (meta) é <strong>G</strong>. Em caso de empates na fila, adota-se <strong>ordem alfabética</strong>.</p>
 
-      <div class="callout definition">
-        <div class="callout-title">Propriedades Teóricas para Prova</div>
-        <ul>
-          <li><strong>Completude:</strong> Sim, se o fator de ramificação $b$ for finito.</li>
-          <li><strong>Otimalidade:</strong> <strong>Apenas se os custos das arestas forem todos iguais</strong> (ex: custo 1). Se os passos tiverem custos diferentes, a BFS <em>não</em> é ótima.</li>
-          <li><strong>Complexidade de Tempo:</strong> $O(b^d)$, onde $b$ é a ramificação e $d$ a profundidade da solução.</li>
-          <li><strong>Complexidade de Espaço:</strong> $O(b^d)$ — este é o calcanhar de Aquiles da BFS: a memória RAM esgota muito antes do tempo de CPU!</li>
-        </ul>
-      </div>
-    </section>
+    <div class="graph-diagram">
+      <svg width="520" height="240" viewBox="0 0 520 240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#5f6368"/>
+          </marker>
+        </defs>
 
-    <section class="card-theory">
-      <h2>2. O Grafo Padrão do Curso</h2>
-      <p>Usaremos este grafo direcionado em toda a trilha para comparar o comportamento de cada algoritmo. Meta: partir de <strong>S</strong> até atingir <strong>G</strong>.</p>
-      <div class="graph-diagram">
-            (A) ---------> (C) ---------> (E)
-           ^   \          /                \
-          /     \        /                  v
-        (S)-----> (B)---                     (G) [META]
-          \              \                  ^
-           \              v                /
-            v-----------> (D)-----------> (F)
+        <!-- Arestas -->
+        <line x1="60" y1="120" x2="160" y2="60" stroke="#5f6368" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="60" y1="120" x2="160" y2="180" stroke="#5f6368" stroke-width="2" marker-end="url(#arrow)"/>
+        
+        <line x1="160" y1="60" x2="280" y2="60" stroke="#5f6368" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="160" y1="60" x2="280" y2="120" stroke="#5f6368" stroke-width="2" marker-end="url(#arrow)"/>
+        
+        <line x1="160" y1="180" x2="280" y2="180" stroke="#5f6368" stroke-width="2" marker-end="url(#arrow)"/>
+        
+        <line x1="280" y1="60" x2="420" y2="120" stroke="#5f6368" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="280" y1="120" x2="420" y2="120" stroke="#5f6368" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="280" y1="180" x2="420" y2="120" stroke="#5f6368" stroke-width="2" marker-end="url(#arrow)"/>
 
-Sucessores por ordem alfabética:
-  S -> [A, B, D]
-  A -> [B, C]
-  B -> [C, D]
-  C -> [E]
-  D -> [E, F]
-  E -> [G]
-  F -> [G]
-  G -> []
-      </div>
-    </section>
+        <!-- Nós -->
+        <!-- S -->
+        <circle cx="60" cy="120" r="18" fill="#1a73e8"/>
+        <text x="60" y="126" font-family="sans-serif" font-weight="bold" font-size="14" fill="#fff" text-anchor="middle">S</text>
 
-    <section class="card-theory">
-      <h2>3. Rastreamento de Mesa de Prova (Passo a Passo)</h2>
-      <p>Convenção adotada: teste de meta na retirada da fronteira, com verificação de repetidos (Grafo de Busca).</p>
-      <div class="trace-table-container">
-        <table class="trace-table">
+        <!-- Nível 1: A, B -->
+        <circle cx="160" cy="60" r="18" fill="#f4efe6" stroke="#202124" stroke-width="2"/>
+        <text x="160" y="126" font-family="sans-serif" font-weight="bold" font-size="14" fill="#202124" text-anchor="middle">A</text>
+        <circle cx="160" cy="60" r="18" fill="#ffffff" stroke="#202124" stroke-width="2"/>
+        <text x="160" y="65" font-family="sans-serif" font-weight="bold" font-size="14" fill="#202124" text-anchor="middle">A</text>
+
+        <circle cx="160" cy="180" r="18" fill="#ffffff" stroke="#202124" stroke-width="2"/>
+        <text x="160" y="185" font-family="sans-serif" font-weight="bold" font-size="14" fill="#202124" text-anchor="middle">B</text>
+
+        <!-- Nível 2: C, D, E -->
+        <circle cx="280" cy="60" r="18" fill="#ffffff" stroke="#202124" stroke-width="2"/>
+        <text x="280" y="65" font-family="sans-serif" font-weight="bold" font-size="14" fill="#202124" text-anchor="middle">C</text>
+
+        <circle cx="280" cy="120" r="18" fill="#ffffff" stroke="#202124" stroke-width="2"/>
+        <text x="280" y="125" font-family="sans-serif" font-weight="bold" font-size="14" fill="#202124" text-anchor="middle">D</text>
+
+        <circle cx="280" cy="180" r="18" fill="#ffffff" stroke="#202124" stroke-width="2"/>
+        <text x="280" y="185" font-family="sans-serif" font-weight="bold" font-size="14" fill="#202124" text-anchor="middle">E</text>
+
+        <!-- Meta: G -->
+        <circle cx="420" cy="120" r="20" fill="#1e8e3e"/>
+        <circle cx="420" cy="120" r="24" fill="none" stroke="#1e8e3e" stroke-width="2"/>
+        <text x="420" y="126" font-family="sans-serif" font-weight="bold" font-size="15" fill="#fff" text-anchor="middle">G</text>
+      </svg>
+      <div class="graph-caption">Figura 1: Grafo direcionado de busca. Inicial: S; Objetivo: G. Ordem de inserção alfabética.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. Tabela de Rastreamento Passo a Passo</h2>
+    <p>Na versão clássica de busca em grafo (Russell &amp; Norvig), o teste de meta no BFS pode ocorrer no momento em que um nó filho é <strong>gerado</strong> para poupar expansões desnecessárias. Observe como a fila é mantida:</p>
+
+    <div class="trace-widget">
+      <div class="table-container">
+        <table>
           <thead>
             <tr>
               <th>Passo</th>
-              <th>Nó Retirado</th>
-              <th>É Meta?</th>
+              <th>Nó Retirado (Expandido)</th>
               <th>Filhos Gerados</th>
-              <th>Fronteira (Fila FIFO: Início &rarr; Fim)</th>
-              <th>Visitados</th>
+              <th>Fila (Fronteira FIFO)</th>
+              <th>Visitados (Explorados)</th>
+              <th>Ação / Observação</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>0</td>
-              <td>—</td>
-              <td>—</td>
-              <td>—</td>
+              <td>-</td>
+              <td>-</td>
               <td><code>[S]</code></td>
               <td><code>{}</code></td>
+              <td>Inicialização com nó raiz <code>S</code>.</td>
             </tr>
             <tr>
               <td>1</td>
-              <td><strong>S</strong></td>
-              <td>Não</td>
-              <td>A, B, D</td>
-              <td><code>[A, B, D]</code></td>
+              <td><code>S</code></td>
+              <td>A, B</td>
+              <td><code>[A, B]</code></td>
               <td><code>{S}</code></td>
+              <td>Gera A e B (ordem alfabética). Nenhum é meta.</td>
             </tr>
             <tr>
               <td>2</td>
-              <td><strong>A</strong></td>
-              <td>Não</td>
-              <td>B*, C <em>(B já na fila)</em></td>
-              <td><code>[B, D, C]</code></td>
+              <td><code>A</code></td>
+              <td>C, D</td>
+              <td><code>[B, C, D]</code></td>
               <td><code>{S, A}</code></td>
+              <td>A sai da frente; C e D entram no final da fila.</td>
             </tr>
             <tr>
               <td>3</td>
-              <td><strong>B</strong></td>
-              <td>Não</td>
-              <td>C*, D* <em>(já na fila)</em></td>
-              <td><code>[D, C]</code></td>
+              <td><code>B</code></td>
+              <td>E</td>
+              <td><code>[C, D, E]</code></td>
               <td><code>{S, A, B}</code></td>
+              <td>B sai; E entra no final da fila.</td>
             </tr>
             <tr>
               <td>4</td>
-              <td><strong>D</strong></td>
-              <td>Não</td>
-              <td>E, F</td>
-              <td><code>[C, E, F]</code></td>
-              <td><code>{S, A, B, D}</code></td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td><strong>C</strong></td>
-              <td>Não</td>
-              <td>E* <em>(já na fila)</em></td>
-              <td><code>[E, F]</code></td>
-              <td><code>{S, A, B, D, C}</code></td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td><strong>E</strong></td>
-              <td>Não</td>
+              <td><code>C</code></td>
               <td>G</td>
-              <td><code>[F, G]</code></td>
-              <td><code>{S, A, B, D, C, E}</code></td>
-            </tr>
-            <tr>
-              <td>7</td>
-              <td><strong>F</strong></td>
-              <td>Não</td>
-              <td>G* <em>(já na fila)</em></td>
-              <td><code>[G]</code></td>
-              <td><code>{S, A, B, D, C, E, F}</code></td>
-            </tr>
-            <tr class="highlight-step">
-              <td>8</td>
-              <td><strong>G</strong></td>
-              <td><strong>SIM!</strong></td>
-              <td>— (Fim)</td>
-              <td><code>[]</code></td>
-              <td><code>{S, A, B, D, C, E, F, G}</code></td>
+              <td><code>[D, E, G]</code></td>
+              <td><code>{S, A, B, C}</code></td>
+              <td>C gera G. Teste de meta em G &rarr; <strong>Sucesso!</strong></td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p>
-        <strong>Caminho retornado:</strong> <code>S &rarr; D &rarr; E &rarr; G</code> (3 arestas) ou <code>S &rarr; A &rarr; C &rarr; E &rarr; G</code> dependendo do ponteiro do pai registrado na primeira inserção de E (que veio de D no passo 4).<br>
-        <strong>Ordem de nós expandidos:</strong> <code>S, A, B, D, C, E, F, G</code>.
-      </p>
-    </section>
 
-    <!-- EXERCÍCIOS INTERATIVOS -->
-
-    <div class="card-exercise" id="ex-bfs-1">
-      <div class="exercise-header">
-        <span class="question-text">Exercício 1 • Estrutura e Inserção na Fronteira</span>
-        <span class="exercise-tag">Múltipla Escolha</span>
+      <div class="trace-controls">
+        <button class="btn btn-prev">&larr; Passo Anterior</button>
+        <button class="btn btn-next">Próximo Passo &rarr;</button>
+        <button class="btn btn-reset">Reiniciar</button>
+        <span class="step-counter" style="margin-left: auto; font-family: sans-serif; font-size: 0.88rem; color: var(--text-muted);">Passo 1 de 5</span>
       </div>
-      <p>Em uma prova, você precisa rastrear a BFS manualmente. Se o nó atual $X$ foi retirado do início da fronteira e gerou os filhos $Y$ e $Z$, como esses novos filhos devem ser inseridos?</p>
-      <div class="options-list">
-        <button class="option-btn" data-correct="false" data-feedback="Erro clássico! Inserir no início transforma a fronteira em uma PILHA (LIFO), convertendo a busca em uma Busca em Profundidade (DFS).">
-          No início da fronteira, de modo que $Y$ seja o próximo a ser expandido imediatamente.
-        </button>
-        <button class="option-btn" data-correct="true" data-feedback="Perfeito! A BFS é regida pela regra FIFO. Novos nós entram sempre no fim da fila e aguardam todos os nós de níveis anteriores e do mesmo nível serem expandidos.">
-          No final da fila, garantindo que todos os nós já presentes no mesmo nível sejam retirados antes.
-        </button>
-        <button class="option-btn" data-correct="false" data-feedback="A BFS é uma busca cega (não informada). Ela desconhece valores de heurística $h(n)$ e custos acumulados.">
-          Em ordem decrescente de valor heurístico $h(n)$ para acelerar a chegada ao objetivo.
-        </button>
-        <button class="option-btn" data-correct="false" data-feedback="Na BFS os filhos nunca substituem nós existentes; eles são enfileirados ao final.">
-          Substituindo o nó pai $X$ na sua posição original para economizar memória.
-        </button>
-      </div>
-      <div class="feedback-box"></div>
     </div>
 
-    <div class="card-exercise" id="ex-bfs-2">
-      <div class="exercise-header">
-        <span class="question-text">Exercício 2 • Active Recall: Estado da Fronteira no Passo 2</span>
-        <span class="exercise-tag">Preenchimento</span>
-      </div>
-      <p>Olhando para o grafo de referência: no início tínhamos <code>[S]</code>. Ao expandir <strong>S</strong>, entraram <code>A, B, D</code>. No passo 2, retiramos <strong>A</strong> (gerou B e C, mas B já existia). Qual é a fronteira exata após o passo 2? Digite as letras separadas por vírgula (ex: <code>B, D, C</code>):</p>
-      <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: B, D, C">
-        <button class="action-btn">Verificar Resposta</button>
-      </div>
-      <div class="feedback-box"></div>
+    <p><strong>Caminho retornado:</strong> <code>S &rarr; A &rarr; C &rarr; G</code> (comprimento = 3 arestas).</p>
+  </section>
+
+  <section>
+    <h2>4. Pegadinhas Clássicas de Prova sobre BFS</h2>
+    <div class="callout exam-tip">
+      <div class="callout-title">Pegadinha 1: "BFS é sempre ótimo?"</div>
+      <p><strong>NÃO!</strong> O BFS só garante otimalidade se o custo de todas as transições for constante (por exemplo, 1). Se o caminho S &rarr; A &rarr; C &rarr; G tiver custos 10 + 10 + 10 = 30, e existir um caminho longo S &rarr; B &rarr; D &rarr; E &rarr; G com custos 1 + 1 + 1 + 1 = 4, o BFS retornará o primeiro por ter menor profundidade, falhando em otimalidade de custo!</p>
     </div>
 
-    <div class="card-exercise" id="ex-bfs-3">
-      <div class="exercise-header">
-        <span class="question-text">Exercício 3 • Pegadinha Conceitual: A BFS é Sempre Ótima?</span>
-        <span class="exercise-tag">Diagnóstico de Erro</span>
-      </div>
-      <p>Um aluno escreveu na prova: <em>"A busca em largura é sempre ótima porque ela sempre encontra o caminho com o menor número de passos até a meta."</em> O professor deu nota zero. Por quê?</p>
-      <div class="options-list">
-        <button class="option-btn" data-correct="false" data-feedback="A BFS é de fato completa em grafos com fator de ramificação finito. Essa não é a razão da nota zero.">
-          Porque a BFS não é completa e pode não encontrar caminho algum se o grafo tiver ciclos.
-        </button>
-        <button class="option-btn" data-correct="true" data-feedback="Excelente diagnóstico! Menor número de passos (arestas) SÓ equivale a menor custo se todas as arestas tiverem o mesmo peso. Se um caminho de 2 passos custar 100 e um caminho de 5 passos custar 5, a BFS retornará o de custo 100!">
-          Porque menor número de passos só significa menor custo total quando todas as arestas têm custos idênticos (uniformes). Com custos variáveis, ela pode escolher um caminho mais raso porém muito mais caro.
-        </button>
-        <button class="option-btn" data-correct="false" data-feedback="A BFS não se confunde com ciclos quando possui conjunto de visitados (versão Grafo). O erro é puramente econômico (custo total do caminho).">
-          Porque se houver dois caminhos de mesmo tamanho, a BFS entra em loop infinito.
-        </button>
-      </div>
-      <div class="feedback-box"></div>
+    <div class="callout warning">
+      <div class="callout-title">Pegadinha 2: "Qual a maior limitação prática do BFS?"</div>
+      <p>Não é o tempo de CPU, e sim o <strong>consumo exponencial de memória</strong>. Em problemas reais com <code>b = 10</code> e <code>d = 10</code>, a fila precisará armazenar mais de 10 bilhões de nós, estourando a RAM.</p>
     </div>
+  </section>
 
-    <div class="card-exercise" id="ex-bfs-4">
-      <div class="exercise-header">
-        <span class="question-text">Exercício 4 • Gargalo de Complexidade</span>
-        <span class="exercise-tag">Múltipla Escolha</span>
+  <section>
+    <h2>5. Exercício de Fixação (Padrão de Prova)</h2>
+    <p>Responda à questão para consolidar o conceito. Analise com atenção o enunciado:</p>
+
+    <div class="quiz-widget" data-correct="2" data-explanation="O BFS gerencia sua fronteira estritamente com uma fila FIFO (First-In, First-Out). Isso garante que todos os nós na profundidade d sejam expandidos antes que qualquer nó da profundidade d+1 seja processado.">
+      <div class="quiz-header">
+        <span>Questão 1: Mecânica e Estrutura da Fronteira</span>
+        <span class="badge exam">IC Prova</span>
       </div>
-      <p>Se em um problema de busca temos ramificação média $b = 10$, a profundidade da solução é $d = 8$ e cada nó ocupa $1$ KB na memória, por que a BFS se torna impraticável antes mesmo da DFS?</p>
-      <div class="options-list">
-        <button class="option-btn" data-correct="true" data-feedback="Exato! $10^8$ nós de 1 KB equivalem a aproximadamente 100 GB de memória principal apenas para armazenar a fronteira. A memória esgota fatalmente.">
-          Porque a BFS precisa manter todos os nós gerados do nível na memória, exigindo $O(b^d)$ de espaço ($\approx 10^8$ nós $\approx 100$ GB de RAM).
-        </button>
-        <button class="option-btn" data-correct="false" data-feedback="Cuidado! O tempo da BFS é $O(b^d)$, exatamente a mesma ordem de grandeza da DFS no mesmo nível. O problema fatal não é a CPU, é a RAM!">
-          Porque a CPU gasta tempo exponencial $O(d!)$ em trocas de contexto na fila.
-        </button>
-        <button class="option-btn" data-correct="false" data-feedback="A BFS encontra a solução mais rasa em $d$. Ela não desce até a profundidade máxima $m$.">
-          Porque ela precisa descer obrigatoriamente até a profundidade máxima $m$ antes de voltar.
-        </button>
+      <div class="quiz-prompt">
+        Qual mecanismo garante que a Busca em Largura (BFS) explore o grafo nível por nível antes de avançar?
       </div>
-      <div class="feedback-box"></div>
+      <div class="quiz-options">
+        <button class="quiz-option">Uma pilha LIFO que desempilha o nó mais recente.</button>
+        <button class="quiz-option">Uma heurística gulosa que prioriza estados perto da meta.</button>
+        <button class="quiz-option">Uma fila FIFO que expande o nó mais antigo.</button>
+        <button class="quiz-option">Uma lista ordenada que prioriza o menor custo total.</button>
+      </div>
+      <div class="quiz-feedback"></div>
     </div>
+  </section>
 
-    <!-- RESUMO DE TROPEÇOS -->
-    <section class="review-summary" id="review-summary-card" style="display: none;">
-      <h3>⚠️ Pontos de Atenção Identificados nesta Sessão</h3>
-      <p>Estes são os conceitos onde você tropeçou nas questões. Revise-os antes da prova:</p>
-      <ul id="review-summary-list"></ul>
-    </section>
-
-    <div class="lesson-nav">
-      <span class="disabled">← Início do Curso</span>
-      <a href="0002-busca-em-profundidade-dfs.html">Próxima: Lição 0002 — Busca em Profundidade (DFS) →</a>
+  <footer>
+    <div class="primary-source-card">
+      <div class="primary-source-title">Fonte Primária Recomendada</div>
+      <p>Russell &amp; Norvig, <em>Inteligência Artificial</em>, 4ª Ed., Seção 3.4.1: "Busca em largura".</p>
     </div>
-  </div>
+    <div class="footer-nav">
+      <span>&larr; <a href="../reference/referencia-rapida-buscas.html">Referência Rápida</a></span>
+      <span><a href="0002-busca-em-profundidade-dfs.html">Avançar para Busca em Profundidade (DFS) &rarr;</a></span>
+    </div>
+    <p>Ficou com alguma dúvida no traçado da fila? Peça ao agente professor para simular um grafo diferente!</p>
+  </footer>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      initMultipleChoice("ex-bfs-1", "BFS: Inserção no fim da fila FIFO");
-      initInputExercise("ex-bfs-2", ["B, D, C", "B,D,C", "[B, D, C]", "[B,D,C]"], "BFS: Rastreamento manual da fronteira FIFO");
-      initMultipleChoice("ex-bfs-3", "BFS: Otimalidade apenas com custos uniformes de aresta");
-      initMultipleChoice("ex-bfs-4", "BFS: Gargalo de memória O(b^d)");
-    });
-  </script>
+  <script src="../assets/components.js"></script>
 </body>
 </html>
