@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redes de Computadores — Dashboard da Disciplina</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="lesson-meta">Ambiente de Estudos Autônomo • Ciência da Computação</div>
+      <h1>Redes de Computadores: Roteamento Unicast</h1>
+      <p class="meta">Teoria de algoritmos de roteamento (DV e LS), gabaritos comentados e repositório de listas.</p>
+    </header>
+
+    <section class="card-theory">
+      <h2>Visão Geral da Matéria</h2>
+      <p>
+        Esta disciplina aborda a camada de rede, com ênfase especial em arquiteturas de <strong>Roteamento Unicast</strong>, tabelas de encaminhamento e convergência de algoritmos de caminho mínimo distribuídos.
+      </p>
+      <ul>
+        <li><strong>Vetor de Distância (Distance Vector - DV):</strong> Algoritmo de Bellman-Ford, contagem ao infinito, horizonte dividido (split horizon) e envenenamento reverso (poison reverse).</li>
+        <li><strong>Estado de Enlace (Link State - LS):</strong> Algoritmo de Dijkstra, inundação de pacotes LSP (Link-State Packets), base de dados topológica unificada e convergência rápida.</li>
+      </ul>
+    </section>
+
+    <!-- SLIDES E TEORIA -->
+    <section class="card-exercise">
+      <div class="exercise-header">
+        <h2>Apostilas e Slides Teóricos (PDFs)</h2>
+        <span class="exercise-tag">Material Base</span>
+      </div>
+      <div class="options-list">
+        <a href="Parte1-roteamento-introducao-2021-1P.pdf" target="_blank" class="option-btn">
+          <div>
+            <strong>📄 Parte 1: Introdução ao Roteamento Unicast</strong><br>
+            <small style="color: var(--text-muted);">Sistemas autônomos, roteamento estático vs dinâmico e métricas de enlace.</small>
+          </div>
+        </a>
+        <a href="Parte2-roteamento-unicast-dv-2021-1P.pdf" target="_blank" class="option-btn">
+          <div>
+            <strong>📄 Parte 2: Roteamento por Vetor de Distância (DV)</strong><br>
+            <small style="color: var(--text-muted);">Equação de Bellman-Ford, mensagens periódicas de vetores e protocolo RIP.</small>
+          </div>
+        </a>
+        <a href="Parte3-roteamento-unicast-ls-2021-1P.pdf" target="_blank" class="option-btn">
+          <div>
+            <strong>📄 Parte 3: Roteamento por Estado de Enlace (LS)</strong><br>
+            <small style="color: var(--text-muted);">Descoberta de vizinhos, algoritmo de Dijkstra e protocolo OSPF.</small>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- LISTAS DE EXERCÍCIOS -->
+    <section class="card-exercise">
+      <div class="exercise-header">
+        <h2>Listas de Exercícios com Gabarito</h2>
+        <span class="exercise-tag">Prática e Provas</span>
+      </div>
+      <div class="options-list">
+        <a href="lista1%20-%20gabarito.pdf" target="_blank" class="option-btn">
+          <div><strong>📝 Lista 1: Exercícios e Gabarito</strong> — Fundamentos de roteamento</div>
+        </a>
+        <a href="lista2%20-%20gabarito.pdf" target="_blank" class="option-btn">
+          <div><strong>📝 Lista 2: Exercícios e Gabarito</strong> — Tabelas de repasse e métricas</div>
+        </a>
+        <a href="lista3%20-%20gabarito.pdf" target="_blank" class="option-btn">
+          <div><strong>📝 Lista 3: Exercícios e Gabarito</strong> — Algoritmo de Bellman-Ford (DV)</div>
+        </a>
+        <a href="lista4%20-%20gabarito.pdf" target="_blank" class="option-btn">
+          <div><strong>📝 Lista 4: Exercícios e Gabarito</strong> — Loops e contagem ao infinito</div>
+        </a>
+        <a href="lista5%20-%20gabarito.pdf" target="_blank" class="option-btn">
+          <div><strong>📝 Lista 5: Exercícios e Gabarito</strong> — Algoritmo de Dijkstra (LS)</div>
+        </a>
+        <a href="lista6%20-%20gabarito.pdf" target="_blank" class="option-btn">
+          <div><strong>📝 Lista 6: Exercícios e Gabarito</strong> — Protocolos OSPF, RIP e BGP</div>
+        </a>
+      </div>
+    </section>
+
+    <footer style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1.5rem 0;">
+      Redes de Computadores • Página Autônoma no GitHub Pages
+    </footer>
+  </div>
+</body>
+</html>

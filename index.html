@@ -3,139 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inteligência Computacional — Trilha Completa de Algoritmos de Busca</title>
+  <title>Portal de Estudos — Seleção de Disciplinas</title>
   <link rel="stylesheet" href="assets/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
-    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
-  <script src="assets/app.js" defer></script>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="lesson-meta">Preparação para Avaliações e Provas • IA / Inteligência Computacional</div>
-      <h1>Trilha Interativa: Algoritmos de Busca</h1>
-      <p class="meta">Teoria concisa (&lt; 5 min), rastreamento de mesa, diagnósticos de erro em tempo real e armadilhas conceituais de prova.</p>
+  <div class="container" style="max-width: 640px; margin-top: 2rem;">
+    <header style="text-align: center; border-bottom: none; padding-bottom: 0.5rem;">
+      <div class="lesson-meta">Ambiente de Aprendizagem Ativa</div>
+      <h1 style="font-size: 2.1rem; margin-bottom: 0.5rem;">Portal de Estudos</h1>
+      <p class="meta">Selecione uma matéria para acessar seu ambiente autônomo:</p>
     </header>
 
-    <section class="card-theory">
-      <h2>Como Estudar nesta Plataforma</h2>
-      <p>
-        Cada lição foi construída com foco em <strong>aprendizado ativo orientado pelo erro</strong>:
-      </p>
-      <ul>
-        <li><strong>Sem paredes de texto:</strong> Vá direto à intuição, ao grafo do problema e à tabela de rastreamento de prova.</li>
-        <li><strong>Exercícios imediatos com diagnósticos:</strong> Quando errar, não olhe respostas prontas — cada botão de alternativa explica exatamente o equívoco de raciocínio comum para você corrigir sua compreensão.</li>
-        <li><strong>Foco em Mesa de Prova:</strong> Todas as lições treinam o preenchimento de tabelas com Nó Retirado, Fronteira, Filhos Gerados e Conjunto de Visitados.</li>
-      </ul>
-    </section>
+    <div class="options-list" style="gap: 1rem; margin-top: 1rem;">
+      <!-- CARD: INTELIGÊNCIA COMPUTACIONAL -->
+      <a href="materias/intelcomp/index.html" class="option-btn" style="padding: 1.25rem 1.4rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; text-decoration: none;">
+        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+          <strong style="font-size: 1.15rem; color: #58a6ff;">🧠 Inteligência Computacional</strong>
+          <span class="exercise-tag" style="background-color: rgba(63, 185, 80, 0.15); color: #7ee787;">10 Lições • Prova</span>
+        </div>
+        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.45;">
+          Trilha completa de Algoritmos de Busca (Cegos e Heurísticos), rastreamento de mesa, simuladores de fronteira, armadilhas e fichas de consulta rápida.
+        </p>
+      </a>
 
-    <!-- MÓDULO 1: BUSCAS CEGAS -->
-    <section class="card-exercise">
-      <div class="exercise-header">
-        <h2>Módulo 1: Buscas Não Informadas (Cegas)</h2>
-        <span class="exercise-tag">6 Lições</span>
-      </div>
-      <div class="options-list">
-        <a href="lessons/0001-busca-em-largura-bfs.html" class="option-btn">
-          <div>
-            <strong>Lição 0001: Busca em Largura (BFS)</strong><br>
-            <small style="color: var(--text-muted);">Fila FIFO, ondas concêntricas de profundidade e por que a BFS não é ótima com custos arbitrários.</small>
-          </div>
-        </a>
-        <a href="lessons/0002-busca-em-profundidade-dfs.html" class="option-btn">
-          <div>
-            <strong>Lição 0002: Busca em Profundidade (DFS)</strong><br>
-            <small style="color: var(--text-muted);">Pilha LIFO, a pegadinha da ordem inversa de empilhamento para desempate alfabético e memória linear $O(bm)$.</small>
-          </div>
-        </a>
-        <a href="lessons/0003-busca-com-retrocesso-backtracking.html" class="option-btn">
-          <div>
-            <strong>Lição 0003: Busca com Retrocesso (Backtracking)</strong><br>
-            <small style="color: var(--text-muted);">A diferença sutil para a DFS: geração de 1 filho por vez, retrocesso em dead-ends e memória estrita $O(m)$.</small>
-          </div>
-        </a>
-        <a href="lessons/0004-busca-profundidade-limite-6-dls.html" class="option-btn">
-          <div>
-            <strong>Lição 0004: DLS com Limite de Profundidade 6</strong><br>
-            <small style="color: var(--text-muted);">Poda artificial em $L=6$, os três retornos de prova (Solução, Falha Definitiva e Cutoff) e rastreamento de mesa.</small>
-          </div>
-        </a>
-        <a href="lessons/0005-aprofundamento-iterativo-4-iteracoes-ids.html" class="option-btn">
-          <div>
-            <strong>Lição 0005: Aprofundamento Iterativo com 4 Iterações (IDS)</strong><br>
-            <small style="color: var(--text-muted);">Unindo a otimalidade da BFS à memória da DFS. Rastreamento das 4 iterações ($L=0, 1, 2, 3$).</small>
-          </div>
-        </a>
-        <a href="lessons/0006-busca-custo-uniforme-ucs.html" class="option-btn">
-          <div>
-            <strong>Lição 0006: Busca de Custo Uniforme (UCS / Dijkstra)</strong><br>
-            <small style="color: var(--text-muted);">$f(n) = g(n)$, Fila de Prioridades (Min-Heap) e a regra de ouro do teste de meta na retirada da fila.</small>
-          </div>
-        </a>
-      </div>
-    </section>
+      <!-- CARD: REDES DE COMPUTADORES -->
+      <a href="materias/redes/index.html" class="option-btn" style="padding: 1.25rem 1.4rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; text-decoration: none;">
+        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+          <strong style="font-size: 1.15rem; color: #58a6ff;">🌐 Redes de Computadores</strong>
+          <span class="exercise-tag" style="background-color: rgba(88, 166, 255, 0.15); color: #79c0ff;">Roteamento • Listas 1 a 6</span>
+        </div>
+        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.45;">
+          Roteamento Unicast (Vetor de Distância / Bellman-Ford e Estado de Enlace / Dijkstra), apostilas em slides e 6 listas resolvidas com gabarito.
+        </p>
+      </a>
+    </div>
 
-    <!-- MÓDULO 2: BUSCAS HEURÍSTICAS -->
-    <section class="card-exercise">
-      <div class="exercise-header">
-        <h2>Módulo 2: Buscas Informadas (Heurísticas)</h2>
-        <span class="exercise-tag">4 Lições</span>
-      </div>
-      <div class="options-list">
-        <a href="lessons/0007-busca-irrevogavel-hill-climbing.html" class="option-btn">
-          <div>
-            <strong>Lição 0007: Busca Irrevogável (Hill Climbing)</strong><br>
-            <small style="color: var(--text-muted);">Busca local míope sem fronteira, memória $O(1)$ e os 3 algozes: Máximos Locais, Platôs e Cumes.</small>
-          </div>
-        </a>
-        <a href="lessons/0008-busca-gulosa-greedy.html" class="option-btn">
-          <div>
-            <strong>Lição 0008: Busca Gulosa (Greedy Best-First)</strong><br>
-            <small style="color: var(--text-muted);">$f(n) = h(n)$, Fila de Prioridades e a vulnerabilidade a caminhos caros induzidos por heurística enganosa.</small>
-          </div>
-        </a>
-        <a href="lessons/0009-busca-a-estrela-astar.html" class="option-btn">
-          <div>
-            <strong>Lição 0009: Algoritmo de Busca A* (A-Star)</strong><br>
-            <small style="color: var(--text-muted);">$f(n) = g(n) + h(n)$, provas de admissibilidade em árvores, consistência em grafos e eficiência ótima.</small>
-          </div>
-        </a>
-        <a href="lessons/0010-a-estrela-aprofundamento-iterativo-ida.html" class="option-btn">
-          <div>
-            <strong>Lição 0010: A* com Aprofundamento Iterativo (IDA*)</strong><br>
-            <small style="color: var(--text-muted);">Como resolver o gargalo de memória do A*: patamares de $f(n)$, atualização pelo menor podado e espaço linear $O(bd)$.</small>
-          </div>
-        </a>
-      </div>
-    </section>
-
-    <!-- FICHAS DE REFERÊNCIA -->
-    <section class="card-exercise">
-      <div class="exercise-header">
-        <h2>Fichas de Consulta Rápida (Cheat Sheets)</h2>
-        <span class="exercise-tag">Revisão Pré-Prova</span>
-      </div>
-      <div class="options-list">
-        <a href="reference/0001-tabela-comparativa-algoritmos-busca.html" class="option-btn">
-          <div>
-            <strong>📄 Tabela Comparativa Completa dos 10 Algoritmos</strong><br>
-            <small style="color: var(--text-muted);">Fronteiras, testes de meta, completude, otimalidade, tempos, espaços e pegadinhas lado a lado.</small>
-          </div>
-        </a>
-        <a href="reference/0002-formulas-e-heuristicas-guia-rapido.html" class="option-btn">
-          <div>
-            <strong>📐 Guia de Fórmulas, Heurísticas e Critérios Teóricos</strong><br>
-            <small style="color: var(--text-muted);">Definições formais de Admissibilidade, Consistência, Dominância no 8-Puzzle e corte do IDA*.</small>
-          </div>
-        </a>
-      </div>
-    </section>
-
-    <footer style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1.5rem 0;">
-      Plataforma de Aprendizado Ativo em Inteligência Computacional • Dark Mode Nativo • Sem Dependências de Build
-    </footer>
+    <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 1.5rem; line-height: 1.5;">
+      💡 <em>Cada matéria é 100% autônoma. Você pode salvar o link direto da sua disciplina nos favoritos e navegar exclusivamente dentro dela.</em>
+    </p>
   </div>
 </body>
 </html>

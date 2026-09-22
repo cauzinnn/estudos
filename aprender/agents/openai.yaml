@@ -1,5 +1,0 @@
-interface:
-  display_name: "Aprender"
-  short_description: "Lições interativas em HTML com foco em exercícios práticos e aprendizado pelo erro"
-policy:
-  allow_implicit_invocation: false
