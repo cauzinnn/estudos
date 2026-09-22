@@ -1,11 +1,22 @@
 /**
- * Motor de Interatividade e Diagnóstico de Erros — Plataforma de Aprendizado Ativo
- * Orientado pelo erro, feedback formativo imediato e retenção duradoura.
+ * Motor de Interatividade e Diagnóstico de Erros — intelcomp2
+ * Focado em Aprendizagem Ativa Orientada pelo Erro
  */
 
 const SessionTracker = {
   stumbles: new Set(),
   lessonId: window.location.pathname.split("/").pop() || "geral",
+
+  init() {
+    try {
+      const stored = JSON.parse(localStorage.getItem("intelcomp2_stumbles") || "{}");
+      const existing = stored[this.lessonId] || [];
+      existing.forEach(item => this.stumbles.add(item));
+      this.renderSummary();
+    } catch (e) {
+      // localStorage bloqueado ou indisponível
+    }
+  },
 
   recordStumble(conceptName) {
     if (conceptName) {
@@ -17,11 +28,11 @@ const SessionTracker = {
 
   persistStumbles() {
     try {
-      const stored = JSON.parse(localStorage.getItem("aprender_stumbles") || "{}");
+      const stored = JSON.parse(localStorage.getItem("intelcomp2_stumbles") || "{}");
       stored[this.lessonId] = Array.from(this.stumbles);
-      localStorage.setItem("aprender_stumbles", JSON.stringify(stored));
+      localStorage.setItem("intelcomp2_stumbles", JSON.stringify(stored));
     } catch (e) {
-      // Falha silenciosa em navegadores com localStorage bloqueado
+      // localStorage restrito
     }
   },
 
@@ -33,7 +44,7 @@ const SessionTracker = {
     if (this.stumbles.size > 0) {
       summaryCard.style.display = "block";
       summaryContainer.innerHTML = Array.from(this.stumbles)
-        .map(item => `<li><strong>Ponto de atenção identificado:</strong> ${item}</li>`)
+        .map(item => `<li><strong>Ponto de tropeço registrado:</strong> ${item}</li>`)
         .join("");
 
       if (window.renderMathInElement) {
@@ -50,8 +61,6 @@ const SessionTracker = {
 
 /**
  * Múltipla Escolha com Diagnóstico de Distratores
- * Quando o aluno clica numa opção errada, NÃO bloqueia o exercício;
- * mostra a falácia do distrator e exige que ele tente de novo!
  */
 function initMultipleChoice(containerId, conceptName) {
   const container = document.getElementById(containerId);
@@ -63,10 +72,10 @@ function initMultipleChoice(containerId, conceptName) {
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
       const isCorrect = btn.dataset.correct === "true";
-      const feedback = btn.dataset.feedback || (isCorrect ? "Exato! Raciocínio perfeito." : "Incorreto. Tente novamente.");
+      const feedback = btn.dataset.feedback || (isCorrect ? "Correto! Raciocínio perfeito." : "Incorreto. Tente novamente.");
 
       feedbackBox.className = "feedback-box show " + (isCorrect ? "success" : "error");
-      feedbackBox.innerHTML = (isCorrect ? "<strong>Correto! </strong>" : "<strong>Atenção: </strong>") + feedback;
+      feedbackBox.innerHTML = (isCorrect ? "<strong>Correto! </strong>" : "<strong>Diagnóstico do Erro: </strong>") + feedback;
 
       if (isCorrect) {
         btn.classList.remove("selected-error");
@@ -92,7 +101,7 @@ function initMultipleChoice(containerId, conceptName) {
 }
 
 /**
- * Preenchimento / Active Recall com Normalização e Validação Robusta
+ * Preenchimento / Active Recall
  */
 function initInputExercise(containerId, validAnswers, conceptName, customValidator = null) {
   const container = document.getElementById(containerId);
@@ -133,7 +142,7 @@ function initInputExercise(containerId, validAnswers, conceptName, customValidat
       input.disabled = true;
     } else {
       const hint = container.dataset.hint || "Revise o passo a passo da regra e tente novamente.";
-      feedbackBox.innerHTML = `<strong>Ainda não:</strong> A resposta informada (<code>${rawVal || "vazio"}</code>) não condiz com o rastreamento esperado. Dica: ${hint}`;
+      feedbackBox.innerHTML = `<strong>Ainda não:</strong> A resposta (<code>${rawVal || "vazio"}</code>) não condiz com o rastreamento esperado. <em>Dica: ${hint}</em>`;
       SessionTracker.recordStumble(conceptName);
     }
 
@@ -155,8 +164,52 @@ function initInputExercise(containerId, validAnswers, conceptName, customValidat
   }
 }
 
+/**
+ * Verdadeiro ou Falso / Identificação de Falácia
+ */
+function initTrueFalse(containerId, isTrueCorrect, conceptName, trueFeedback, falseFeedback) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const btnTrue = container.querySelector(".btn-true");
+  const btnFalse = container.querySelector(".btn-false");
+  const feedbackBox = container.querySelector(".feedback-box");
+
+  function evaluate(chosenTrue, clickedBtn, otherBtn) {
+    const isCorrect = (chosenTrue === isTrueCorrect);
+    const feedback = chosenTrue ? trueFeedback : falseFeedback;
+
+    feedbackBox.className = "feedback-box show " + (isCorrect ? "success" : "error");
+    feedbackBox.innerHTML = (isCorrect ? "<strong>Exato! </strong>" : "<strong>Atenção à falácia: </strong>") + feedback;
+
+    if (isCorrect) {
+      clickedBtn.classList.remove("selected-error");
+      clickedBtn.classList.add("selected-success");
+      otherBtn.disabled = true;
+    } else {
+      clickedBtn.classList.add("selected-error");
+      SessionTracker.recordStumble(conceptName);
+    }
+
+    if (window.renderMathInElement) {
+      window.renderMathInElement(feedbackBox, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ]
+      });
+    }
+  }
+
+  if (btnTrue && btnFalse) {
+    btnTrue.addEventListener("click", () => evaluate(true, btnTrue, btnFalse));
+    btnFalse.addEventListener("click", () => evaluate(false, btnFalse, btnTrue));
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Render math delimiters se katex estiver pronto
+  SessionTracker.init();
+
   if (window.renderMathInElement) {
     window.renderMathInElement(document.body, {
       delimiters: [

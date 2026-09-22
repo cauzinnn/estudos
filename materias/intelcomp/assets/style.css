@@ -64,7 +64,7 @@ header {
 .nav-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 1rem;
   font-size: 0.9rem;
 }
@@ -75,15 +75,16 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
   background-color: rgba(88, 166, 255, 0.08);
-  transition: background-color 0.15s ease;
+  border: 1px solid var(--border-subtle);
+  transition: all 0.15s ease;
 }
 
 .nav-links a:hover {
   background-color: rgba(88, 166, 255, 0.2);
-  text-decoration: none;
+  border-color: var(--border-focus);
 }
 
 h1 {
@@ -167,6 +168,15 @@ code {
   color: var(--purple);
 }
 
+.callout.pitfall {
+  border-left-color: var(--error);
+  background-color: rgba(248, 81, 73, 0.08);
+}
+
+.callout.pitfall .callout-title {
+  color: #ff7b72;
+}
+
 /* Diagrams and Preformatted Text */
 .graph-diagram, .code-block {
   background-color: #030712;
@@ -178,8 +188,16 @@ code {
   line-height: 1.45;
   color: #e6edf3;
   overflow-x: auto;
-  white-space: pre;
   margin: 1rem 0;
+  text-align: center;
+}
+
+.graph-caption {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.6rem;
+  font-family: var(--font-family);
+  text-align: center;
 }
 
 /* Tables */
@@ -226,10 +244,6 @@ code {
   background-color: rgba(63, 185, 80, 0.15);
 }
 
-.trace-table tr.highlight-prune {
-  background-color: rgba(248, 81, 73, 0.12);
-}
-
 /* Cards & Theory */
 .card-theory {
   background-color: var(--bg-card);
@@ -268,10 +282,21 @@ code {
   color: var(--accent);
 }
 
+.exercise-tag.diagnostic {
+  background-color: rgba(210, 153, 34, 0.15);
+  color: #e3b341;
+}
+
+.exercise-tag.recall {
+  background-color: rgba(188, 140, 255, 0.15);
+  color: #d2a8ff;
+}
+
 .question-text {
   font-size: 1.02rem;
   font-weight: 500;
   color: var(--text-main);
+  line-height: 1.5;
 }
 
 .options-list {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lição 0002: Busca em Profundidade (DFS) — Inteligência Computacional</title>
+  <title>Lição 0002: Busca em Profundidade (DFS) — intelcomp</title>
   <link rel="stylesheet" href="../assets/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -13,64 +13,113 @@
 </head>
 <body>
   <div class="container">
-    <nav class="nav-links">
-      <a href="../index.html">← Painel Principal</a>
-      <a href="0001-busca-em-largura-bfs.html">← Lição 0001: BFS</a>
-      <a href="../reference/0001-tabela-comparativa-algoritmos-busca.html">📄 Tabela Comparativa de Buscas</a>
-    </nav>
 
     <header>
-      <div class="lesson-meta">Módulo 1: Buscas Não Informadas (Cegas) • Lição 0002</div>
+      <div class="lesson-meta">intelcomp • Buscas Não Informadas (Cegas) • Lição 0002</div>
       <h1>Algoritmo de Busca em Profundidade (DFS)</h1>
-      <p class="meta">Fronteira LIFO (Pilha), ordem de inserção vs. desempate e economia brutal de memória com risco de loops.</p>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Mergulho vertical na árvore, fronteira em Pilha LIFO, a enorme economia de memória $O(b \cdot m)$ e a clássica armadilha do desempate alfabético invertido.
+      </p>
     </header>
 
-    <section class="card-theory">
-      <h2>1. O Mecanismo Central em 2 Minutos</h2>
-      <p>
-        A <strong>Busca em Profundidade (Depth-First Search - DFS)</strong> mergulha o mais fundo possível ao longo de cada ramo antes de retroceder. Sempre expande o nó mais profundo disponível na fronteira.
-      </p>
-      <ul>
-        <li><strong>Fronteira:</strong> <strong>Pilha LIFO (Last-In, First-Out)</strong>. O nó a expandir é removido do <strong>Topo</strong>; novos nós são empilhados no <strong>Topo</strong>.</li>
-        <li><strong>Vantagem decisiva:</strong> Consumo de memória linear $O(b \cdot m)$, dramaticamente menor que o exponencial $O(b^d)$ da BFS.</li>
-        <li><strong>Desvantagem fatal:</strong> Pode descer por ramos infinitos ou se perder em ciclos em buscas em árvore, falhando em encontrar soluções rasas.</li>
-      </ul>
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/0001-busca-em-largura-bfs.html">← Lição 0001: BFS</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+    </div>
 
-      <div class="callout exam-tip">
-        <div class="callout-title">⚠️ A Maior Pegadinha de Prova: Ordem de Empilhamento</div>
-        <p>
-          Se o enunciado exige desempate por <strong>ordem alfabética</strong> (ex: expandir $A$ antes de $B$), e você usa uma pilha onde o topo fica à esquerda: para que <code>A</code> seja desempilhado primeiro, você deve empilhar primeiro <code>D</code>, depois <code>B</code> e por fim <code>A</code>! Quem empilha $A$ primeiro acaba desempilhando $D$ primeiro e zera a questão!
-        </p>
-      </div>
+    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <section class="card-theory">
+      <h2>1. Teoria Enxuta: O Modelo Mental da DFS</h2>
+      <p>
+        A <strong>Busca em Profundidade</strong> (<em>Depth-First Search — DFS</em>) segue a intuição do <strong>mergulho vertical</strong>: ela avança o mais fundo possível ao longo de cada ramo antes de retroceder (<em>backtracking</em>).
+      </p>
+      <ol>
+        <li>Expande sempre o <strong>nó mais profundo</strong> atualmente presente na fronteira.</li>
+        <li>Ao alcançar uma folha sem filhos (beco sem saída) ou nós já explorados, a busca "recua" um nível e retoma a exploração no nó mais recente que ainda possua irmãos não visitados.</li>
+      </ol>
+      <p>
+        Para atingir esse comportamento, sua fronteira utiliza estritamente uma estrutura <strong>LIFO (Last-In, First-Out — Pilha)</strong>: o último nó gerado é o primeiro a ser desempilhado e expandido.
+      </p>
 
       <div class="callout definition">
-        <div class="callout-title">Propriedades Teóricas para Prova</div>
-        <ul>
-          <li><strong>Completude:</strong> <strong>Não</strong> (em grafos infinitos ou sem detecção de ciclos). <strong>Sim</strong> apenas em grafos finitos com verificação estrita de estados visitados.</li>
-          <li><strong>Otimalidade:</strong> <strong>Não</strong>. Pode encontrar um caminho profundo de centenas de passos antes de sequer considerar uma solução de 1 passo no outro ramo.</li>
-          <li><strong>Tempo:</strong> $O(b^m)$, onde $m$ é a profundidade máxima do espaço de busca ($m \ge d$).</li>
-          <li><strong>Espaço:</strong> $O(b \cdot m)$ para armazenamento dos ramos na pilha (ou $O(m)$ com backtracking estrito).</li>
+        <div class="callout-title">📌 Propriedades Formais de Prova</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Completude:</strong> <u>Não</u> é completa em busca em árvore se houver ramos infinitos ou ciclos (pode ficar presa em um poço sem fundo). Em busca em grafo (com tabela de fechados / visitados) em espaços de estados <em>finitos</em>, torna-se <strong>completa</strong>.</li>
+          <li><strong>Otimalidade:</strong> <u>Não</u> é ótima. Pode mergulhar por um ramo extremamente longo e caro à esquerda e encontrar um objetivo subótimo, sem sequer avaliar uma meta a apenas 1 passo de distância no ramo da direita!</li>
+          <li><strong>Tempo:</strong> $O(b^m)$, onde $b$ é o fator de ramificação e $m$ é a profundidade máxima do espaço de estados (pode ser muito maior que a profundidade da solução mais rasa $d$).</li>
+          <li><strong>Espaço (Memória — A Superpotência da DFS):</strong> $O(b \cdot m)$ na formulação padrão com pilha. Ela precisa manter na memória apenas o caminho ativo da raiz até o nó corrente, mais os irmãos não expandidos ao longo do trajeto.</li>
         </ul>
+      </div>
+
+      <div class="callout pitfall">
+        <div class="callout-title">⚠️ A Grande Armadilha de Prova: Desempate Alfabético Invertido na Pilha</div>
+        <p style="margin-bottom: 0;">
+          Em enunciados de provas e exames de IA, a convenção padrão é: <em>"Em caso de empate entre nós gerados, visite em ordem alfabética"</em> (isto é, retirar e expandir $A$ antes de $B$).<br><br>
+          Como a fronteira é uma <strong>Pilha LIFO</strong> (onde quem sai é o elemento do topo), para que o nó $A$ saia primeiro, <strong>$B$ deve ser empilhado antes de $A$</strong>!<br>
+          Estrutura da Pilha (Base $\to$ Topo): <code>[B, A]</code> $\to$ Topo: <code>A</code>.<br>
+          Se você empilhar em ordem alfabética direta (primeiro $A$, depois $B$), a pilha ficará com $B$ no topo, forçando a busca a visitar $B$ primeiro e errando todo o rastreamento na folha de respostas!
+        </p>
       </div>
     </section>
 
+    <!-- SEÇÃO 2: GRAFO DIDÁTICO PARA RASTREAMENTO -->
     <section class="card-theory">
-      <h2>2. Grafo de Referência e Rastreamento de Mesa</h2>
-      <div class="graph-diagram">
-            (A) ---------> (C) ---------> (E)
-           ^   \          /                \
-          /     \        /                  v
-        (S)-----> (B)---                     (G) [META]
-          \              \                  ^
-           \              v                /
-            v-----------> (D)-----------> (F)
-
-Sucessores (ordem alfabética): S -> [A, B, D], A -> [B, C], B -> [C, D], C -> [E], D -> [E, F], E -> [G], F -> [G]
-      </div>
-
+      <h2>2. Grafo de Rastreamento (Convenção: Visita em Ordem Alfabética)</h2>
       <p>
-        Abaixo, rastreamos a DFS na versão <strong>Grafo</strong> (não re-insere nós já visitados). A fronteira é representada como uma Pilha onde o <strong>Topo está à Esquerda</strong>:
+        Considere o grafo direcionado abaixo. O nó inicial é <strong>S</strong> e o nó objetivo é <strong>G</strong>. Havendo múltiplos filhos gerados no mesmo passo, a visita deve ser em <strong>ordem alfabética</strong>:
       </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="240" viewBox="0 0 540 240" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-dfs" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#8b949e"/>
+            </marker>
+          </defs>
+
+          <!-- Arestas -->
+          <!-- S -> A e S -> B -->
+          <line x1="60" y1="120" x2="190" y2="60" stroke="#30363d" stroke-width="2.5" marker-end="url(#arrow-dfs)"/>
+          <line x1="60" y1="120" x2="190" y2="180" stroke="#30363d" stroke-width="2.5" marker-end="url(#arrow-dfs)"/>
+          
+          <!-- A -> C e A -> D -->
+          <line x1="190" y1="60" x2="320" y2="35" stroke="#30363d" stroke-width="2.5" marker-end="url(#arrow-dfs)"/>
+          <line x1="190" y1="60" x2="320" y2="95" stroke="#30363d" stroke-width="2.5" marker-end="url(#arrow-dfs)"/>
+          
+          <!-- D -> G e B -> G -->
+          <line x1="320" y1="95" x2="460" y2="120" stroke="#30363d" stroke-width="2.5" marker-end="url(#arrow-dfs)"/>
+          <line x1="190" y1="180" x2="460" y2="120" stroke="#30363d" stroke-width="2.5" marker-end="url(#arrow-dfs)"/>
+
+          <!-- Nós -->
+          <!-- S (Raiz) -->
+          <circle cx="60" cy="120" r="18" fill="#1f6feb" stroke="#58a6ff" stroke-width="2"/>
+          <text x="60" y="125" font-family="monospace" font-weight="bold" font-size="14" fill="#fff" text-anchor="middle">S</text>
+
+          <!-- Nível 1: A e B -->
+          <circle cx="190" cy="60" r="18" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="190" y="65" font-family="monospace" font-weight="bold" font-size="14" fill="#f0f6fc" text-anchor="middle">A</text>
+
+          <circle cx="190" cy="180" r="18" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="190" y="185" font-family="monospace" font-weight="bold" font-size="14" fill="#f0f6fc" text-anchor="middle">B</text>
+
+          <!-- Nível 2: C (Beco sem saída) e D -->
+          <circle cx="320" cy="35" r="18" fill="#21262d" stroke="#f85149" stroke-width="2"/>
+          <text x="320" y="40" font-family="monospace" font-weight="bold" font-size="14" fill="#f85149" text-anchor="middle">C</text>
+          <text x="320" y="15" font-family="sans-serif" font-size="10" fill="#f85149" text-anchor="middle">Beco</text>
+
+          <circle cx="320" cy="95" r="18" fill="#161b22" stroke="#8b949e" stroke-width="2"/>
+          <text x="320" y="100" font-family="monospace" font-weight="bold" font-size="14" fill="#f0f6fc" text-anchor="middle">D</text>
+
+          <!-- Objetivo G -->
+          <circle cx="460" cy="120" r="20" fill="#238636" stroke="#3fb950" stroke-width="2"/>
+          <circle cx="460" cy="120" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="460" y="125" font-family="monospace" font-weight="bold" font-size="15" fill="#fff" text-anchor="middle">G</text>
+        </svg>
+        <div class="graph-caption">
+          Figura 1: Grafo direcionado. Inicial: <strong>S</strong> | Objetivo: <strong>G</strong> | $C$ é beco sem saída.
+        </div>
+      </div>
 
       <div class="trace-table-container">
         <table class="trace-table">
@@ -78,178 +127,225 @@ Sucessores (ordem alfabética): S -> [A, B, D], A -> [B, C], B -> [C, D], C -> [
             <tr>
               <th>Passo</th>
               <th>Nó Retirado (Topo)</th>
-              <th>É Meta?</th>
               <th>Filhos Gerados</th>
-              <th>Fronteira (Pilha LIFO: [Topo ... Base])</th>
+              <th>Fronteira (Pilha: [Base ... Topo])</th>
               <th>Visitados</th>
+              <th>Anotação do Rastreamento</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>0</td>
-              <td>—</td>
+              <td><strong>0</strong></td>
               <td>—</td>
               <td>—</td>
               <td><code>[S]</code></td>
               <td><code>{}</code></td>
+              <td>Inicialização com a raiz no topo da pilha.</td>
             </tr>
             <tr>
-              <td>1</td>
-              <td><strong>S</strong></td>
-              <td>Não</td>
-              <td>A, B, D</td>
-              <td><code>[A, B, D]</code> <em>(A no topo)</em></td>
+              <td><strong>1</strong></td>
+              <td><code>S</code></td>
+              <td>A, B</td>
+              <td><code>[B, A]</code></td>
               <td><code>{S}</code></td>
+              <td>Para retirar $A$ antes de $B$, empilha-se $B$ e depois $A$. Topo = <code>A</code>.</td>
             </tr>
             <tr>
-              <td>2</td>
-              <td><strong>A</strong></td>
-              <td>Não</td>
-              <td>B, C</td>
-              <td><code>[B, C, B, D]</code> &rarr; <code>[B, C, D]</code></td>
-              <td><code>{S, A}</code></td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td><strong>B</strong></td>
-              <td>Não</td>
+              <td><strong>2</strong></td>
+              <td><code>A</code></td>
               <td>C, D</td>
-              <td><code>[C, D, D]</code> &rarr; <code>[C, D]</code></td>
-              <td><code>{S, A, B}</code></td>
+              <td><code>[B, D, C]</code></td>
+              <td><code>{S, A}</code></td>
+              <td>Para retirar $C$ antes de $D$, empilha-se $D$ e depois $C$. Topo = <code>C</code>.</td>
             </tr>
             <tr>
-              <td>4</td>
-              <td><strong>C</strong></td>
-              <td>Não</td>
-              <td>E</td>
-              <td><code>[E, D]</code></td>
-              <td><code>{S, A, B, C}</code></td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td><strong>E</strong></td>
-              <td>Não</td>
-              <td>G</td>
-              <td><code>[G, D]</code></td>
-              <td><code>{S, A, B, C, E}</code></td>
+              <td><strong>3</strong></td>
+              <td><code>C</code></td>
+              <td>Nenhum</td>
+              <td><code>[B, D]</code></td>
+              <td><code>{S, A, C}</code></td>
+              <td>$C$ é folha (beco sem saída). A busca faz <em>backtracking</em>: o novo topo é <code>D</code>!</td>
             </tr>
             <tr class="highlight-step">
-              <td>6</td>
-              <td><strong>G</strong></td>
-              <td><strong>SIM!</strong></td>
-              <td>— (Objetivo encontrado)</td>
-              <td><code>[D]</code></td>
-              <td><code>{S, A, B, C, E, G}</code></td>
+              <td><strong>4</strong></td>
+              <td><code>D</code></td>
+              <td>G</td>
+              <td><code>[B, G]</code></td>
+              <td><code>{S, A, C, D}</code></td>
+              <td>$D$ gera $G$. $G$ é objetivo &rarr; <strong>Meta encontrada!</strong></td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p>
-        <strong>Caminho retornado:</strong> <code>S &rarr; A &rarr; B &rarr; C &rarr; E &rarr; G</code> (5 arestas!).<br>
-        <strong>Compare com a BFS:</strong> A BFS encontrou <code>S &rarr; D &rarr; E &rarr; G</code> (3 arestas). A DFS encontrou um caminho muito mais longo porque mergulhou a fundo no primeiro ramo sem olhar para os lados!
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0;">
+        Caminho encontrado pela DFS: <code>S &rarr; A &rarr; D &rarr; G</code> (comprimento: 3 arestas).<br>
+        <em>Observe a subotimalidade:</em> o caminho direto <code>S &rarr; B &rarr; G</code> (2 arestas) nunca foi explorado porque o nó $B$ permaneceu na base da pilha esperando o ramo de $A$ esgotar!
       </p>
     </section>
 
-    <!-- EXERCÍCIOS INTERATIVOS -->
+    <!-- EXERCÍCIOS PRÁTICOS ORIENTADOS PELO ERRO -->
 
-    <div class="card-exercise" id="ex-dfs-1">
+    <!-- EXERCÍCIO 1: MECÂNICA DA PILHA LIFO -->
+    <section class="card-exercise" id="ex1">
       <div class="exercise-header">
-        <span class="question-text">Exercício 1 • Armadilha da Pilha LIFO</span>
-        <span class="exercise-tag">Múltipla Escolha</span>
+        <h3>Exercício 1: Invariante da Fronteira na DFS</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
-      <p>Você expandiu o nó $S$ e gerou os filhos $A, B$ e $C$. A prova estipula: <em>"Critério de desempate: ordem alfabética estrita"</em>. Em uma pilha convencional onde o método <code>pop()</code> retira do topo, qual deve ser a ordem de empilhamento (primeiro &rarr; último inserido)?</p>
+      <div class="question-text">
+        Qual característica fundamental da estrutura de <strong>Pilha (LIFO)</strong> força a DFS a mergulhar profundamente em um ramo em vez de explorar os nós do mesmo nível?
+      </div>
       <div class="options-list">
-        <button class="option-btn" data-correct="false" data-feedback="CUIDADO! Se você empilhar A primeiro, depois B e por último C, o topo será C! Logo, C seria o primeiro a ser expandido, violando a ordem alfabética!">
-          Empilhar $A$, depois $B$, e por último $C$.
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: quem remove elementos na ordem exata de chegada (FIFO) é a Fila Comum, mecânica exclusiva da Busca em Largura (BFS).">
+          A) Os nós são retirados na mesma ordem cronológica em que foram descobertos pela primeira vez.
         </button>
-        <button class="option-btn" data-correct="true" data-feedback="Correto! Como a pilha é LIFO, o último a entrar é o primeiro a sair. Para que $A$ fique no topo e saia primeiro, devemos empilhar na ordem inversa: $C$, depois $B$ e por fim $A$.">
-          Empilhar $C$ primeiro, depois $B$, e por último $A$ (para que $A$ fique no topo).
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! Como os nós recém-gerados (filhos do nó corrente) são colocados no topo da pilha, o próximo passo retirará imediatamente um desses filhos (um nível mais fundo), aprofundando o ramo antes de mexer nos irmãos anteriores.">
+          B) Os descendentes recém-gerados são colocados no topo da pilha e serão desempilhados antes de qualquer irmão mais antigo ou nós de níveis superiores.
         </button>
-        <button class="option-btn" data-correct="false" data-feedback="Empilhar todos ao mesmo tempo não existe na especificação da estrutura de dados de pilha.">
-          Empilhar $B$, depois $A$ e por último $C$.
+        <button class="option-btn" data-correct="false" data-feedback="Equívoco comum: ordenar por menor custo acumulado g(n) é a definição de Busca de Custo Uniforme (UCS). A DFS é uma busca cega pura e ignora pesos de arestas.">
+          C) A pilha calcula dinamicamente o menor custo acumulado g(n) e puxa para o topo o caminho mais curto.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a DFS não utiliza heurísticas h(n). Avaliações heurísticas pertencem a buscas informadas como Gulosa e A*.">
+          D) A pilha ordena os nós segundo uma heurística de proximidade espacial da meta.
         </button>
       </div>
       <div class="feedback-box"></div>
-    </div>
+    </section>
 
-    <div class="card-exercise" id="ex-dfs-2">
+    <!-- EXERCÍCIO 2: IDENTIFICAÇÃO DE FALÁCIA (A PEGADINHA DO DESEMPATE) -->
+    <section class="card-exercise" id="ex2">
       <div class="exercise-header">
-        <span class="question-text">Exercício 2 • Active Recall: Caminho Encontrado</span>
-        <span class="exercise-tag">Preenchimento</span>
+        <h3>Exercício 2: Pegadinha de Prova — Desempate Alfabético no Rastreamento</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
-      <p>No rastreamento acima, qual foi a sequência exata de nós do caminho retornado pela DFS desde a origem até a meta? Digite no formato <code>S -> A -> B -> C -> E -> G</code> ou separado por vírgula:</p>
+      <div class="question-text">
+        Analise o caso a seguir de um exame de IA:<br>
+        <em>"O enunciado exigia: 'em caso de múltiplos filhos, visite os nós em ordem alfabética'. Um estudante, ao expandir o nó X, gerou os filhos M e P. Para garantir a ordem alfabética, ele empilhou primeiro M e depois P, resultando na pilha [..., M, P]. No passo seguinte, ele desempilhou P para expansão."</em><br><br>
+        O procedimento do estudante para atender à convenção de prova foi <strong>Correto</strong> ou <strong>Incorreto</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com a pegadinha fatal da pilha LIFO! O último a entrar é o primeiro a sair. Ao empilhar M e depois P, o elemento P ficou no TOPO. Ao desempilhar, o estudante visitou P antes de M, violando a ordem alfabética exigida!">
+          Correto
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! Para que M seja visitado antes de P em uma pilha LIFO, M precisa estar no topo. Portanto, a ordem de empilhamento DEVE ser invertida: empilha-se P primeiro e depois M, gerando a pilha [..., P, M]. Ao desempilhar, sai M!">
+          Incorreto
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3: ACTIVE RECALL / RASTREAMENTO DE MESA -->
+    <section class="card-exercise" id="ex3" data-hint="Lembre-se: B já estava na base da pilha. O nó A é desempilhado e seus filhos C e D são empilhados. Para visitar C antes de D (ordem alfabética), D deve ser empilhado antes de C.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Rastreamento Ativo da Pilha (LIFO)</h3>
+        <span class="exercise-tag recall">Active Recall / Mesa</span>
+      </div>
+      <div class="question-text">
+        Considere o grafo da <strong>Figura 1</strong>:<br>
+        No <strong>Passo 1</strong>, expandimos $S$, empilhamos $B$ e depois $A$, ficando a pilha: <code>[B, A]</code> (com $A$ no topo).<br>
+        No <strong>Passo 2</strong>, retiramos $A$ do topo para expansão. Seus filhos gerados são $C$ e $D$.<br><br>
+        Respeitando a convenção de desempate alfabético (onde $C$ deve sair antes de $D$), <strong>digite como fica o conteúdo completo da pilha</strong> da base até o topo (separados por vírgula ou espaço):
+      </div>
       <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: S -> A -> B -> C -> E -> G">
-        <button class="action-btn">Verificar Caminho</button>
+        <input type="text" class="text-input" placeholder="Ex: B, D, C" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Pilha</button>
       </div>
       <div class="feedback-box"></div>
-    </div>
+    </section>
 
-    <div class="card-exercise" id="ex-dfs-3">
+    <!-- EXERCÍCIO 4: MEMÓRIA LINEAR VS EXPONENCIAL -->
+    <section class="card-exercise" id="ex4">
       <div class="exercise-header">
-        <span class="question-text">Exercício 3 • Comparação Crítica: DFS vs BFS</span>
-        <span class="exercise-tag">Diagnóstico</span>
+        <h3>Exercício 4: A Superpotência da Memória da DFS</h3>
+        <span class="exercise-tag diagnostic">Complexidade Assintótica</span>
       </div>
-      <p>Por que dizemos em Inteligência Computacional que a DFS tem vantagem de <strong>espaço</strong> mas desvantagem de <strong>tempo e otimalidade</strong> em relação à BFS?</p>
+      <div class="question-text">
+        Imagine um espaço de busca em árvore com fator de ramificação $b = 10$ e profundidade máxima $m = 10$.<br>
+        Enquanto a BFS exigiria manter na RAM cerca de $10^{10} = 10.000.000.000$ (10 bilhões) de nós no pior caso, qual é a quantidade máxima de nós que a DFS precisará armazenar na memória ao longo da busca?
+      </div>
       <div class="options-list">
-        <button class="option-btn" data-correct="false" data-feedback="Errado. O espaço da DFS é linear $O(b \cdot m)$, enquanto o da BFS é exponencial $O(b^d)$!">
-          Porque a DFS consome $O(b^d)$ de espaço e a BFS consome apenas $O(b \cdot m)$.
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: 10^10 é o consumo exponencial O(b^m) da BFS. A DFS nunca guarda toda a árvore ao mesmo tempo!">
+          A) Cerca de $10^{10}$ nós (memória exponencial).
         </button>
-        <button class="option-btn" data-correct="true" data-feedback="Perfeito! A memória linear $O(b \cdot m)$ da DFS é fantástica e nunca satura a RAM, mas ela arrisca descer até a profundidade máxima $m$ gastando $O(b^m)$ no tempo e pode retornar caminhos muito piores que a BFS.">
-          Porque a memória da DFS cresce linearmente com a profundidade máxima $O(b \cdot m)$, mas seu tempo pode atingir $O(b^m)$ e ela não garante encontrar o caminho mais raso.
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! A memória da DFS é linear: O(b * m). Para b = 10 e m = 10, ela armazena no máximo cerca de 10 * 10 = 100 nós na memória (apenas o caminho atual e os nós irmãos adjacentes). Isso cabe em meros kilobytes de RAM!">
+          B) Cerca de $10 \times 10 = 100$ nós (memória linear $O(b \cdot m)$).
         </button>
-        <button class="option-btn" data-correct="false" data-feedback="Falso. A DFS não utiliza nenhuma função heurística; ela é uma busca cega.">
-          Porque a DFS calcula custos de heurística que consomem muita CPU sem salvar nós na RAM.
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: 10^2 = 100 coincide numericamente com b * m neste caso particular, mas a fórmula de complexidade da DFS não é quadrática b^2, e sim o produto b * m. Se m fosse 20, seriam 200 nós, e não 100.">
+          C) Exatamente $b^2 = 100$ nós (memória quadrática).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: O(m) estrito só ocorre se gerarmos apenas 1 filho por vez (Backtracking Search clássico). Na DFS com pilha que retém todos os irmãos gerados na fronteira, o consumo é O(b * m).">
+          D) Cerca de $10$ nós (apenas os nós do caminho atual, ignorando irmãos).
         </button>
       </div>
       <div class="feedback-box"></div>
-    </div>
+    </section>
 
-    <div class="card-exercise" id="ex-dfs-4">
+    <!-- EXERCÍCIO 5: COMPLETUDE E CICLOS -->
+    <section class="card-exercise" id="ex5">
       <div class="exercise-header">
-        <span class="question-text">Exercício 4 • Detecção de Falácia</span>
-        <span class="exercise-tag">Múltipla Escolha</span>
+        <h3>Exercício 5: Condição de Falha e Ciclos</h3>
+        <span class="exercise-tag diagnostic">Completude de Algoritmos</span>
       </div>
-      <p>Um aluno afirmou: <em>"A busca em profundidade sempre encontra uma solução mais rápido que a busca em largura porque ela mergulha direto em direção ao fundo da árvore."</em> Qual é a falácia dessa afirmação?</p>
+      <div class="question-text">
+        Considere um grafo com apenas três estados: $S$, $A$ e $G$. Existe uma aresta de $S$ para $A$, uma de $A$ para $S$ (ciclo infinito bidirecional) e uma aresta de $S$ para $G$ (meta).<br><br>
+        Se executarmos a <strong>DFS clássica em árvore</strong> (sem tabela de estados visitados / conjunto de fechados), o que ocorrerá?
+      </div>
       <div class="options-list">
-        <button class="option-btn" data-correct="true" data-feedback="Exato! Se o ramo escolhido à esquerda for muito profundo (ou infinito) e a solução estiver no ramo da direita logo na profundidade 1, a DFS explorará milhões de nós desnecessários antes de voltar.">
-          Ela assume falsamente que o ramo inicial contém a meta. Se a meta estiver em outro ramo raso, a DFS pode explorar uma subárvore gigante ou infinita antes de voltar.
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a DFS não sabe que existe um caminho mais curto para G se o ramo de A for expandido antes e gerar um ciclo infinito. Ela não 'percebe' o outro lado sem retroceder.">
+          A) A DFS sempre encontrará a meta G rapidamente porque ela está a apenas 1 passo de distância da raiz S.
         </button>
-        <button class="option-btn" data-correct="false" data-feedback="A profundidade máxima $m$ pode ser maior, menor ou igual ao fator de ramificação $b$. Isso não define a falácia.">
-          A falácia é que a profundidade máxima $m$ nunca pode ser maior que o fator de ramificação $b$.
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Sem controle de nós visitados (busca em grafo), a DFS aprofundará indefinidamente no ciclo S -> A -> S -> A -> S..., gerando uma árvore infinita e falhando em encontrar G. É por isso que a DFS em árvore é incompleta em espaços com ciclos!">
+          B) A DFS entrará em um loop infinito no ciclo $S \leftrightarrow A$, falhando em encontrar a meta $G$ a menos que seja utilizada busca em grafo com registro de visitados.
         </button>
-        <button class="option-btn" data-correct="false" data-feedback="DFS não entra em loop se for busca em grafo com controle de visitados. A questão é a ordem de visitação cega.">
-          A falácia é que a DFS sempre entra em loop em qualquer tipo de árvore.
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a DFS não possui mecanismo de detecção de ciclo nativo em versão árvore; ela simplesmente continua empilhando e desempilhando indefinidamente até estourar a memória ou a pilha de recursão (stack overflow).">
+          C) O algoritmo detecta o ciclo matematicamente e poda a busca de forma ótima em O(1).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: quem testa todos os nós rasos primeiro e contorna o ciclo naturalmente é a BFS (Largura), não a DFS.">
+          D) A DFS visitará G primeiro porque nós objetivos têm prioridade intrínseca sobre nós intermediários.
         </button>
       </div>
       <div class="feedback-box"></div>
-    </div>
+    </section>
 
-    <!-- RESUMO DE TROPEÇOS -->
+    <!-- SEÇÃO FINAL: PONTOS DE TROPEÇO DINÂMICOS -->
     <section class="review-summary" id="review-summary-card" style="display: none;">
-      <h3>⚠️ Pontos de Atenção Identificados nesta Sessão</h3>
-      <p>Estes são os conceitos onde você tropeçou nas questões. Revise-os antes da prova:</p>
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações ou erros nas seguintes armadilhas conceituais da DFS. Revise-as atentamente:
+      </p>
       <ul id="review-summary-list"></ul>
     </section>
 
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="0001-busca-em-largura-bfs.html">← Lição Anterior: 0001 — BFS</a>
-      <a href="0003-busca-com-retrocesso-backtracking.html">Próxima: Lição 0003 — Busca com Retrocesso (Backtracking) →</a>
+      <a href="../lessons/0001-busca-em-largura-bfs.html">← Lição Anterior: 0001 — BFS</a>
+      <a href="../index.html">Voltar ao Painel da Matéria</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
+      <span class="disabled" title="Conclua a compreensão desta lição antes de avançar">Próxima Lição: 0003 — Backtracking (Em Breve) &rarr;</span>
     </div>
+
   </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      initMultipleChoice("ex-dfs-1", "DFS: Ordem de empilhamento LIFO invertida para desempate");
-      initInputExercise("ex-dfs-2", [
-        "S -> A -> B -> C -> E -> G",
-        "S->A->B->C->E->G",
-        "S, A, B, C, E, G",
-        "S,A,B,C,E,G",
-        "[S, A, B, C, E, G]"
-      ], "DFS: Rastreamento do caminho gerado");
-      initMultipleChoice("ex-dfs-3", "DFS: Complexidade de espaço linear O(b*m) vs tempo O(b^m)");
-      initMultipleChoice("ex-dfs-4", "DFS: Subárvores profundas e perda de completude");
+      // Ex 1: Mecânica da Fronteira LIFO
+      initMultipleChoice("ex1", "Invariante da Pilha LIFO na DFS");
+
+      // Ex 2: Falácia do Desempate Alfabético
+      initTrueFalse("ex2", false, "Desempate alfabético invertido no empilhamento da DFS",
+        "Cuidado: para visitar em ordem alfabética, o nó A deve estar no TOPO da pilha LIFO!",
+        "Exato! Ordem de empilhamento deve ser invertida para garantir desempate alfabético.");
+
+      // Ex 3: Active Recall da Pilha
+      initInputExercise("ex3", ["bdc", "b,d,c", "[b,d,c]", "b d c", "[b, d, c]"], "Rastreamento da Pilha LIFO com desempate alfabético", (raw, clean) => {
+        const norm = clean.replace(/[,\s]/g, "");
+        return norm === "bdc";
+      });
+
+      // Ex 4: Comparativo de Memória BFS vs DFS
+      initMultipleChoice("ex4", "Superpotência da DFS: Memória Linear O(b * m)");
+
+      // Ex 5: Falha em Ciclos / Incompletude da DFS em Árvore
+      initMultipleChoice("ex5", "Incompletude da DFS em árvore na presença de ciclos");
     });
   </script>
 </body>

@@ -128,13 +128,29 @@
         <ul style="margin-bottom: 0;">
           <li><strong>BFS:</strong> Aplica-se no momento da <u>geração</u> do filho.</li>
           <li><strong>UCS:</strong> Aplica-se <u>apenas quando o nó é retirado</u> da fila de prioridade para expansão.</li>
+          <li><strong>DFS:</strong> Pode ser aplicado na geração ou expansão; em implementações clássicas aplica-se na geração ou ao desempilhar.</li>
         </ul>
+      </div>
+
+      <div class="callout pitfall">
+        <div class="callout-title">Regra 4: A Pegadinha do Desempate Alfabético na DFS (LIFO)</div>
+        <p style="margin-bottom: 0;">
+          Para visitar nós em ordem alfabética ($A$ antes de $B$), em uma <strong>Pilha (LIFO)</strong> o empilhamento precisa ser <strong>invertido</strong>: empilha-se primeiro $B$ e depois $A$, garantindo que $A$ fique no <strong>topo</strong> da pilha para ser desempilhado primeiro!
+        </p>
+      </div>
+
+      <div class="callout exam-tip">
+        <div class="callout-title">Regra 5: Memória Linear da DFS vs Exponencial da BFS</div>
+        <p style="margin-bottom: 0;">
+          A BFS consome memória exponencial $O(b^d)$, guardando todas as folhas de um nível na RAM. A DFS consome apenas memória linear $O(b \cdot m)$ (o caminho atual mais irmãos imediatos). Para $b=10$ e profundidade 10: BFS requer $\sim 10^{10}$ nós (inviável na prática), enquanto a DFS requer apenas $10 \times 10 = 100$ nós.
+        </p>
       </div>
     </section>
 
     <div class="lesson-nav">
       <a href="../index.html">← Voltar ao Painel da Matéria</a>
-      <a href="../lessons/0001-busca-em-largura-bfs.html">← Retornar aos Exercícios da Lição 0001</a>
+      <a href="../lessons/0001-busca-em-largura-bfs.html">← Exercícios: Lição 0001 (BFS)</a>
+      <a href="../lessons/0002-busca-em-profundidade-dfs.html">Exercícios: Lição 0002 (DFS) &rarr;</a>
     </div>
 
   </div>
