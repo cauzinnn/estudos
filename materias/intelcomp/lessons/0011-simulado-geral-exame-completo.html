@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulado Geral: Exame Completo de Algoritmos de Busca — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">intelcomp • Prova Final Unificada • Simulado Completo</div>
+      <h1>Simulado Geral: Exame Completo de Algoritmos de Busca</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Desafio capstone integrando todos os 10 algoritmos em um único grafo complexo ponderado e heurístico. Sem dicas, sem formatos entregues: apenas domínio conceitual rigoroso.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha: Buscas Cegas</a>
+      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">📄 Ficha: Buscas Heurísticas</a>
+    </div>
+
+    <!-- SEÇÃO DO GRAFO MESTRE -->
+    <section class="card-theory">
+      <h2>O Grafo Mestre do Exame (Topologia, Pesos e Heurísticas)</h2>
+      <p>
+        Todas as 12 questões deste exame referem-se estritamente ao grafo direcionado abaixo.<br>
+        • Nó inicial: <strong>S</strong> (raiz).<br>
+        • Nós objetivos: <strong>G1</strong> e <strong>G2</strong> (ambos possuem <code>h = 0</code>).<br>
+        • Os custos das arestas <code>c(u, v)</code> estão indicados em azul ao lado das setas.<br>
+        • O valor heurístico <code>h(n)</code> de cada nó está anotado abaixo de seu identificador.
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="320" viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-master" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#6e7681"/>
+            </marker>
+          </defs>
+
+          <!-- Arestas a partir de S -->
+          <line x1="70" y1="160" x2="220" y2="80" stroke="#2d3340" stroke-width="2.5" marker-end="url(#arrow-master)"/>
+          <text x="135" y="105" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 2</text>
+
+          <line x1="70" y1="160" x2="220" y2="240" stroke="#2d3340" stroke-width="2.5" marker-end="url(#arrow-master)"/>
+          <text x="135" y="220" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 5</text>
+
+          <!-- Arestas a partir de A -->
+          <line x1="220" y1="80" x2="380" y2="45" stroke="#2d3340" stroke-width="2.5" marker-end="url(#arrow-master)"/>
+          <text x="290" y="50" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 4</text>
+
+          <line x1="220" y1="80" x2="380" y2="115" stroke="#2d3340" stroke-width="2.5" marker-end="url(#arrow-master)"/>
+          <text x="290" y="110" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 1</text>
+
+          <!-- Arestas a partir de B -->
+          <line x1="220" y1="240" x2="550" y2="200" stroke="#2d3340" stroke-width="2.5" marker-end="url(#arrow-master)"/>
+          <text x="370" y="210" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 6</text>
+
+          <line x1="220" y1="240" x2="380" y2="285" stroke="#2d3340" stroke-width="2.5" marker-end="url(#arrow-master)"/>
+          <text x="290" y="275" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 1</text>
+
+          <!-- Arestas a partir de C e D para G2 -->
+          <line x1="380" y1="45" x2="550" y2="80" stroke="#2d3340" stroke-width="2.5" marker-end="url(#arrow-master)"/>
+          <text x="465" y="50" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 2</text>
+
+          <line x1="380" y1="115" x2="550" y2="80" stroke="#2d3340" stroke-width="2.5" marker-end="url(#arrow-master)"/>
+          <text x="465" y="110" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 3</text>
+
+          <!-- Nós -->
+          <!-- S -->
+          <circle cx="70" cy="160" r="18" fill="#1b2a4a" stroke="#58a6ff" stroke-width="2"/>
+          <text x="70" y="165" font-family="monospace" font-weight="bold" font-size="13" fill="#c9d1d9" text-anchor="middle">S</text>
+          <text x="70" y="195" font-family="sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">h = 7</text>
+
+          <!-- A -->
+          <circle cx="220" cy="80" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="220" y="85" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">A</text>
+          <text x="220" y="110" font-family="sans-serif" font-size="11" fill="#d49b59" text-anchor="middle">h = 6</text>
+
+          <!-- B -->
+          <circle cx="220" cy="240" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="220" y="245" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">B</text>
+          <text x="220" y="270" font-family="sans-serif" font-size="11" fill="#d49b59" text-anchor="middle">h = 2</text>
+
+          <!-- C -->
+          <circle cx="380" cy="45" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="380" y="50" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">C</text>
+          <text x="380" y="25" font-family="sans-serif" font-size="11" fill="#d49b59" text-anchor="middle">h = 1</text>
+
+          <!-- D -->
+          <circle cx="380" cy="115" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="380" y="120" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">D</text>
+          <text x="380" y="145" font-family="sans-serif" font-size="11" fill="#d49b59" text-anchor="middle">h = 6</text>
+
+          <!-- E (Beco sem saída) -->
+          <circle cx="380" cy="285" r="18" fill="#241a20" stroke="#f85149" stroke-width="2"/>
+          <text x="380" y="290" font-family="monospace" font-size="13" fill="#f85149" text-anchor="middle">E</text>
+          <text x="380" y="312" font-family="sans-serif" font-size="10" fill="#f85149" text-anchor="middle">Beco (h=4)</text>
+
+          <!-- G2 (Meta 2) -->
+          <circle cx="550" cy="80" r="20" fill="#1a2e22" stroke="#3fb950" stroke-width="2"/>
+          <circle cx="550" cy="80" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="550" y="85" font-family="monospace" font-weight="bold" font-size="13" fill="#3fb950" text-anchor="middle">G2</text>
+          <text x="550" y="115" font-family="sans-serif" font-size="11" fill="#3fb950" text-anchor="middle">Meta (h=0)</text>
+
+          <!-- G1 (Meta 1) -->
+          <circle cx="550" cy="200" r="20" fill="#1a2e22" stroke="#3fb950" stroke-width="2"/>
+          <circle cx="550" cy="200" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="550" y="205" font-family="monospace" font-weight="bold" font-size="13" fill="#3fb950" text-anchor="middle">G1</text>
+          <text x="550" y="235" font-family="sans-serif" font-size="11" fill="#3fb950" text-anchor="middle">Meta (h=0)</text>
+        </svg>
+        <div class="graph-caption">
+          Figura Mestre: Grafo ponderado com estimativas heurísticas. Havendo empate, a convenção padrão é a ordem alfabética.
+        </div>
+      </div>
+    </section>
+
+    <!-- QUESTÃO 1: BFS -->
+    <section class="card-exercise" id="q1">
+      <div class="exercise-header">
+        <h3>Questão 1: Busca em Largura (BFS) — Solução Retornada</h3>
+        <span class="exercise-tag diagnostic">Módulo 1</span>
+      </div>
+      <div class="question-text">
+        Se executarmos a <strong>Busca em Largura (BFS)</strong> a partir do nó S, qual meta será encontrada primeiro e através de qual caminho?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Sua resposta..." autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 2: DFS -->
+    <section class="card-exercise" id="q2">
+      <div class="exercise-header">
+        <h3>Questão 2: Busca em Profundidade (DFS) — Desempate de Prova</h3>
+        <span class="exercise-tag diagnostic">Módulo 1</span>
+      </div>
+      <div class="question-text">
+        Considerando a convenção de prova clássica de desempate alfabético na visitação da Pilha LIFO, <strong>qual caminho a Busca em Profundidade (DFS) encontrará</strong> no Grafo Mestre?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Sua resposta..." autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 3: BACKTRACKING -->
+    <section class="card-exercise" id="q3">
+      <div class="exercise-header">
+        <h3>Questão 3: Backtracking no Beco sem Saída</h3>
+        <span class="exercise-tag recall">Módulo 1</span>
+      </div>
+      <div class="question-text">
+        Se o algoritmo de Backtracking explorar o ramo de B e descer até a folha E (que não é meta e não tem sucessores), <strong>qual será o caminho ativo na memória imediatamente após a realização do retrocesso (backtrack)</strong>?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Sua resposta..." autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 4: DLS -->
+    <section class="card-exercise" id="q4">
+      <div class="exercise-header">
+        <h3>Questão 4: DLS com Limite L = 1</h3>
+        <span class="exercise-tag diagnostic">Módulo 1</span>
+      </div>
+      <div class="question-text">
+        Se executarmos o DLS no Grafo Mestre com limite <code>L = 1</code>, qual será a saída exata retornada pela função?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: no nível 1 (nós A e B) nenhuma meta foi atingida.">
+          A) Solução (encontra G1 no nível 1).
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como as metas estão nas profundidades 2 e 3, a busca atinge o limite L=1 sem encontrar objetivos, mas como nós de profundidade 1 possuem descendentes que foram cortados, o retorno é obrigatoriamente Cutoff!">
+          B) Cutoff (corte por limite atingido).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Falha Definitiva só ocorreria se o grafo inteiro tivesse profundidade menor que 1 e nenhuma meta existisse.">
+          C) Falha Definitiva (Failure).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o DLS nunca entra em loop se o limite for respeitado.">
+          D) Erro de Stack Overflow por recursão infinita.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 5: IDS -->
+    <section class="card-exercise" id="q5">
+      <div class="exercise-header">
+        <h3>Questão 5: Aprofundamento Iterativo (IDS) — Iteração da Solução</h3>
+        <span class="exercise-tag recall">Módulo 1</span>
+      </div>
+      <div class="question-text">
+        O IDS inicia em <code>L = 0</code> (1ª iteração). Em qual número de iteração (1ª, 2ª, 3ª, etc.) o IDS encontrará pela primeira vez uma solução no Grafo Mestre?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Sua resposta..." autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 6: UCS -->
+    <section class="card-exercise" id="q6">
+      <div class="exercise-header">
+        <h3>Questão 6: Busca de Custo Uniforme (UCS) — Custo Ótimo</h3>
+        <span class="exercise-tag recall">Módulo 1</span>
+      </div>
+      <div class="question-text">
+        A Busca de Custo Uniforme (UCS) garante encontrar a rota de menor custo acumulado. <strong>Qual é o valor numérico exato do custo acumulado g da rota ótima encontrada pela UCS</strong> no Grafo Mestre?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Sua resposta..." autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 7: ROTA DA UCS -->
+    <section class="card-exercise" id="q7">
+      <div class="exercise-header">
+        <h3>Questão 7: Trajetória Ótima da UCS</h3>
+        <span class="exercise-tag recall">Módulo 1</span>
+      </div>
+      <div class="question-text">
+        Digite a sequência completa de nós da rota ótima selecionada e retornada pela UCS ao desempilhar a meta da fila de prioridade:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Sua resposta..." autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 8: BUSCA GULOSA -->
+    <section class="card-exercise" id="q8">
+      <div class="exercise-header">
+        <h3>Questão 8: A Armadilha da Busca Gulosa (Greedy)</h3>
+        <span class="exercise-tag diagnostic">Módulo 2</span>
+      </div>
+      <div class="question-text">
+        A Busca Gulosa avalia unicamente <code>f(n) = h(n)</code>. Qual caminho ela escolherá a partir de S e <strong>qual será o custo real total</strong> pago por essa decisão?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: h(A) = 6, que é maior que h(B) = 2. A Busca Gulosa nunca escolherá A antes de B!">
+          A) Caminho S &rarr; A &rarr; D &rarr; G2 com custo 6.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como h(B) = 2 é muito menor que h(A) = 6, a Busca Gulosa é iludida pelo nó B. De B, ela vê G1 com h=0 e fecha a rota S -> B -> G1, pagando o custo 5 + 6 = 11!">
+          B) Caminho S &rarr; B &rarr; G1 com custo total de 11.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: E possui h=4, enquanto G1 possui h=0. A Gulosa escolhe G1 antes de E.">
+          C) Caminho S &rarr; B &rarr; E com custo total de 6.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: a Gulosa não escolhe C porque A tem heurística 6.">
+          D) Caminho S &rarr; A &rarr; C &rarr; G2 com custo 8.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 9: ADMISSIBILIDADE HEURÍSTICA -->
+    <section class="card-exercise" id="q9">
+      <div class="exercise-header">
+        <h3>Questão 9: Teste Formal de Admissibilidade Heurística</h3>
+        <span class="exercise-tag diagnostic">Módulo 2</span>
+      </div>
+      <div class="question-text">
+        Analise com rigor matemático a heurística atribuída ao nó <strong>D</strong> (<code>h(D) = 6</code>).<br>
+        Essa heurística <code>h(D) = 6</code> é <strong>admissível</strong> para o problema proposto?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Atenção à definição de admissibilidade! Uma heurística é admissível se e somente se h(n) <= h*(n) para todo nó. O custo real ótimo de D até a meta G2 é exatamente 3 (a aresta direta D -> G2). Como a heurística atribuída foi 6, ela superestimou o custo real (6 > 3), sendo portanto INADMISSÍVEL!">
+          Sim, é admissível
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Brilhante! O custo real de D até a meta mais próxima G2 é c(D, G2) = 3. Como h(D) = 6, temos h(D) > h*(D) (superestimação do custo real). Portanto, a heurística de D NÃO é admissível!">
+          Não, é inadmissível
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 10: ALGORITMO A* -->
+    <section class="card-exercise" id="q10">
+      <div class="exercise-header">
+        <h3>Questão 10: Rastreamento da Fila de Prioridades do A*</h3>
+        <span class="exercise-tag recall">Módulo 2</span>
+      </div>
+      <div class="question-text">
+        No Passo 1 do A*, o nó raiz S (com <code>g=0, h=7 &rarr; f=7</code>) é expandido, gerando os nós <strong>A</strong> e <strong>B</strong>.<br><br>
+        Calcule os valores de <code>f(A)</code> e <code>f(B)</code>.<br>
+        <strong>Qual nó possui o menor valor de f e será desenfileirado primeiro no Passo 2?</strong>
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Sua resposta..." autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 11: HILL CLIMBING -->
+    <section class="card-exercise" id="q11">
+      <div class="exercise-header">
+        <h3>Questão 11: Busca Irrevogável (Hill Climbing) — Ponto de Parada</h3>
+        <span class="exercise-tag diagnostic">Módulo 2</span>
+      </div>
+      <div class="question-text">
+        Se o Hill Climbing for formulado para minimizar a heurística <code>h(n)</code> (buscando chegar a <code>h=0</code>) partindo de S:<br>
+        De S (h=7), ele se move para B (h=2).<br>
+        Em B, seus vizinhos são E (h=4) e G1 (h=0). Ele se move para G1 (h=0) e atinge a meta.<br><br>
+        Qual é a quantidade de nós mantidos na memória RAM pelo Hill Climbing durante essa busca?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: isso seria memória linear de árvore.">
+          A) Memória linear proporcional ao número de passos (O(d)).
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O Hill Climbing é uma busca puramente local e irrevogável, mantendo apenas o estado corrente na memória: espaço constante O(1).">
+          B) Memória constante O(1), mantendo apenas o estado corrente na memória.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o Hill Climbing não possui fronteira nem fila de prioridades.">
+          C) Memória exponencial O(b^d) para guardar a fronteira.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O(b * m) pertence à DFS clássica.">
+          D) Memória linear O(b &times; m).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 12: IDA* -->
+    <section class="card-exercise" id="q12">
+      <div class="exercise-header">
+        <h3>Questão 12: IDA* — Atualização Dinâmica do Limite</h3>
+        <span class="exercise-tag recall">Módulo 2</span>
+      </div>
+      <div class="question-text">
+        No IDA*, a 1ª iteração utiliza como limite de corte <code>limite_0 = f(S) = 0 + 7 = 7</code>.<br>
+        Durante a 1ª iteração, os nós gerados a partir de S são:<br>
+        • Nó B: <code>g = 5, h = 2 &rarr; f(B) = 7</code> (permanece no limite).<br>
+        • Nó A: <code>g = 2, h = 6 &rarr; f(A) = 8</code> (ultrapassa o limite e é podado!).<br>
+        • Ao expandir B (limite 7), são gerados E (<code>f = 6 + 4 = 10</code>) e G1 (<code>f = 11 + 0 = 11</code>), ambos podados!<br><br>
+        Os nós podados tiveram valores <code>f = 8</code>, <code>f = 10</code> e <code>f = 11</code>.<br>
+        <strong>Qual será o limite numérico exato de corte para a 2ª iteração do IDA*?</strong>
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Sua resposta..." autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO FINAL: PONTOS DE TROPEÇO DINÂMICOS -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Neste Simulado</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O motor de diagnóstico registrou falhas ou hesitações nos seguintes tópicos do exame. Revise-os nas fichas de referência antes da sua prova:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Voltar ao Painel da Matéria</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha: Buscas Cegas</a>
+      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">📄 Ficha: Buscas Heurísticas</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Q1: BFS encontra G1 por S -> B -> G1
+      initInputExercise("q1", ["sbg1", "s,b,g1", "s->b->g1", "s-b-g1", "s b g1", "g1"], "BFS encontra a meta mais rasa G1 via S -> B -> G1", (raw, clean) => {
+        const norm = clean.replace(/[^a-z0-9]/g, "");
+        return norm === "sbg1" || norm === "g1";
+      });
+
+      // Q2: DFS com desempate alfabético invertido vai em A -> C -> G2
+      initInputExercise("q2", ["sacg2", "s,a,c,g2", "s->a->c->g2", "s-a-c-g2", "s a c g2", "g2"], "DFS explora ramo esquerdo S -> A -> C -> G2", (raw, clean) => {
+        const norm = clean.replace(/[^a-z0-9]/g, "");
+        return norm === "sacg2" || (norm.includes("sac") && norm.includes("g2"));
+      });
+
+      // Q3: Backtracking caminho ativo após recuo de E
+      initInputExercise("q3", ["sb", "s,b", "[s,b]", "s b", "s->b"], "Caminho ativo [S, B] após descarte de E no Backtracking", (raw, clean) => {
+        const norm = clean.replace(/[^a-z0-9]/g, "");
+        return norm === "sb";
+      });
+
+      // Q4: DLS L=1 retorna Cutoff
+      initMultipleChoice("q4", "DLS com L=1 retorna Cutoff por podar nós de profundidade 1");
+
+      // Q5: IDS encontra meta no L=2 (3ª iteração)
+      initInputExercise("q5", ["3", "3ª", "3a"], "IDS encontra G1 na 3ª iteração (quando L=2)", (raw, clean) => {
+        return clean.includes("3");
+      });
+
+      // Q6: Custo ótimo da UCS = 6
+      initInputExercise("q6", ["6"], "Custo ótimo g = 6 retornado pela UCS", (raw, clean) => {
+        return clean === "6";
+      });
+
+      // Q7: Rota ótima da UCS: S -> A -> D -> G2
+      initInputExercise("q7", ["sadg2", "s,a,d,g2", "s->a->d->g2", "s-a-d-g2", "s a d g2"], "Rota ótima S -> A -> D -> G2", (raw, clean) => {
+        const norm = clean.replace(/[^a-z0-9]/g, "");
+        return norm === "sadg2";
+      });
+
+      // Q8: Busca Gulosa escolhe S -> B -> G1 com custo 11
+      initMultipleChoice("q8", "Busca Gulosa iludida por h(B)=2 escolhe rota de custo 11");
+
+      // Q9: Inadmissibilidade de h(D)=6
+      initTrueFalse("q9", false, "Inadmissibilidade de h(D)=6 (superestima o custo real 3)",
+        "Cuidado: h(D)=6 superestima o custo real de 3 até a meta G2!",
+        "Exato! h(D) = 6 > h*(D) = 3, logo a heurística é inadmissível.");
+
+      // Q10: Menor f no Passo 1 do A* é B (f=7 vs f=8 de A)
+      initInputExercise("q10", ["b"], "A*: menor f é B (f=7 vs f=8 de A)", (raw, clean) => {
+        return clean === "b";
+      });
+
+      // Q11: Memória O(1) do Hill Climbing
+      initMultipleChoice("q11", "Memória constante O(1) do Hill Climbing");
+
+      // Q12: Novo limite do IDA* = 8 (menor f podado)
+      initInputExercise("q12", ["8"], "Novo limite do IDA* é 8 (menor f podado)", (raw, clean) => {
+        return clean === "8";
+      });
+    });
+  </script>
+</body>
+</html>

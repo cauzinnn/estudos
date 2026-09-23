@@ -38,6 +38,10 @@ Documento de acompanhamento contínuo da disciplina **intelcomp**, orientado ao 
 10. **0010 - A\* com Aprofundamento Iterativo (IDA\*)** (`lessons/0010-a-estrela-aprofundamento-iterativo-ida.html`) — ✅ **Disponível**
     - *Conceitos:* Patamares de corte baseados em $f(n)$, atualização pelo menor valor podado, economia de RAM.
 
+### Módulo Especial: Prova Final
+11. **0011 - Simulado Geral: Exame Completo de Busca** (`lessons/0011-simulado-geral-exame-completo.html`) — ✅ **Disponível**
+    - *Conceitos:* 12 questões integradas de nível de prova universitária sobre um único grafo ponderado e heurístico com becos sem saída, armadilhas de custo e heurísticas inadmissíveis. Sem pistas no formato dos inputs.
+
 ---
 
 ## 📑 Fichas de Consulta Rápida (Cheat Sheets)
