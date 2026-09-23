@@ -1,23 +1,453 @@
-:root {
-  --bg-main: #0d1117;
-  --bg-card: #161b22;
-  --bg-card-hover: #21262d;
-  --border-subtle: #30363d;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@200;300;400;500;600&family=Lexend:wght@200;300;400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap');
+
+:root, [data-theme="slate"] {
+  --bg-main: #12151c;
+  --bg-card: #181d26;
+  --bg-card-hover: #1f2532;
+  --border-subtle: #29303d;
   --border-focus: #58a6ff;
-  --text-main: #f0f6fc;
+  --text-main: #c9d1d9;
+  --text-heading: #e6edf3;
   --text-muted: #8b949e;
   --accent: #58a6ff;
-  --accent-muted: rgba(88, 166, 255, 0.15);
+  --accent-muted: rgba(88, 166, 255, 0.12);
   --success: #3fb950;
-  --success-bg: rgba(63, 185, 80, 0.15);
+  --success-bg: rgba(63, 185, 80, 0.12);
   --error: #f85149;
-  --error-bg: rgba(248, 81, 73, 0.15);
+  --error-bg: rgba(248, 81, 73, 0.12);
   --warning: #d29922;
-  --warning-bg: rgba(210, 153, 34, 0.15);
+  --warning-bg: rgba(210, 153, 34, 0.12);
   --purple: #bc8cff;
-  --purple-bg: rgba(188, 140, 255, 0.15);
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --purple-bg: rgba(188, 140, 255, 0.12);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* 2. NORD FROST (Tons polares suaves, azul ártico) */
+[data-theme="nord"] {
+  --bg-main: #242933;
+  --bg-card: #2e3440;
+  --bg-card-hover: #3b4252;
+  --border-subtle: #434c5e;
+  --border-focus: #88c0d0;
+  --text-main: #d8dee9;
+  --text-heading: #eceff4;
+  --text-muted: #9aa5b8;
+  --accent: #88c0d0;
+  --accent-muted: rgba(136, 192, 208, 0.15);
+  --success: #a3be8c;
+  --success-bg: rgba(163, 190, 140, 0.15);
+  --error: #bf616a;
+  --error-bg: rgba(191, 97, 106, 0.15);
+  --warning: #ebcb8b;
+  --warning-bg: rgba(235, 203, 139, 0.15);
+  --purple: #b48ead;
+  --purple-bg: rgba(180, 142, 173, 0.15);
+}
+
+/* 3. CATPPUCCIN MOCHA (Aveludado, lavanda e tons pastel relaxantes) */
+[data-theme="catppuccin"] {
+  --bg-main: #181825;
+  --bg-card: #1e1e2e;
+  --bg-card-hover: #262639;
+  --border-subtle: #313244;
+  --border-focus: #cba6f7;
+  --text-main: #cdd6f4;
+  --text-heading: #f5e0dc;
+  --text-muted: #a6adc8;
+  --accent: #cba6f7;
+  --accent-muted: rgba(203, 166, 247, 0.15);
+  --success: #a6e3a1;
+  --success-bg: rgba(166, 227, 161, 0.15);
+  --error: #f38ba8;
+  --error-bg: rgba(243, 139, 168, 0.15);
+  --warning: #f9e2af;
+  --warning-bg: rgba(249, 226, 175, 0.15);
+  --purple: #f5c2e7;
+  --purple-bg: rgba(245, 194, 231, 0.15);
+}
+
+/* 4. DRACULA SOFT (Fundo grafite escuro, ciano suave e rosa) */
+[data-theme="dracula"] {
+  --bg-main: #1d1e26;
+  --bg-card: #242633;
+  --bg-card-hover: #2e3040;
+  --border-subtle: #3a3d52;
+  --border-focus: #bd93f9;
+  --text-main: #e2e4ef;
+  --text-heading: #f8f8f2;
+  --text-muted: #9598b0;
+  --accent: #8be9fd;
+  --accent-muted: rgba(139, 233, 253, 0.15);
+  --success: #50fa7b;
+  --success-bg: rgba(80, 250, 123, 0.15);
+  --error: #ff5555;
+  --error-bg: rgba(255, 85, 85, 0.15);
+  --warning: #f1fa8c;
+  --warning-bg: rgba(241, 250, 140, 0.15);
+  --purple: #bd93f9;
+  --purple-bg: rgba(189, 147, 249, 0.15);
+}
+
+/* 5. TOKYO NIGHT (Azul noite moderno com acentos ciano e azul céu) */
+[data-theme="tokyo-night"] {
+  --bg-main: #161622;
+  --bg-card: #1f2030;
+  --bg-card-hover: #26283d;
+  --border-subtle: #33364f;
+  --border-focus: #7aa2f7;
+  --text-main: #a9b1d6;
+  --text-heading: #c0caf5;
+  --text-muted: #787f9d;
+  --accent: #7aa2f7;
+  --accent-muted: rgba(122, 162, 247, 0.15);
+  --success: #9ece6a;
+  --success-bg: rgba(158, 206, 106, 0.15);
+  --error: #f7768e;
+  --error-bg: rgba(247, 118, 142, 0.15);
+  --warning: #e0af68;
+  --warning-bg: rgba(224, 175, 104, 0.15);
+  --purple: #bb9af7;
+  --purple-bg: rgba(187, 154, 247, 0.15);
+}
+
+/* 6. SOLARIZED DARK (Clássico acadêmico, verde-azulado profundo) */
+[data-theme="solarized"] {
+  --bg-main: #00232b;
+  --bg-card: #002b36;
+  --bg-card-hover: #073642;
+  --border-subtle: #0f4a56;
+  --border-focus: #268bd2;
+  --text-main: #93a1a1;
+  --text-heading: #eee8d5;
+  --text-muted: #657b83;
+  --accent: #2aa198;
+  --accent-muted: rgba(42, 161, 152, 0.15);
+  --success: #859900;
+  --success-bg: rgba(133, 153, 0, 0.15);
+  --error: #dc322f;
+  --error-bg: rgba(220, 50, 47, 0.15);
+  --warning: #b58900;
+  --warning-bg: rgba(181, 137, 0, 0.15);
+  --purple: #6c71c4;
+  --purple-bg: rgba(108, 113, 196, 0.15);
+}
+
+/* 7. WARM SEPIA (Papel escuro aquecido, aconchegante para longas leituras) */
+[data-theme="sepia"] {
+  --bg-main: #1b1916;
+  --bg-card: #23201c;
+  --bg-card-hover: #2c2823;
+  --border-subtle: #3c362f;
+  --border-focus: #d49b59;
+  --text-main: #d3c7b8;
+  --text-heading: #f0e6d6;
+  --text-muted: #9b8f80;
+  --accent: #d49b59;
+  --accent-muted: rgba(212, 155, 89, 0.15);
+  --success: #8ba870;
+  --success-bg: rgba(139, 168, 112, 0.15);
+  --error: #cc6b64;
+  --error-bg: rgba(204, 107, 100, 0.15);
+  --warning: #dfab58;
+  --warning-bg: rgba(223, 171, 88, 0.15);
+  --purple: #bfa075;
+  --purple-bg: rgba(191, 160, 117, 0.15);
+}
+
+/* 8. GRUVBOX MATERIAL (Estética retrô aconchegante, contraste ultra amigável aos olhos) */
+[data-theme="gruvbox"] {
+  --bg-main: #282828;
+  --bg-card: #32302f;
+  --bg-card-hover: #3c3836;
+  --border-subtle: #504945;
+  --border-focus: #d79921;
+  --text-main: #d4be98;
+  --text-heading: #ebdbb2;
+  --text-muted: #928374;
+  --accent: #d79921;
+  --accent-muted: rgba(215, 153, 33, 0.15);
+  --success: #a9b665;
+  --success-bg: rgba(169, 182, 101, 0.15);
+  --error: #ea6962;
+  --error-bg: rgba(234, 105, 98, 0.15);
+  --warning: #e78a4e;
+  --warning-bg: rgba(231, 138, 78, 0.15);
+  --purple: #d3869b;
+  --purple-bg: rgba(211, 134, 155, 0.15);
+}
+
+/* 9. MONOKAI PRO WARM (Carvão aquecido com acentos em âmbar e menta) */
+[data-theme="monokai"] {
+  --bg-main: #221f22;
+  --bg-card: #2d2a2e;
+  --bg-card-hover: #373438;
+  --border-subtle: #49464b;
+  --border-focus: #ffd866;
+  --text-main: #c1c0c0;
+  --text-heading: #fcfcfa;
+  --text-muted: #727072;
+  --accent: #ffd866;
+  --accent-muted: rgba(255, 216, 102, 0.15);
+  --success: #a9dc76;
+  --success-bg: rgba(169, 220, 118, 0.15);
+  --error: #ff6188;
+  --error-bg: rgba(255, 97, 136, 0.15);
+  --warning: #fc9867;
+  --warning-bg: rgba(252, 152, 103, 0.15);
+  --purple: #ab9df2;
+  --purple-bg: rgba(171, 157, 242, 0.15);
+}
+
+/* 10. E-INK MINIMALIST B&W (Foco acadêmico máximo, escala de cinza pura sem saturação) */
+[data-theme="e-ink"] {
+  --bg-main: #141414;
+  --bg-card: #1c1c1c;
+  --bg-card-hover: #262626;
+  --border-subtle: #383838;
+  --border-focus: #e0e0e0;
+  --text-main: #cfcfcf;
+  --text-heading: #f5f5f5;
+  --text-muted: #7d7d7d;
+  --accent: #e0e0e0;
+  --accent-muted: rgba(224, 224, 224, 0.12);
+  --success: #a8a8a8;
+  --success-bg: rgba(168, 168, 168, 0.15);
+  --error: #ffffff;
+  --error-bg: rgba(255, 255, 255, 0.15);
+  --warning: #b0b0b0;
+  --warning-bg: rgba(176, 176, 176, 0.15);
+  --purple: #d5d5d5;
+  --purple-bg: rgba(213, 213, 213, 0.15);
+}
+
+/* Tipografia Alternável */
+:root {
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-weight-body: 350;
+  --font-weight-bold: 550;
+  --font-weight-heading: 550;
+  --base-font-size: 15.5px;
+}
+[data-font="clean"] {
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+[data-font="mono"] {
+  --font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+[data-font="serif"] {
+  --font-family: 'Merriweather', Charter, Georgia, Cambria, serif;
+}
+[data-font="lexend"] {
+  --font-family: 'Lexend', system-ui, -apple-system, sans-serif;
+}
+
+/* Pesos de Fonte (Weight Variants: Extra-Light, Light, Regular, Medium) */
+[data-weight="extra-light"] {
+  --font-weight-body: 200;
+  --font-weight-bold: 400;
+  --font-weight-heading: 300;
+}
+[data-weight="light"] {
+  --font-weight-body: 300;
+  --font-weight-bold: 500;
+  --font-weight-heading: 450;
+}
+[data-weight="regular"] {
+  --font-weight-body: 400;
+  --font-weight-bold: 600;
+  --font-weight-heading: 600;
+}
+[data-weight="medium"] {
+  --font-weight-body: 500;
+  --font-weight-bold: 700;
+  --font-weight-heading: 700;
+}
+
+/* Tamanhos de Fonte Granulares (13px até 21px) */
+[data-size="13px"] { --base-font-size: 13px; }
+[data-size="small"], [data-size="14px"] { --base-font-size: 14px; }
+[data-size="15px"] { --base-font-size: 15px; }
+[data-size="normal"], [data-size="15.5px"] { --base-font-size: 15.5px; }
+[data-size="16.5px"] { --base-font-size: 16.5px; }
+[data-size="large"], [data-size="17.5px"] { --base-font-size: 17.5px; }
+[data-size="xlarge"], [data-size="19px"] { --base-font-size: 19px; }
+[data-size="21px"] { --base-font-size: 21px; }
+
+/* Densidade Alternável */
+[data-density="compact"] .container {
+  gap: 1.15rem;
+}
+[data-density="compact"] .card-theory,
+[data-density="compact"] .card-exercise {
+  padding: 1rem 1.15rem;
+  gap: 0.75rem;
+}
+[data-density="relaxed"] .container {
+  gap: 2.25rem;
+}
+[data-density="relaxed"] .card-theory,
+[data-density="relaxed"] .card-exercise {
+  padding: 1.75rem 2rem;
+  gap: 1.25rem;
+}
+
+/* Barra Flutuante de Personalização / Theme Switcher */
+.theme-panel-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  margin-bottom: -0.75rem;
+  flex-wrap: wrap;
+}
+
+.theme-pill-select {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.theme-pill-select:hover, .theme-pill-select:focus {
+  border-color: var(--border-focus);
+}
+
+/* Barra de Progresso da Sessão */
+.session-progress-wrapper {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+}
+
+.session-progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.session-progress-track {
+  width: 100%;
+  height: 6px;
+  background-color: var(--bg-card-hover);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.session-progress-fill {
+  height: 100%;
+  width: 0%;
+  background-color: var(--success);
+  transition: width 0.3s ease;
+}
+
+/* Grafo Pinado Flutuante */
+.pinned-graph-btn {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  z-index: 100;
+  transition: all 0.15s ease;
+}
+
+.pinned-graph-btn:hover {
+  border-color: var(--border-focus);
+  background-color: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.pinned-graph-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.pinned-graph-modal.show {
+  display: flex;
+}
+
+.pinned-graph-box {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  max-width: 680px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.pinned-graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.4rem;
+}
+
+.pinned-graph-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  line-height: 1;
+}
+
+.pinned-graph-close:hover {
+  color: var(--text-main);
+}
+
+.pinned-graph-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+}
+
+.pinned-graph-body svg {
+  max-width: 100%;
+  height: auto;
 }
 
 * {
@@ -30,12 +460,18 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main);
   font-family: var(--font-family);
-  font-size: 16px;
-  line-height: 1.65;
+  font-size: var(--base-font-size, 15.5px);
+  font-weight: var(--font-weight-body, 350);
+  line-height: 1.6;
   padding: 1.5rem 1rem;
   display: flex;
   justify-content: center;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+strong, b {
+  font-weight: var(--font-weight-bold, 550);
 }
 
 .container {
@@ -64,7 +500,7 @@ header {
 .nav-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 1rem;
   font-size: 0.9rem;
 }
@@ -75,35 +511,38 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
   background-color: rgba(88, 166, 255, 0.08);
-  transition: background-color 0.15s ease;
+  border: 1px solid var(--border-subtle);
+  transition: all 0.15s ease;
 }
 
 .nav-links a:hover {
   background-color: rgba(88, 166, 255, 0.2);
-  text-decoration: none;
+  border-color: var(--border-focus);
 }
 
 h1 {
-  font-size: 1.9rem;
-  font-weight: 700;
-  color: var(--text-main);
+  font-size: 1.85rem;
+  font-weight: var(--font-weight-heading, 550);
+  color: var(--text-heading);
   line-height: 1.25;
+  letter-spacing: -0.015em;
 }
 
 h2 {
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: var(--text-main);
+  font-size: 1.3rem;
+  font-weight: var(--font-weight-heading, 550);
+  color: var(--text-heading);
   margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
 }
 
 h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-main);
+  font-size: 1.05rem;
+  font-weight: var(--font-weight-heading, 550);
+  color: var(--text-heading);
   margin-bottom: 0.5rem;
 }
 
@@ -133,9 +572,9 @@ code {
 .callout {
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-left: 4px solid var(--accent);
-  border-radius: 8px;
-  padding: 1.15rem 1.25rem;
+  border-left: 2.5px solid var(--accent);
+  border-radius: 6px;
+  padding: 1.1rem 1.25rem;
   margin: 1rem 0;
 }
 
@@ -167,6 +606,15 @@ code {
   color: var(--purple);
 }
 
+.callout.pitfall {
+  border-left-color: var(--error);
+  background-color: rgba(248, 81, 73, 0.08);
+}
+
+.callout.pitfall .callout-title {
+  color: #ff7b72;
+}
+
 /* Diagrams and Preformatted Text */
 .graph-diagram, .code-block {
   background-color: #030712;
@@ -178,8 +626,16 @@ code {
   line-height: 1.45;
   color: #e6edf3;
   overflow-x: auto;
-  white-space: pre;
   margin: 1rem 0;
+  text-align: center;
+}
+
+.graph-caption {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.6rem;
+  font-family: var(--font-family);
+  text-align: center;
 }
 
 /* Tables */
@@ -218,16 +674,16 @@ code {
   border-bottom: none;
 }
 
-.trace-table tr:hover {
+.trace-table tbody tr:nth-child(even) td {
   background-color: rgba(255, 255, 255, 0.02);
 }
 
-.trace-table tr.highlight-step {
-  background-color: rgba(63, 185, 80, 0.15);
+.trace-table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.04);
 }
 
-.trace-table tr.highlight-prune {
-  background-color: rgba(248, 81, 73, 0.12);
+.trace-table tr.highlight-step td {
+  background-color: rgba(63, 185, 80, 0.15) !important;
 }
 
 /* Cards & Theory */
@@ -268,10 +724,21 @@ code {
   color: var(--accent);
 }
 
+.exercise-tag.diagnostic {
+  background-color: rgba(210, 153, 34, 0.15);
+  color: #e3b341;
+}
+
+.exercise-tag.recall {
+  background-color: rgba(188, 140, 255, 0.15);
+  color: #d2a8ff;
+}
+
 .question-text {
   font-size: 1.02rem;
   font-weight: 500;
   color: var(--text-main);
+  line-height: 1.5;
 }
 
 .options-list {

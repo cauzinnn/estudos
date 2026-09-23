@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0008: Busca Gulosa (Greedy Best-First) — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">intelcomp • Buscas Informadas (Heurísticas) • Lição 0008</div>
+      <h1>Busca Gulosa (Greedy Best-First Search)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Avaliação puramente prospectiva f(n) = h(n), atração por atalhos ilusórios e a vulnerabilidade fatal a caminhos de custo exorbitante.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/0007-busca-irrevogavel-hill-climbing.html">← Lição 0007: Hill Climbing</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+    </div>
+
+    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <section class="card-theory">
+      <h2>1. Teoria Enxuta: O Modelo Mental da Busca Gulosa</h2>
+      <p>
+        A <strong>Busca Gulosa</strong> (<em>Greedy Best-First Search</em>) tenta se aproximar da meta o mais rápido possível avaliando os nós exclusivamente pela <strong>estimativa heurística do custo restante até o objetivo</strong>:
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Função de Avaliação: <code>f(n) = h(n)</code></div>
+        <p style="margin-bottom: 0;">
+          Diferente da UCS (que só olha para o passado através de <code>g(n)</code>), a Busca Gulosa <strong>olha exclusivamente para o futuro</strong>, escolhendo sempre o nó da fronteira com o menor valor de <code>h(n)</code> (o que aparenta estar mais perto da meta).
+        </p>
+      </div>
+
+      <div class="callout pitfall">
+        <div class="callout-title">⚠️ A Grande Armadilha de Prova: Por que a Gulosa NÃO é Ótima?</div>
+        <p style="margin-bottom: 0;">
+          Por ignorar completamente o custo acumulado <code>g(n)</code>, a Busca Gulosa é <strong>facilmente seduzida por ilusões</strong>.<br><br>
+          Um nó pode parecer muito promissor por estar geometricamente próximo da meta (baixo <code>h</code>), mas para alcançá-lo ou prosseguir a partir dele a rota pode exigir arestas de custos gigantescos!<br>
+          <em>Atenção de exame:</em> Mesmo que a heurística <code>h(n)</code> seja <strong>admissível</strong> (nunca superestime o custo real), a Busca Gulosa <u>continua não sendo ótima</u>! A admissibilidade só garante otimalidade no algoritmo A*.
+        </p>
+      </div>
+
+      <div class="callout exam-tip">
+        <div class="callout-title">💡 Propriedades Formais da Busca Gulosa</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Completude:</strong> Incompleta em busca em árvore (pode entrar em loops infinitos entre nós com valores de <em>h</em> repetidos). Completa em busca em grafo em espaços finitos.</li>
+          <li><strong>Otimalidade:</strong> <strong>Não</strong>. Pode encontrar rotas absurdamente caras.</li>
+          <li><strong>Complexidade de Tempo e Espaço:</strong> <code>O(b^m)</code> no pior caso, pois mantém toda a fronteira na fila de prioridades.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: GRAFO DIDÁTICO E A ARMADILHA DA ILUSÃO -->
+    <section class="card-theory">
+      <h2>2. Grafo Didático: A Sedutora Armadilha da Heurística</h2>
+      <p>
+        Considere o grafo abaixo. A raiz é <strong>S</strong> e a meta é <strong>G</strong> (com <code>h(G) = 0</code>).<br>
+        O nó <strong>A</strong> parece ótimo porque sua heurística é <strong>h(A) = 2</strong>, enquanto <strong>B</strong> tem <strong>h(B) = 8</strong>:
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="220" viewBox="0 0 540 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-greedy" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#6e7681"/>
+            </marker>
+          </defs>
+
+          <!-- Ramo de A (Sedutor, mas caríssimo) -->
+          <line x1="60" y1="110" x2="200" y2="55" stroke="#f85149" stroke-width="2" marker-end="url(#arrow-greedy)"/>
+          <text x="120" y="70" font-family="sans-serif" font-size="11" fill="#f85149">custo = 10</text>
+
+          <line x1="200" y1="55" x2="450" y2="110" stroke="#f85149" stroke-width="2" marker-end="url(#arrow-greedy)"/>
+          <text x="325" y="65" font-family="sans-serif" font-size="11" fill="#f85149">custo = 100 (Abismo!)</text>
+
+          <!-- Ramo de B (Aparenta pior em h, mas é baratíssimo!) -->
+          <line x1="60" y1="110" x2="200" y2="165" stroke="#3fb950" stroke-width="2" marker-end="url(#arrow-greedy)"/>
+          <text x="120" y="155" font-family="sans-serif" font-size="11" fill="#3fb950">custo = 1</text>
+
+          <line x1="200" y1="165" x2="450" y2="110" stroke="#3fb950" stroke-width="2" marker-end="url(#arrow-greedy)"/>
+          <text x="325" y="155" font-family="sans-serif" font-size="11" fill="#3fb950">custo = 2 (Ótimo!)</text>
+
+          <!-- Nós -->
+          <circle cx="60" cy="110" r="18" fill="#1b2a4a" stroke="#58a6ff" stroke-width="2"/>
+          <text x="60" y="115" font-family="monospace" font-weight="bold" font-size="13" fill="#c9d1d9" text-anchor="middle">S</text>
+          <text x="60" y="140" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">h = 10</text>
+
+          <!-- Nó A -->
+          <circle cx="200" cy="55" r="18" fill="#241a20" stroke="#f85149" stroke-width="2"/>
+          <text x="200" y="60" font-family="monospace" font-weight="bold" font-size="13" fill="#f85149" text-anchor="middle">A</text>
+          <text x="200" y="35" font-family="sans-serif" font-weight="bold" font-size="11" fill="#f85149" text-anchor="middle">h(A) = 2 (Isca!)</text>
+
+          <!-- Nó B -->
+          <circle cx="200" cy="165" r="18" fill="#1a2e22" stroke="#3fb950" stroke-width="2"/>
+          <text x="200" y="170" font-family="monospace" font-weight="bold" font-size="13" fill="#3fb950" text-anchor="middle">B</text>
+          <text x="200" y="195" font-family="sans-serif" font-size="11" fill="#3fb950" text-anchor="middle">h(B) = 8</text>
+
+          <!-- Meta G -->
+          <circle cx="450" cy="110" r="20" fill="#1a2e22" stroke="#3fb950" stroke-width="2"/>
+          <circle cx="450" cy="110" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="450" y="115" font-family="monospace" font-weight="bold" font-size="14" fill="#3fb950" text-anchor="middle">G</text>
+          <text x="450" y="145" font-family="sans-serif" font-size="10" fill="#3fb950" text-anchor="middle">h(G) = 0</text>
+        </svg>
+        <div class="graph-caption">
+          Figura 1: A Busca Gulosa compara apenas h(A)=2 com h(B)=8. Escolhe A e paga 10 + 100 = 110! O caminho ótimo por B custaria apenas 1 + 2 = 3.
+        </div>
+      </div>
+
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Passo</th>
+              <th>Nó Desenfileirado</th>
+              <th>Filhos Gerados</th>
+              <th>Fila de Prioridades [Nó: f=h]</th>
+              <th>Decisão da Busca Gulosa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>0</strong></td>
+              <td>—</td>
+              <td>—</td>
+              <td><code>[S: 10]</code></td>
+              <td>Inicialização com h(S) = 10.</td>
+            </tr>
+            <tr>
+              <td><strong>1</strong></td>
+              <td><code>S</code></td>
+              <td>A (h=2), B (h=8)</td>
+              <td><code>[A: 2, B: 8]</code></td>
+              <td>Compara h(A)=2 e h(B)=8. <strong>A é colocado no topo da fila!</strong></td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td><code>A</code></td>
+              <td>G (h=0)</td>
+              <td><code>[G: 0, B: 8]</code></td>
+              <td>A gera G com h=0. G entra no topo da fila!</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>3</strong></td>
+              <td><code>G</code></td>
+              <td>—</td>
+              <td><code>[B: 8]</code></td>
+              <td><strong>G é retirado! Solução encontrada: S &rarr; A &rarr; G (Custo Real: 110!)</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIOS PRÁTICOS (7 DESAFIOS DIAGNÓSTICOS) -->
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: A Função de Avaliação Gulosa</h3>
+        <span class="exercise-tag diagnostic">Conceito Central</span>
+      </div>
+      <div class="question-text">
+        Qual é a função de avaliação <code>f(n)</code> utilizada na ordenação da fronteira pela Busca Gulosa (Greedy Best-First)?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: f(n) = g(n) é a função de avaliação da Busca de Custo Uniforme (UCS / Dijkstra).">
+          A) f(n) = g(n) (custo de caminho acumulado a partir da raiz).
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A Busca Gulosa avalia os nós unicamente pela função heurística h(n), que estima a distância até a meta.">
+          B) f(n) = h(n) (estimativa heurística do custo até a meta).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: f(n) = g(n) + h(n) é a equação do algoritmo A*!">
+          C) f(n) = g(n) + h(n) (soma do custo real com a estimativa heurística).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: h(n) - g(n) não é utilizado em nenhum algoritmo clássico.">
+          D) f(n) = h(n) - g(n) (diferencial heurístico).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Pegadinha de Exame — Admissibilidade na Busca Gulosa</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Analise a afirmação de prova:<br>
+        <em>"Se a função heurística h(n) for admissível (ou seja, nunca superestimar o custo real até o objetivo), a Busca Gulosa torna-se garantidamente um algoritmo ótimo."</em><br><br>
+        Essa proposição é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Armadilha clássica! A admissibilidade da heurística garante otimalidade APENAS para o A* (que considera g(n)). Na Busca Gulosa, como o custo passado g(n) é totalmente ignorado, ela continuará escolhendo caminhos caros mesmo com heurísticas admissíveis!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Perfeito! Admissibilidade é irrelevante para a otimalidade da Busca Gulosa: como ela não soma o custo acumulado g(n), qualquer atalho ilusório com h baixo será escolhido, resultando em soluções subótimas caríssimas.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="Na Figura 1, o caminho escolhido pela Busca Gulosa foi S -> A -> G. O custo é 10 + 100 = 110.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Cálculo do Custo da Solução Encontrada</h3>
+        <span class="exercise-tag recall">Active Recall Numérico</span>
+      </div>
+      <div class="question-text">
+        No grafo da <strong>Figura 1</strong>, qual é o <strong>custo real total acumulado</strong> da solução encontrada pela Busca Gulosa? (Digite apenas o número):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 110" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Custo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4" data-hint="A rota ótima é S -> B -> G. Custo: 1 + 2 = 3.">
+      <div class="exercise-header">
+        <h3>Exercício 4: Custo da Rota Ótima que a Gulosa Ignorou</h3>
+        <span class="exercise-tag recall">Active Recall Numérico</span>
+      </div>
+      <div class="question-text">
+        No mesmo grafo da Figura 1, qual seria o <strong>custo real da rota ótima</strong> que a Busca Gulosa deixou de explorar por ter sido enganada pela heurística de A? (Digite apenas o número):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 3" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Custo Ótimo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Risco de Incompletude em Árvore</h3>
+        <span class="exercise-tag diagnostic">Completude</span>
+      </div>
+      <div class="question-text">
+        Por que a Busca Gulosa em versão de <em>busca em árvore</em> (sem conjunto de visitados) pode falhar em encontrar o objetivo mesmo em um grafo finito?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: podas ocorrem no DLS, não na Busca Gulosa.">
+          A) Porque ela poda todos os nós com profundidade maior que 10.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! Se existirem dois nós X e Y conectados entre si com valores de h menores que os de outros ramos, a busca ficará oscilando indefinidamente X -> Y -> X -> Y..., sem nunca explorar o ramo verdadeiro que leva à meta!">
+          B) Ela pode ficar presa em um loop infinito entre estados reversíveis que possuem valores heurísticos menores do que os ramos que levam à meta.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a Busca Gulosa não tem relação com custos negativos de aresta.">
+          C) Porque ela para automaticamente se encontrar qualquer aresta com peso negativo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: fila de prioridades ordena nós normalmente sem travamentos internos.">
+          D) Porque a fila de prioridades trava quando dois nós têm valores heurísticos iguais.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 6 -->
+    <section class="card-exercise" id="ex6">
+      <div class="exercise-header">
+        <h3>Exercício 6: Comparativo Conceitual de Funções de Avaliação</h3>
+        <span class="exercise-tag diagnostic">Síntese Comparada</span>
+      </div>
+      <div class="question-text">
+        Qual alternativa sintetiza perfeitamente a diferença na função de avaliação <code>f(n)</code> entre <strong>UCS</strong>, <strong>Busca Gulosa</strong> e <strong>A*</strong>?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! UCS foca no passado g(n); Busca Gulosa foca no futuro h(n); A* soma passado e futuro g(n) + h(n).">
+          A) UCS usa f(n) = g(n); Busca Gulosa usa f(n) = h(n); A* usa f(n) = g(n) + h(n).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: as funções estão trocadas.">
+          B) UCS usa f(n) = h(n); Busca Gulosa usa f(n) = g(n); A* usa f(n) = g(n) &times; h(n).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o algoritmo A* não divide os custos.">
+          C) UCS usa f(n) = g(n); Busca Gulosa usa f(n) = g(n) + h(n); A* usa f(n) = g(n) / h(n).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: nenhum desses algoritmos usa a profundidade d no lugar de g(n) quando há custos ponderados.">
+          D) Todas usam f(n) = d (profundidade simples).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 7 -->
+    <section class="card-exercise" id="ex7" data-hint="A Busca Gulosa seguiu S -> A -> G. Digite a sequência: S, A, G.">
+      <div class="exercise-header">
+        <h3>Exercício 7: Sequência do Caminho Subótimo Retornado</h3>
+        <span class="exercise-tag recall">Active Recall / Mesa</span>
+      </div>
+      <div class="question-text">
+        Digite a sequência exata de nós que compõe o caminho de solução encontrado pela Busca Gulosa na Figura 1 (separados por vírgula, traço ou espaço):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: S, A, G" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Sequência</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO FINAL: PONTOS DE TROPEÇO DINÂMICOS -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações ou erros nas seguintes armadilhas conceituais da Busca Gulosa. Revise-as:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../lessons/0007-busca-irrevogavel-hill-climbing.html">← Lição Anterior: 0007 — Hill Climbing</a>
+      <a href="../index.html">Voltar ao Painel da Matéria</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
+      <a href="0009-busca-a-estrela-astar.html">Próxima Lição: 0009 — Algoritmo A* &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Função f(n) = h(n)
+      initMultipleChoice("ex1", "Busca Gulosa: f(n) = h(n)");
+
+      // Ex 2: Falácia de otimalidade por admissibilidade na Gulosa
+      initTrueFalse("ex2", false, "Falácia: Heurística admissível NÃO garante otimalidade na Busca Gulosa",
+        "Cuidado: admissibilidade só garante otimalidade no A*!",
+        "Exato! A Busca Gulosa não é ótima mesmo com heurísticas admissíveis.");
+
+      // Ex 3: Custo real subótimo 110
+      initInputExercise("ex3", ["110"], "Custo real subótimo de 110 na Busca Gulosa", (raw, clean) => {
+        return clean === "110";
+      });
+
+      // Ex 4: Custo real da rota ótima 3
+      initInputExercise("ex4", ["3"], "Custo da rota ótima de 3 que a Gulosa ignorou", (raw, clean) => {
+        return clean === "3";
+      });
+
+      // Ex 5: Incompletude em árvore com ciclos
+      initMultipleChoice("ex5", "Incompletude da Busca Gulosa em árvores com ciclos");
+
+      // Ex 6: Comparativo de funções f(n)
+      initMultipleChoice("ex6", "Comparativo de funções: UCS g(n), Gulosa h(n), A* g(n)+h(n)");
+
+      // Ex 7: Caminho retornado S -> A -> G
+      initInputExercise("ex7", ["sag", "s,a,g", "s->a->g", "s-a-g", "s a g"], "Caminho retornado S -> A -> G", (raw, clean) => {
+        const norm = clean.replace(/[^a-z]/g, "");
+        return norm === "sag";
+      });
+    });
+  </script>
+</body>
+</html>

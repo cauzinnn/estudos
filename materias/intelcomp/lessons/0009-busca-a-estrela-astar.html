@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0009: Algoritmo de Busca A* (A-Star) — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">intelcomp • Buscas Informadas (Heurísticas) • Lição 0009</div>
+      <h1>Algoritmo de Busca A* (A-Star Search)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        A união magistral f(n) = g(n) + h(n), teoremas de admissibilidade e consistência, eficiência ótima e o calcanhar de Aquiles da memória RAM.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/0008-busca-gulosa-greedy.html">← Lição 0008: Busca Gulosa</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+    </div>
+
+    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <section class="card-theory">
+      <h2>1. Teoria Enxuta: O Modelo Mental do A*</h2>
+      <p>
+        O <strong>Algoritmo A*</strong> é a busca informada mais amplamente utilizada na ciência da computação. Ele equilibra perfeitamente o custo já pago com o custo futuro estimado:
+      </p>
+      
+      <div class="callout definition">
+        <div class="callout-title">📌 Equação Fundamental de Avaliação: <code>f(n) = g(n) + h(n)</code></div>
+        <ul style="margin-bottom: 0;">
+          <li><code>g(n)</code>: Custo real acumulado para ir da raiz <em>S</em> até o nó <em>n</em> (componente da UCS).</li>
+          <li><code>h(n)</code>: Estimativa heurística do custo restante de <em>n</em> até a meta (componente da Busca Gulosa).</li>
+          <li><code>f(n)</code>: Custo total estimado da rota mais barata que passa pelo nó <em>n</em>.</li>
+        </ul>
+      </div>
+
+      <div class="callout exam-tip">
+        <div class="callout-title">💡 Os Dois Teoremas de Otimalidade de Exame</div>
+        <ol style="margin-bottom: 0;">
+          <li><strong>Busca em Árvore (Tree Search):</strong> O A* é ótimo se <code>h(n)</code> for <strong>ADMISSÍVEL</strong> (nunca superestima o custo real: <code>h(n) &le; h*(n)</code>). A heurística precisa ser otimista!</li>
+          <li><strong>Busca em Grafo (Graph Search):</strong> O A* é ótimo se <code>h(n)</code> for <strong>CONSISTENTE (Monotônica)</strong>:<br>
+            <code>h(n) &le; c(n, a, n') + h(n')</code> (Desigualdade Triangular).<br>
+            <em>Consequência:</em> Os valores de <code>f(n)</code> nunca decrescem ao longo de um caminho. Quando um estado é expandido pela primeira vez, a rota encontrada até ele é garantidamente ótima!
+          </li>
+        </ol>
+      </div>
+
+      <div class="callout pitfall">
+        <div class="callout-title">⚠️ O Calcanhar de Aquiles do A*: A Memória RAM</div>
+        <p style="margin-bottom: 0;">
+          Embora o A* seja <strong>otimamente eficiente</strong> (nenhum outro algoritmo ótimo com a mesma heurística expande menos nós), ele mantém <strong>todos os nós gerados na memória RAM</strong>. Em problemas do mundo real, a memória <code>O(b^d)</code> esgota-se em minutos, muito antes do tempo de CPU!
+        </p>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: GRAFO DIDÁTICO E RASTREAMENTO DO A* -->
+    <section class="card-theory">
+      <h2>2. Grafo Didático: Rastreamento com g(n), h(n) e f(n)</h2>
+      <p>
+        Observe o grafo abaixo. Raiz: <strong>S</strong>; Meta: <strong>G</strong> (onde <code>h(G) = 0</code>).<br>
+        O A* avalia a fronteira somando <code>f = g + h</code> e sempre expande o nó com o <strong>menor f</strong>:
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="220" viewBox="0 0 540 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-astar" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#6e7681"/>
+            </marker>
+          </defs>
+
+          <!-- Arestas -->
+          <line x1="60" y1="110" x2="200" y2="55" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-astar)"/>
+          <text x="120" y="70" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 1</text>
+
+          <line x1="60" y1="110" x2="200" y2="165" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-astar)"/>
+          <text x="120" y="155" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 4</text>
+
+          <line x1="200" y1="55" x2="450" y2="110" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-astar)"/>
+          <text x="330" y="70" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 5</text>
+
+          <line x1="200" y1="165" x2="450" y2="110" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-astar)"/>
+          <text x="330" y="155" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 1</text>
+
+          <!-- Nós -->
+          <circle cx="60" cy="110" r="18" fill="#1b2a4a" stroke="#58a6ff" stroke-width="2"/>
+          <text x="60" y="115" font-family="monospace" font-weight="bold" font-size="13" fill="#c9d1d9" text-anchor="middle">S</text>
+          <text x="60" y="140" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">h = 5</text>
+
+          <!-- Nó A -->
+          <circle cx="200" cy="55" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="200" y="60" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">A</text>
+          <text x="200" y="35" font-family="sans-serif" font-size="11" fill="#d49b59" text-anchor="middle">h(A) = 4</text>
+
+          <!-- Nó B -->
+          <circle cx="200" cy="165" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="200" y="170" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">B</text>
+          <text x="200" y="195" font-family="sans-serif" font-size="11" fill="#d49b59" text-anchor="middle">h(B) = 1</text>
+
+          <!-- Meta G -->
+          <circle cx="450" cy="110" r="20" fill="#1a2e22" stroke="#3fb950" stroke-width="2"/>
+          <circle cx="450" cy="110" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="450" y="115" font-family="monospace" font-weight="bold" font-size="14" fill="#3fb950" text-anchor="middle">G</text>
+          <text x="450" y="145" font-family="sans-serif" font-size="10" fill="#3fb950" text-anchor="middle">h = 0</text>
+        </svg>
+        <div class="graph-caption">
+          Figura 1: A* calcula f(A) = g(A)+h(A) = 1+4 = 5. Para B: f(B) = g(B)+h(B) = 4+1 = 5.
+        </div>
+      </div>
+
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Passo</th>
+              <th>Nó Desenfileirado</th>
+              <th>Filhos Gerados</th>
+              <th>Cálculo: f = g + h</th>
+              <th>Fila de Prioridades [Nó: f]</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>0</strong></td>
+              <td>—</td>
+              <td>—</td>
+              <td><code>g(S)=0, h=5 &rarr; f=5</code></td>
+              <td><code>[S: 5]</code></td>
+            </tr>
+            <tr>
+              <td><strong>1</strong></td>
+              <td><code>S</code></td>
+              <td>A, B</td>
+              <td>
+                A: g=1, h=4 &rarr; <code>f(A) = 5</code><br>
+                B: g=4, h=1 &rarr; <code>f(B) = 5</code>
+              </td>
+              <td><code>[A: 5, B: 5]</code> (desempate alfabético)</td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td><code>A (f=5)</code></td>
+              <td>G (via A)</td>
+              <td>G: g=1+5=6, h=0 &rarr; <code>f(G) = 6</code></td>
+              <td><code>[B: 5, G: 6]</code> (B é retirado primeiro!)</td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td><code>B (f=5)</code></td>
+              <td>G (via B)</td>
+              <td>G: g=4+1=5, h=0 &rarr; <code>f(G) = 5</code></td>
+              <td><code>[G: 5, G: 6]</code> (novo caminho é melhor!)</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>4</strong></td>
+              <td><code>G (f=5)</code></td>
+              <td>—</td>
+              <td><strong>G é retirado da frente!</strong></td>
+              <td><strong>Solução Ótima Encontrada: S &rarr; B &rarr; G (Custo 5)</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIOS PRÁTICOS (7 DESAFIOS DIAGNÓSTICOS) -->
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: A Composição da Função f(n)</h3>
+        <span class="exercise-tag diagnostic">Conceito Central</span>
+      </div>
+      <div class="question-text">
+        Qual é a interpretação semântica exata da função <code>f(n) = g(n) + h(n)</code> no algoritmo A*?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: isso seria f(n) = g(n) apenas.">
+          A) O custo total exato para navegar de volta do nó n até a raiz.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! f(n) estima o custo total da solução mais barata que passa obrigatoriamente pelo nó n, somando o que já custou (g) com o que se prevê que custará (h).">
+          B) A estimativa do custo total do caminho mais barato que parte da raiz e chega ao objetivo passando pelo nó n.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: h(n) é uma estimativa e não um valor garantidamente exato no momento da busca.">
+          C) O valor exato e sem margem de erro da distância física euclidiana até a meta.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: f(n) não calcula o número de nós na memória.">
+          D) O número máximo de nós irmãos que serão gerados na memória RAM.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Pegadinha de Exame — Admissibilidade vs Consistência</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Analise a proposição:<br>
+        <em>"Para garantir que o A* seja ótimo em busca em grafo (onde estados repetidos são descartados via conjunto de fechados), basta que a heurística h(n) seja admissível."</em><br><br>
+        Esta proposição é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Armadilha clássica de concurso e exames! A simples admissibilidade garante otimalidade APENAS para busca em árvore. Em busca em GRAFO (com conjunto de nós fechados), uma heurística inconsistente pode fechar um nó antes de encontrar um caminho posterior mais barato. Para grafos, exige-se CONSISTÊNCIA (monotonicidade)!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Perfeito! Admissibilidade basta apenas para busca em árvore. Em busca em grafo, a heurística deve ser CONSISTENTE (monotônica: h(n) <= c(n,a,n') + h(n')) para garantir que o primeiro caminho encontrado até qualquer nó seja comprovadamente o melhor!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="No Passo 1, temos A com g=1, h=4 -> f=5. E B com g=4, h=1 -> f=5. Qual é o valor de f de ambos?">
+      <div class="exercise-header">
+        <h3>Exercício 3: Cálculo do Valor f(n)</h3>
+        <span class="exercise-tag recall">Active Recall Numérico</span>
+      </div>
+      <div class="question-text">
+        No grafo da Figura 1, considere o nó <strong>B</strong>, que possui custo de aresta a partir de S de <code>c = 4</code> e estimativa heurística <code>h(B) = 1</code>.<br><br>
+        <strong>Qual é o valor exato de f(B) calculado pelo A*?</strong> (Digite apenas o número):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 5" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar f(B)</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: O Momento do Teste de Meta no A*</h3>
+        <span class="exercise-tag diagnostic">Mecânica de Algoritmos</span>
+      </div>
+      <div class="question-text">
+        Assim como na UCS, quando é que o A* pode aplicar com segurança o teste de meta para declarar sucesso e retornar o caminho?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: se testar na geração, um nó de meta com f maior gerado precocemente pode ser aceito antes de um caminho com f menor!">
+          A) No momento em que um nó meta é gerado como sucessor de qualquer estado.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! Apenas quando o nó meta atinge a cabeça da fila de prioridade e é retirado para expansão, temos a garantia matemática de que nenhum outro nó na fila possui f menor que ele.">
+          B) Apenas quando o nó objetivo é retirado (desenfileirado) da fila de prioridades para expansão.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o A* não espera a fila esvaziar completamente.">
+          C) Quando toda a fila de prioridades estiver vazia.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o A* é dinâmico e o teste não ocorre na inicialização.">
+          D) Na raiz antes de gerar o primeiro filho.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: O Gargalo Prático do A*</h3>
+        <span class="exercise-tag diagnostic">Complexidade Assintótica</span>
+      </div>
+      <div class="question-text">
+        Em problemas reais de larga escala (como planejamento robótico complexo), por que o A* clássico frequentemente não consegue ser executado até o fim?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o tempo de CPU por nó é muito rápido.">
+          A) Porque o processador consome 100% de ciclos em cálculos trigonométricos.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O A* mantém todos os nós gerados na memória RAM (consumo exponencial O(b^d)). A memória esgota-se com poucos gigabytes disponíveis, motivando a criação de algoritmos com memória linear como o IDA*!">
+          B) O consumo de memória RAM estoura rapidamente, pois todos os nós gerados devem permanecer armazenados na fronteira ou conjunto de fechados (espaço exponencial O(b^d)).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: se h for admissível/consistente, o A* nunca entra em loops infinitos.">
+          C) Porque ele entra em loop infinito quando a heurística é consistente.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o A* é ótimo e completo sob as condições formais estabelecidas.">
+          D) Porque ele não suporta grafos com mais de 3 níveis de profundidade.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 6 -->
+    <section class="card-exercise" id="ex6" data-hint="A desigualdade triangular estabelece que a estimativa direta h(n) não pode ser maior que o custo do passo até n' mais a estimativa h(n').">
+      <div class="exercise-header">
+        <h3>Exercício 6: Propriedade da Consistência / Desigualdade Triangular</h3>
+        <span class="exercise-tag recall">Fórmula Formal</span>
+      </div>
+      <div class="question-text">
+        Para uma heurística ser dita <strong>Consistente (Monotônica)</strong>, qual relação matemática deve ser satisfeita para todo nó <code>n</code> e todo sucessor <code>n'</code> gerado por uma ação de custo <code>c(n, a, n')</code>?<br><br>
+        Digite o símbolo de comparação correto que completa a relação: <code>h(n) ____ c(n, a, n') + h(n')</code><br>
+        (Digite <code>&lt;=</code> ou <code>&gt;=</code> ou <code>==</code>):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: <=" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Símbolo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 7 -->
+    <section class="card-exercise" id="ex7" data-hint="No Passo 4 da tabela, a solução ótima escolhida pelo A* foi S -> B -> G com custo 5.">
+      <div class="exercise-header">
+        <h3>Exercício 7: Rastreamento da Rota Ótima Encontrada</h3>
+        <span class="exercise-tag recall">Síntese de Rota</span>
+      </div>
+      <div class="question-text">
+        Digite a sequência de nós da rota ótima selecionada e retornada pelo A* no grafo da Figura 1 (separados por vírgula, traço ou espaço):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: S, B, G" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Rota</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO FINAL: PONTOS DE TROPEÇO DINÂMICOS -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações ou erros nas seguintes armadilhas conceituais do A*. Revise-as:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../lessons/0008-busca-gulosa-greedy.html">← Lição Anterior: 0008 — Busca Gulosa</a>
+      <a href="../index.html">Voltar ao Painel da Matéria</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
+      <a href="0010-a-estrela-aprofundamento-iterativo-ida.html">Próxima Lição: 0010 — IDA* &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Interpretação de f(n) = g(n) + h(n)
+      initMultipleChoice("ex1", "A*: f(n) = g(n) + h(n) como custo total estimado");
+
+      // Ex 2: Admissibilidade em árvore vs Consistência em grafo
+      initTrueFalse("ex2", false, "Admissibilidade (árvore) vs Consistência (grafo) no A*",
+        "Cuidado: para busca em grafo, a heurística precisa ser CONSISTENTE!",
+        "Exato! Busca em grafo exige consistência (desigualdade triangular).");
+
+      // Ex 3: Cálculo numérico de f(B) = 4 + 1 = 5
+      initInputExercise("ex3", ["5"], "Cálculo de f(n) = g(n) + h(n) = 5", (raw, clean) => {
+        return clean === "5";
+      });
+
+      // Ex 4: Teste de meta na retirada
+      initMultipleChoice("ex4", "Teste de meta na retirada no A*");
+
+      // Ex 5: Gargalo da memória RAM O(b^d)
+      initMultipleChoice("ex5", "Gargalo supremo do A*: Memória RAM O(b^d)");
+
+      // Ex 6: Símbolo <= da desigualdade triangular
+      initInputExercise("ex6", ["<=", "≤", "=<"], "Consistência: h(n) <= c + h(n')", (raw, clean) => {
+        return clean.includes("<=") || clean.includes("≤") || clean.includes("=<");
+      });
+
+      // Ex 7: Rota ótima final S -> B -> G
+      initInputExercise("ex7", ["sbg", "s,b,g", "s->b->g", "s-b-g", "s b g"], "Rota ótima S -> B -> G", (raw, clean) => {
+        const norm = clean.replace(/[^a-z]/g, "");
+        return norm === "sbg";
+      });
+    });
+  </script>
+</body>
+</html>

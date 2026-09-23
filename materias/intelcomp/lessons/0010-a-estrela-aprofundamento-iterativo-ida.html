@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0010: A* com Aprofundamento Iterativo (IDA*) — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">intelcomp • Buscas Informadas (Heurísticas) • Lição 0010</div>
+      <h1>A* com Aprofundamento Iterativo (IDA*)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Superando o gargalo de RAM do A*: cortes dinâmicos por patamar de f(n), atualização pelo menor valor podado e memória linear O(b &times; d).
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/0009-busca-a-estrela-astar.html">← Lição 0009: Algoritmo A*</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+    </div>
+
+    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <section class="card-theory">
+      <h2>1. Teoria Enxuta: O Modelo Mental do IDA*</h2>
+      <p>
+        O <strong>IDA*</strong> (<em>Iterative Deepening A*</em>) resolve o grande problema do A* clássico: o consumo de memória RAM exponencial. Ele aplica a lógica do Aprofundamento Iterativo (IDS), mas com uma diferença crucial no critério de corte:
+      </p>
+      
+      <div class="callout definition">
+        <div class="callout-title">📌 O Critério de Poda: Patamar de Custo <code>f(n)</code></div>
+        <p style="margin-bottom: 0;">
+          Enquanto o IDS corta por <em>profundidade inteira</em> (0, 1, 2, 3...), o IDA* corta pelo <strong>valor total estimado <code>f(n) = g(n) + h(n)</code></strong>:
+        </p>
+        <ol style="margin-top: 0.5rem; margin-bottom: 0;">
+          <li><strong>Limite Inicial:</strong> Definido exatamente como o valor <em>f</em> do nó raiz: <code>limite_0 = f(raiz) = 0 + h(raiz)</code>.</li>
+          <li><strong>Execução com Poda:</strong> Executa uma busca em profundidade com backtracking. Se um nó tiver <code>f(n) &gt; limite</code>, ele é podado e seu valor <em>f(n)</em> é registrado.</li>
+          <li><strong>Cálculo do Novo Limite:</strong> Ao final da iteração, o novo limite é ajustado para o <strong>MENOR valor de f(n) entre todos os nós que foram podados</strong> na iteração anterior!</li>
+        </ol>
+      </div>
+
+      <div class="callout exam-tip">
+        <div class="callout-title">💡 A Grande Pegadinha de Prova: Como o Limite Avança?</div>
+        <p style="margin-bottom: 0;">
+          O limite do IDA* <strong>NUNCA é incrementado somando +1</strong> de forma arbitrária!<br>
+          Se os nós podados tiverem <code>f = 12</code>, <code>f = 15</code> e <code>f = 18</code>, o próximo patamar de corte será exatamente <strong>12</strong> (o menor valor podado). Isso garante que pelo menos um novo nó seja explorado na próxima rodada sem pular nenhuma solução potencialmente ótima.
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Propriedades Formais de Prova</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Completude e Otimalidade:</strong> Sim, idênticas ao A* (desde que a heurística seja admissível e os custos de aresta sejam positivos).</li>
+          <li><strong>Consumo de Memória: <code>O(b &times; d)</code> (Linear!)</strong><br>
+            Como realiza DFS em cada iteração, consome apenas o caminho ativo e irmãos. É o algoritmo que tornou viável resolver quebra-cabeças complexos como o <em>15-puzzle</em> e o <em>Cubo de Rubik</em> onde o A* comum estouraria a RAM em segundos!
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: GRAFO DIDÁTICO E RASTREAMENTO DO IDA* -->
+    <section class="card-theory">
+      <h2>2. Rastreamento Passo a Passo: Ajuste dos Patamares de Corte</h2>
+      <p>
+        Considere o grafo didático abaixo. Nó inicial: <strong>S</strong> (com <code>h=10</code>, logo <code>f=10</code>). Meta: <strong>G</strong> (com <code>f=14</code>):
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="220" viewBox="0 0 540 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-ida" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#6e7681"/>
+            </marker>
+          </defs>
+
+          <!-- Arestas -->
+          <line x1="60" y1="110" x2="190" y2="60" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ida)"/>
+          <text x="120" y="70" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 2</text>
+
+          <line x1="60" y1="110" x2="190" y2="160" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ida)"/>
+          <text x="120" y="155" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 3</text>
+
+          <line x1="190" y1="60" x2="330" y2="60" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ida)"/>
+          <text x="250" y="50" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 4</text>
+
+          <line x1="330" y1="60" x2="460" y2="110" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ida)"/>
+          <text x="400" y="75" font-family="sans-serif" font-size="11" fill="#79c0ff">c = 8</text>
+
+          <!-- Nós -->
+          <circle cx="60" cy="110" r="18" fill="#1b2a4a" stroke="#58a6ff" stroke-width="2"/>
+          <text x="60" y="115" font-family="monospace" font-weight="bold" font-size="13" fill="#c9d1d9" text-anchor="middle">S</text>
+          <text x="60" y="140" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">f = 10</text>
+
+          <!-- Nó A -->
+          <circle cx="190" cy="60" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="190" y="65" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">A</text>
+          <text x="190" y="35" font-family="sans-serif" font-size="11" fill="#d49b59" text-anchor="middle">f = 12</text>
+
+          <!-- Nó B -->
+          <circle cx="190" cy="160" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="190" y="165" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">B</text>
+          <text x="190" y="195" font-family="sans-serif" font-size="11" fill="#d49b59" text-anchor="middle">f = 16</text>
+
+          <!-- Nó C -->
+          <circle cx="330" cy="60" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="330" y="65" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">C</text>
+          <text x="330" y="35" font-family="sans-serif" font-size="11" fill="#d49b59" text-anchor="middle">f = 14</text>
+
+          <!-- Meta G -->
+          <circle cx="460" cy="110" r="20" fill="#1a2e22" stroke="#3fb950" stroke-width="2"/>
+          <circle cx="460" cy="110" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="460" y="115" font-family="monospace" font-weight="bold" font-size="14" fill="#3fb950" text-anchor="middle">G</text>
+          <text x="460" y="145" font-family="sans-serif" font-size="10" fill="#3fb950" text-anchor="middle">f = 14 (Meta)</text>
+        </svg>
+        <div class="graph-caption">
+          Figura 1: Acompanhe as iterações do IDA*: corte inicial = 10; corte 2 = 12; corte 3 = 14 (meta encontrada!).
+        </div>
+      </div>
+
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Iteração</th>
+              <th>Limite f de Corte</th>
+              <th>Nós Gerados</th>
+              <th>Nós Podados (f &gt; limite)</th>
+              <th>Próximo Limite Definido</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1ª Iteração</strong></td>
+              <td><code>f &le; 10</code> (f da raiz)</td>
+              <td><code>S (f=10)</code> gera A(12) e B(16)</td>
+              <td>A(f=12) e B(f=16) são podados!</td>
+              <td>Menor podado = <strong>12</strong></td>
+            </tr>
+            <tr>
+              <td><strong>2ª Iteração</strong></td>
+              <td><code>f &le; 12</code></td>
+              <td><code>S</code> expande <code>A (f=12)</code>. A gera C(14)</td>
+              <td>C(f=14) e B(f=16) são podados!</td>
+              <td>Menor podado = <strong>14</strong></td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>3ª Iteração</strong></td>
+              <td><code>f &le; 14</code></td>
+              <td><code>S &rarr; A &rarr; C &rarr; G (f=14)</code></td>
+              <td>G atinge a meta dentro do corte!</td>
+              <td><strong>Solução Ótima Encontrada: S &rarr; A &rarr; C &rarr; G</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIOS PRÁTICOS (7 DESAFIOS DIAGNÓSTICOS) -->
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: O Critério de Poda do IDA*</h3>
+        <span class="exercise-tag diagnostic">Mecânica do Algoritmo</span>
+      </div>
+      <div class="question-text">
+        O que distingue o mecanismo de corte do <strong>IDA*</strong> em relação ao <strong>IDS</strong> convencional?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o corte do IDS é por profundidade d, não por custo f.">
+          A) Ambos cortam estritamente por número de arestas (profundidade d).
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O IDS corta por profundidade inteira L, enquanto o IDA* corta pelo valor estimado de custo f(n) = g(n) + h(n).">
+          B) O IDS impõe limites por profundidade de arestas (L=0, 1, 2...), enquanto o IDA* impõe limites baseados no valor total estimado f(n) = g(n) + h(n).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o IDA* utiliza profundidade na descida, mas o critério de corte é f(n).">
+          C) O IDA* corta nós pelo número de filhos gerados por cada pai.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o IDA* é um algoritmo exato e ótimo, e não probabilístico.">
+          D) O IDA* realiza cortes aleatórios baseados em uma distribuição normal.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Atualização do Patamar de Corte</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Analise a proposição:<br>
+        <em>"Ao final de cada iteração sem sucesso do IDA*, o novo limite de corte é calculado simplesmente somando +1 ao limite anterior."</em><br><br>
+        Esta proposição é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Armadilha clássica! Somar +1 geraria iterações inúteis sem novos nós ou falharia se os custos fossem reais/contínuos. O novo limite é OBRIGATORIAMENTE o menor valor de f entre todos os nós que foram podados na iteração!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Perfeito! O novo limite é ajustado dinamicamente para o MENOR valor de f(n) que excedeu o corte na iteração anterior. Isso garante que a próxima iteração explore exatamente a fronteira mais promissora sem desperdiçar iterações.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="Na 1ª iteração, o corte é f(S) = g(S) + h(S) = 0 + 10 = 10.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Limite Inicial de Corte</h3>
+        <span class="exercise-tag recall">Active Recall Numérico</span>
+      </div>
+      <div class="question-text">
+        No grafo da Figura 1, o nó raiz S possui custo acumulado <code>g(S) = 0</code> e heurística <code>h(S) = 10</code>.<br><br>
+        <strong>Qual é o valor numérico exato do limite de corte da PRIMEIRA iteração do IDA*?</strong> (Digite apenas o número):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 10" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Limite</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4" data-hint="Na 1ª iteração foram podados A (f=12) e B (f=16). O menor entre eles é 12.">
+      <div class="exercise-header">
+        <h3>Exercício 4: Cálculo do Limite da 2ª Iteração</h3>
+        <span class="exercise-tag recall">Active Recall / Mesa</span>
+      </div>
+      <div class="question-text">
+        Na 1ª iteração (limite 10), os nós gerados foram A (com <code>f = 12</code>) e B (com <code>f = 16</code>), ambos podados.<br><br>
+        <strong>Qual será o limite de corte adotado para a 2ª iteração?</strong> (Digite apenas o número):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 12" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar 2º Limite</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Consumo de Memória Linear do IDA*</h3>
+        <span class="exercise-tag diagnostic">Complexidade Assintótica</span>
+      </div>
+      <div class="question-text">
+        Qual é a complexidade de espaço (memória RAM) do IDA* e por que ele é preferido ao A* em jogos como o 15-puzzle?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O(b^d) é o consumo exponencial do A* clássico que estoura a memória.">
+          A) Memória exponencial O(b^d), pois precisa armazenar todos os patamares passados.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! O IDA* opera com memória linear O(b × d), pois em cada iteração ele executa uma DFS com retrocesso, mantendo na memória apenas o ramo corrente e nós irmãos imediatos!">
+          B) Memória linear O(b &times; d). Ele descarta nós fora do caminho ativo e não mantém uma fila de prioridades global na RAM.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: memória constante O(1) pertence ao Hill Climbing.">
+          C) Memória estritamente constante O(1).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: complexidade quadrática não se aplica ao IDA*.">
+          D) Memória quadrática O(d^2).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 6 -->
+    <section class="card-exercise" id="ex6">
+      <div class="exercise-header">
+        <h3>Exercício 6: Número da Iteração de Sucesso</h3>
+        <span class="exercise-tag recall">Active Recall Numérico</span>
+      </div>
+      <div class="question-text">
+        No rastreamento da Figura 1, <strong>em qual iteração (1ª, 2ª ou 3ª) o objetivo G (f=14) é finalmente alcançado</strong> pelo IDA*?<br>
+        (Digite apenas o número):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 3" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Iteração</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 7 -->
+    <section class="card-exercise" id="ex7" data-hint="O caminho ótimo final foi S -> A -> C -> G.">
+      <div class="exercise-header">
+        <h3>Exercício 7: Sequência do Caminho Ótimo Retornado</h3>
+        <span class="exercise-tag recall">Síntese de Rota</span>
+      </div>
+      <div class="question-text">
+        Digite a sequência de nós da rota ótima retornada pelo IDA* no grafo da Figura 1 (separados por vírgula, traço ou espaço):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: S, A, C, G" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Rota</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO FINAL: PONTOS DE TROPEÇO DINÂMICOS -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações ou erros nas seguintes armadilhas conceituais do IDA*. Revise-as:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../lessons/0009-busca-a-estrela-astar.html">← Lição Anterior: 0009 — A*</a>
+      <a href="../index.html">Voltar ao Painel da Matéria</a>
+      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">📄 Ficha de Referência: Heurísticas</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Critério de corte por f(n)
+      initMultipleChoice("ex1", "Critério de corte do IDA* baseado em patamares de f(n)");
+
+      // Ex 2: Falácia de incremento do limite por +1
+      initTrueFalse("ex2", false, "Falácia: novo limite do IDA* NÃO é +1, é o menor f podado",
+        "Cuidado: o novo limite é o menor f podado, não +1!",
+        "Exato! O novo limite é dinamicamente o menor f que excedeu o corte.");
+
+      // Ex 3: Limite inicial da 1ª iteração
+      initInputExercise("ex3", ["10"], "Limite inicial do IDA* f(raiz) = 10", (raw, clean) => {
+        return clean === "10";
+      });
+
+      // Ex 4: Limite da 2ª iteração
+      initInputExercise("ex4", ["12"], "Segundo limite do IDA* = 12 (menor f podado)", (raw, clean) => {
+        return clean === "12";
+      });
+
+      // Ex 5: Memória linear O(b * d)
+      initMultipleChoice("ex5", "Memória linear O(b * d) do IDA*");
+
+      // Ex 6: Iteração de sucesso (3)
+      initInputExercise("ex6", ["3", "3ª", "3a"], "Meta alcançada na 3ª iteração (limite 14)", (raw, clean) => {
+        return clean.includes("3");
+      });
+
+      // Ex 7: Rota ótima S -> A -> C -> G
+      initInputExercise("ex7", ["sacg", "s,a,c,g", "s->a->c->g", "s-a-c-g", "s a c g"], "Rota ótima S -> A -> C -> G", (raw, clean) => {
+        const norm = clean.replace(/[^a-z]/g, "");
+        return norm === "sacg";
+      });
+    });
+  </script>
+</body>
+</html>

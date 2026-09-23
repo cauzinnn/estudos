@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0005: Aprofundamento Iterativo (IDS) — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">intelcomp • Buscas Não Informadas (Cegas) • Lição 0005</div>
+      <h1>Aprofundamento Iterativo (IDS — 4 Iterações)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        O melhor dos dois mundos: a otimalidade e completude da BFS aliada à economia de memória linear da DFS O(b &times; d).
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/0004-busca-profundidade-limite-6-dls.html">← Lição 0004: DLS</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+    </div>
+
+    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <section class="card-theory">
+      <h2>1. Teoria Enxuta: O Modelo Mental do IDS</h2>
+      <p>
+        A <strong>Busca em Profundidade com Aprofundamento Iterativo</strong> (<em>Iterative Deepening Search — IDS</em>) contorna simultaneamente o estouro de memória da BFS e a escolha incerta do limite do DLS:
+      </p>
+      <ol>
+        <li>Executa repetidamente a busca com limite (DLS), aumentando gradativamente o limite <code>L = 0, 1, 2, 3...</code> a cada ciclo.</li>
+        <li>Em cada iteração <code>L</code>, desce em profundidade com memória linear de DFS.</li>
+        <li>Se a iteração terminar em <em>Cutoff</em>, reinicia do zero com limite <code>L + 1</code> até encontrar a solução.</li>
+      </ol>
+
+      <div class="callout exam-tip">
+        <div class="callout-title">💡 A Grande Pegadinha de Exame: A 'Sobrecarga' de Regenerar Nós</div>
+        <p>
+          <em>"Recalcular os nós dos níveis superiores em toda nova iteração não é um desperdício absurdo de tempo?"</em><br><br>
+          <strong>NÃO!</strong> Em árvores com fator de ramificação <code>b &ge; 2</code>, a vasta maioria esmagadora dos nós está concentrada no <strong>nível mais profundo (folhas)</strong>.<br>
+          No IDS, as folhas do nível <code>d</code> são geradas apenas <strong>1 vez</strong>, o nível <code>d-1</code> é gerado 2 vezes, ..., e a raiz é gerada <code>d+1</code> vezes.<br>
+          Para <code>b = 10</code>, a sobrecarga de nós repetidos em relação à BFS é de <strong>apenas cerca de 11%</strong>, mas ganhamos em troca a substituição de gigabytes de RAM por meros kilobytes!
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Propriedades Formais de Prova</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Completude:</strong> Sim (se <em>b</em> for finito).</li>
+          <li><strong>Otimalidade:</strong> Sim, para passos de custo idêntico / unitário (encontra garantidamente a meta mais rasa <em>d</em>).</li>
+          <li><strong>Complexidade de Tempo:</strong> <code>O(b^d)</code> (assintoticamente idêntico à BFS).</li>
+          <li><strong>Complexidade de Espaço:</strong> <code>O(b &times; d)</code> — memória linear! É o método cego preferido na prática quando o espaço de busca é grande e a profundidade da solução é desconhecida.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: GRAFO DIDÁTICO E RASTREAMENTO DAS 4 ITERAÇÕES -->
+    <section class="card-theory">
+      <h2>2. Rastreamento Passo a Passo: 4 Iterações (L = 0, 1, 2, 3)</h2>
+      <p>
+        Considere o grafo didático abaixo. O objetivo <strong>G</strong> está na profundidade <code>d = 3</code>. Acompanhe a evolução das 4 iterações consecutivas:
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="220" viewBox="0 0 540 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-ids" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#6e7681"/>
+            </marker>
+          </defs>
+
+          <!-- Arestas -->
+          <line x1="60" y1="110" x2="180" y2="60" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ids)"/>
+          <line x1="60" y1="110" x2="180" y2="160" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ids)"/>
+
+          <line x1="180" y1="60" x2="310" y2="60" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ids)"/>
+          <line x1="180" y1="160" x2="310" y2="160" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ids)"/>
+
+          <line x1="310" y1="60" x2="450" y2="110" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ids)"/>
+
+          <!-- Linhas de níveis -->
+          <text x="60" y="25" font-family="sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">L=0</text>
+          <text x="180" y="25" font-family="sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">L=1</text>
+          <text x="310" y="25" font-family="sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">L=2</text>
+          <text x="450" y="25" font-family="sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">L=3</text>
+
+          <!-- Nós -->
+          <circle cx="60" cy="110" r="18" fill="#1b2a4a" stroke="#58a6ff" stroke-width="2"/>
+          <text x="60" y="115" font-family="monospace" font-weight="bold" font-size="13" fill="#c9d1d9" text-anchor="middle">S</text>
+
+          <circle cx="180" cy="60" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="180" y="65" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">A</text>
+
+          <circle cx="180" cy="160" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="180" y="165" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">B</text>
+
+          <circle cx="310" cy="60" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="310" y="65" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">C</text>
+
+          <circle cx="310" cy="160" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="310" y="165" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">D</text>
+
+          <circle cx="450" cy="110" r="20" fill="#1a2e22" stroke="#3fb950" stroke-width="2"/>
+          <circle cx="450" cy="110" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="450" y="115" font-family="monospace" font-weight="bold" font-size="14" fill="#3fb950" text-anchor="middle">G</text>
+        </svg>
+        <div class="graph-caption">
+          Figura 1: A meta G está no nível d = 3. O IDS atinge G na 4ª iteração (quando L = 3).
+        </div>
+      </div>
+
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Iteração</th>
+              <th>Limite (L)</th>
+              <th>Nós Gerados e Visitados</th>
+              <th>Resultado da Iteração</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1ª Iteração</strong></td>
+              <td><code>L = 0</code></td>
+              <td><code>S</code></td>
+              <td>S não é meta &rarr; <strong>Cutoff</strong> (nós podados no nível 0)</td>
+            </tr>
+            <tr>
+              <td><strong>2ª Iteração</strong></td>
+              <td><code>L = 1</code></td>
+              <td><code>S &rarr; A, B</code></td>
+              <td>Nenhum é meta &rarr; <strong>Cutoff</strong> (podados no nível 1)</td>
+            </tr>
+            <tr>
+              <td><strong>3ª Iteração</strong></td>
+              <td><code>L = 2</code></td>
+              <td><code>S &rarr; A &rarr; C; S &rarr; B &rarr; D</code></td>
+              <td>Nenhum é meta &rarr; <strong>Cutoff</strong> (podados no nível 2)</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>4ª Iteração</strong></td>
+              <td><code>L = 3</code></td>
+              <td><code>S &rarr; A &rarr; C &rarr; G</code></td>
+              <td><strong>G é encontrado no nível 3! Retorno: Solução Ótima</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0;">
+        Caminho ótimo retornado: <code>S &rarr; A &rarr; C &rarr; G</code> (comprimento: 3 passos).
+      </p>
+    </section>
+
+    <!-- EXERCÍCIOS PRÁTICOS (7 DESAFIOS DIAGNÓSTICOS) -->
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: A Grande Vantagem Híbrida do IDS</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico Conceitual</span>
+      </div>
+      <div class="question-text">
+        Por que o IDS é frequentemente considerado o melhor algoritmo de busca cega quando o espaço de estados é muito grande e os custos das ações são idênticos?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o IDS não é informado; ele não calcula funções heurísticas h(n).">
+          A) Porque ele calcula heuristicamente a distância em linha reta até a meta em tempo O(1).
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Ele garante otimalidade e completude exatamente como a BFS, mas consumindo apenas memória linear O(b × d) como a DFS, contornando o estouro de memória RAM.">
+          B) Porque ele combina a completude e otimalidade da BFS com o consumo de memória estritamente linear da DFS: O(b × d).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a complexidade de tempo do IDS é exponencial O(b^d), e não linear ou constante.">
+          C) Porque ele encontra a solução em tempo O(d), descartando todas as ramificações erradas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o IDS só é ótimo se os custos de transição forem unitários; para custos arbitrários, o algoritmo indicado é o UCS.">
+          D) Porque ele garante solução de menor custo mesmo que os pesos das arestas sejam negativos.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Identificação de Falácia — Sobrecarga de Tempo</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Analise a crítica de um desenvolvedor:<br>
+        <em>"O IDS é um algoritmo ineficiente na prática porque ele gera a raiz e os nós do topo dezenas de vezes a cada iteração, tornando o seu tempo assintótico ordens de grandeza pior do que a BFS tradicional."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com a ilusão matemática! Quase todos os nós de uma árvore estão na base (nível folha). Os nós do topo são poucos. Para b=10, a sobrecarga de regeneração é de apenas cerca de 11%, mantendo a mesma classe O(b^d)!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Perfeito! Como a quantidade de nós cresce exponencialmente com a profundidade, os nós do topo representam uma fração minúscula do total. O nível folha (que contém a imensa maioria dos nós) é gerado apenas 1 vez, mantendo a classe assintótica O(b^d).">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="No grafo da Figura 1, o objetivo mais raso está em d = 3. O IDS começa em L=0. Em qual iteração L ele alcança d = 3?">
+      <div class="exercise-header">
+        <h3>Exercício 3: Número da Iteração da Descoberta</h3>
+        <span class="exercise-tag recall">Active Recall Numérico</span>
+      </div>
+      <div class="question-text">
+        No problema da Figura 1, onde a meta está situada na profundidade <code>d = 3</code>, o IDS inicia em <code>L = 0</code> (1ª iteração).<br><br>
+        <strong>Em qual número de iteração (1ª, 2ª, 3ª, etc.) a meta G será encontrada?</strong> (Digite apenas o número):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 4" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Iteração</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4" data-hint="A raiz (d=0) é gerada em TODAS as iterações: L=0, L=1, L=2 e L=3.">
+      <div class="exercise-header">
+        <h3>Exercício 4: Frequência de Geração da Raiz</h3>
+        <span class="exercise-tag recall">Cálculo de Mesa</span>
+      </div>
+      <div class="question-text">
+        Se o IDS executa as iterações com <code>L = 0, 1, 2, 3</code> até encontrar a meta na profundidade 3, <strong>quantas vezes o nó raiz S foi gerado ao todo</strong> ao longo de todo o processo?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite apenas o número" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Contagem</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Consumo de Memória Linear</h3>
+        <span class="exercise-tag diagnostic">Complexidade Assintótica</span>
+      </div>
+      <div class="question-text">
+        Se um problema possui fator de ramificação <code>b = 10</code> e a solução mais rasa está na profundidade <code>d = 5</code>, qual é a ordem de grandeza do consumo de memória do IDS no momento em que a meta é encontrada?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: 10^5 = 100.000 é a memória da BFS (todas as folhas retidas). O IDS nunca guarda toda a fronteira na memória!">
+          A) Cerca de 100.000 nós (consumo exponencial O(b^d)).
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como o IDS é uma DFS a cada iteração, ele mantém apenas o caminho ativo e irmãos: O(b × d) = 10 × 5 = 50 nós na memória RAM!">
+          B) Cerca de 10 &times; 5 = 50 nós (consumo linear O(b &times; d)).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o IDS armazena os nós do ramo ativo mais os irmãos na pilha, não sendo O(1).">
+          C) Exatamente 1 nó (consumo constante O(1)).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: complexidade quadrática b^2 não reflete a memória do IDS.">
+          D) Cerca de 10^2 = 100 nós (consumo quadrático O(b^2)).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 6 -->
+    <section class="card-exercise" id="ex6">
+      <div class="exercise-header">
+        <h3>Exercício 6: Critério de Término em Falha no IDS</h3>
+        <span class="exercise-tag diagnostic">Lógica de Controle</span>
+      </div>
+      <div class="question-text">
+        Como o laço principal do IDS sabe que o espaço de estados finito não possui nenhuma meta e pode parar com <strong>Falha Definitiva</strong> em vez de continuar incrementando <code>L</code> eternamente?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! Se a chamada DLS(L) percorrer todos os ramos e retornar 'Falha' (sem que nenhum nó tenha sofrido Cutoff), significa que a árvore inteira foi explorada e não há nós mais profundos a investigar. O IDS para imediatamente com falha!">
+          A) Quando uma iteração DLS termina retornando Falha Definitiva sem que nenhum corte (Cutoff) tenha ocorrido.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o Cutoff sinaliza que existem nós além de L, logo o IDS continuará incrementando L!">
+          B) Quando uma iteração retorna Cutoff mais de 5 vezes seguidas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o IDS não impõe um teto arbitrário como 100; ele é guiado pelo retorno de cutoff.">
+          C) Quando o limite L atinge o valor pré-determinado de 100 iterações.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o IDS é cego e não utiliza distâncias euclidianas.">
+          D) Quando a distância estimada até a raiz torna-se negativa.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 7 -->
+    <section class="card-exercise" id="ex7" data-hint="Lembre-se da tabela: na 2ª iteração (L=1), visitamos S e depois seus sucessores imediatos A e B.">
+      <div class="exercise-header">
+        <h3>Exercício 7: Rastreamento dos Nós na 2ª Iteração (L = 1)</h3>
+        <span class="exercise-tag recall">Active Recall / Mesa</span>
+      </div>
+      <div class="question-text">
+        No rastreamento da Figura 1, <strong>quais são os nós expandidos/visitados durante a 2ª iteração (quando o limite é L = 1)</strong>?<br>
+        Digite os nós separados por vírgula ou espaço:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: S, A, B" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Nós</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO FINAL: PONTOS DE TROPEÇO DINÂMICOS -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações ou erros nas seguintes armadilhas conceituais do IDS. Revise-as:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../lessons/0004-busca-profundidade-limite-6-dls.html">← Lição Anterior: 0004 — DLS</a>
+      <a href="../index.html">Voltar ao Painel da Matéria</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
+      <a href="0006-busca-custo-uniforme-ucs.html">Próxima Lição: 0006 — UCS &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Combinação ótima BFS + DFS
+      initMultipleChoice("ex1", "IDS: Otimalidade da BFS com Espaço da DFS O(b * d)");
+
+      // Ex 2: Falácia da sobrecarga de regeneração
+      initTrueFalse("ex2", false, "Mito da ineficiência temporal do IDS por regeneração",
+        "Cuidado: a maioria dos nós está na base, a sobrecarga é de apenas ~11%!",
+        "Exato! O nível folha é gerado apenas 1 vez, mantendo a classe O(b^d).");
+
+      // Ex 3: Número da iteração onde atinge a meta
+      initInputExercise("ex3", ["4", "4ª", "4a"], "Identificação da iteração de sucesso (L=3)", (raw, clean) => {
+        return clean.includes("4");
+      });
+
+      // Ex 4: Contagem de gerações da raiz (d+1 vezes)
+      initInputExercise("ex4", ["4"], "Raiz gerada d+1 = 4 vezes no IDS", (raw, clean) => {
+        return clean === "4";
+      });
+
+      // Ex 5: Consumo de memória linear O(b * d)
+      initMultipleChoice("ex5", "Consumo de memória linear O(b * d) no IDS");
+
+      // Ex 6: Critério de término em falha
+      initMultipleChoice("ex6", "Critério de término do IDS (DLS retorna Falha sem Cutoff)");
+
+      // Ex 7: Nós na iteração L=1
+      initInputExercise("ex7", ["sab", "s,a,b", "s a b", "[s,a,b]"], "Rastreamento dos nós na iteração L=1", (raw, clean) => {
+        const norm = clean.replace(/[^a-z]/g, "");
+        return norm === "sab" || norm === "sba";
+      });
+    });
+  </script>
+</body>
+</html>

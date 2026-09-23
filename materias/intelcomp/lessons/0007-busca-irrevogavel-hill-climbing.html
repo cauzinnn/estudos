@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0007: Busca Irrevogável (Hill Climbing) — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">intelcomp • Buscas Informadas (Heurísticas) • Lição 0007</div>
+      <h1>Busca Irrevogável (Hill Climbing / Subida de Encosta)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Busca local míope em espaço de estados, memória constante O(1), ausência de retrocesso e os três vilões clássicos: máximos locais, platôs e cumes.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/0006-busca-custo-uniforme-ucs.html">← Lição 0006: UCS</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+    </div>
+
+    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <section class="card-theory">
+      <h2>1. Teoria Enxuta: O Modelo Mental do Hill Climbing</h2>
+      <p>
+        A <strong>Busca Irrevogável</strong> (popularmente conhecida como <em>Hill Climbing</em> ou <em>Subida de Encosta</em>) opera como alguém tentando escalar uma montanha em meio a uma neblina densa:
+      </p>
+      <ol>
+        <li>Olha apenas para os <strong>vizinhos imediatos</strong> do estado atual.</li>
+        <li>Move-se para o vizinho que apresenta a melhoria mais íngreme na função de avaliação <code>h(n)</code>.</li>
+        <li>Se nenhum vizinho for melhor que o estado atual, a busca <strong>termina imediatamente</strong> (declarando haver atingido o cume).</li>
+      </ol>
+      <p>
+        Ela é dita <strong>irrevogável</strong> porque <u>nunca mantém histórico de alternativas nem faz retrocesso (backtracking)</u>: um passo dado jamais pode ser desfeito.
+      </p>
+
+      <div class="callout pitfall">
+        <div class="callout-title">⚠️ Os Três Algozes Clássicos de Prova</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>1. Máximo Local:</strong> Um pico que é superior a todos os seus vizinhos adjacentes, mas inferior ao <em>Máximo Global</em>. O algoritmo empaca nele achando que encontrou a melhor solução possível.</li>
+          <li><strong>2. Platô (Planalto):</strong> Uma região plana onde todos os vizinhos possuem o mesmo valor de avaliação. O algoritmo fica sem gradiente direcional e vagueia às cegas.</li>
+          <li><strong>3. Cume / Crista (Ridge):</strong> Uma sequência de máximos locais inclinada de difícil escalada porque os movimentos permitidos são ortogonais aos eixos, fazendo a busca oscilar lateralmente sem subir.</li>
+        </ul>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Propriedades Formais de Prova</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Consumo de Memória: <code>O(1)</code> (Constante!)</strong><br>
+            Armazena na memória apenas o estado atual e seu valor de avaliação. Não há fila, pilha ou árvore de busca.</li>
+          <li><strong>Completude:</strong> <u>Não</u>. Fica presa frequentemente em máximos locais.</li>
+          <li><strong>Otimalidade:</strong> <u>Não</u>. A solução final depende inteiramente do ponto de partida.</li>
+          <li><strong>Técnica de Mitigação:</strong> <em>Random-Restart Hill Climbing</em> (reinicializações aleatórias a partir de múltiplos pontos iniciais).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: TOPOGRAFIA DIDÁTICA DO RELEVO -->
+    <section class="card-theory">
+      <h2>2. Perfil Topográfico de Relevo (Função de Avaliação)</h2>
+      <p>
+        Considere a paisagem de avaliação abaixo. Partindo do estado <strong>S</strong> (valor 3), o algoritmo sobe avidamente até o nó <strong>B</strong> (valor 8). Observe por que ele é incapaz de alcançar o Máximo Global <strong>G</strong> (valor 15):
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="220" viewBox="0 0 540 220" xmlns="http://www.w3.org/2000/svg">
+          <!-- Curva de relevo -->
+          <path d="M 40 180 Q 90 150 140 140 Q 180 80 220 80 Q 250 80 280 160 Q 340 170 390 120 Q 440 30 490 30" 
+                fill="none" stroke="#2d3340" stroke-width="3"/>
+
+          <!-- Ponto de início S -->
+          <circle cx="70" cy="165" r="14" fill="#1b2a4a" stroke="#58a6ff" stroke-width="2"/>
+          <text x="70" y="170" font-family="monospace" font-weight="bold" font-size="11" fill="#c9d1d9" text-anchor="middle">S</text>
+          <text x="70" y="195" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">h = 3</text>
+
+          <!-- Ponto intermediário A -->
+          <circle cx="140" cy="140" r="14" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="140" y="145" font-family="monospace" font-size="11" fill="#c9d1d9" text-anchor="middle">A</text>
+          <text x="140" y="125" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">h = 6</text>
+
+          <!-- Máximo Local B -->
+          <circle cx="220" cy="80" r="16" fill="#241a20" stroke="#f85149" stroke-width="2"/>
+          <text x="220" y="85" font-family="monospace" font-weight="bold" font-size="12" fill="#f85149" text-anchor="middle">B</text>
+          <text x="220" y="55" font-family="sans-serif" font-weight="bold" font-size="11" fill="#f85149" text-anchor="middle">Máximo Local (h = 8)</text>
+          <text x="220" y="40" font-family="sans-serif" font-size="10" fill="#f85149" text-anchor="middle">PARADA PRECOCE!</text>
+
+          <!-- Vale C -->
+          <circle cx="290" cy="165" r="14" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="290" y="170" font-family="monospace" font-size="11" fill="#c9d1d9" text-anchor="middle">C</text>
+          <text x="290" y="195" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">h = 2 (Vale)</text>
+
+          <!-- Máximo Global G -->
+          <circle cx="490" cy="30" r="18" fill="#1a2e22" stroke="#3fb950" stroke-width="2"/>
+          <circle cx="490" cy="30" r="22" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="490" y="35" font-family="monospace" font-weight="bold" font-size="13" fill="#3fb950" text-anchor="middle">G</text>
+          <text x="490" y="65" font-family="sans-serif" font-weight="bold" font-size="11" fill="#3fb950" text-anchor="middle">Máximo Global (h = 15)</text>
+        </svg>
+        <div class="graph-caption">
+          Figura 1: Topografia de relevo. Em B (h=8), todos os vizinhos são menores (A=6 e C=2). O Hill Climbing para em B e jamais alcança G (h=15).
+        </div>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIOS PRÁTICOS (7 DESAFIOS DIAGNÓSTICOS) -->
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: O Significado de 'Irrevogável'</h3>
+        <span class="exercise-tag diagnostic">Mecânica de Busca</span>
+      </div>
+      <div class="question-text">
+        Por que o algoritmo Hill Climbing clássico é classificado na literatura como um método de <strong>Busca Irrevogável</strong>?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: quem mantém caminhos na pilha é a DFS / Backtracking. O Hill Climbing não tem pilha.">
+          A) Porque ele armazena uma pilha de nós que não pode ser modificada por outros threads.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Ele opera sem memória de estados passados e sem mecanismo de backtracking. Uma vez selecionado o próximo vizinho, as ramificações alternativas anteriores são irrevogavelmente descartadas.">
+          B) Porque ele não mantém histórico de nós passados nem árvore de busca, sendo incapaz de retroceder (fazer backtracking) se a escolha de vizinho levar a um beco sem saída.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o Hill Climbing é subótimo e frequentemente empaca em soluções inferiores.">
+          C) Porque ele encontra uma solução garantidamente perfeita que não pode ser revogada por nenhum outro algoritmo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o teste de meta no Hill Climbing pode ser avaliado a qualquer momento e não tem relação com custos acumulados de aresta.">
+          D) Porque o teste de meta é executado exclusivamente na raiz.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Identificação de Falácia — Otimalidade Global</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Considere a afirmação:<br>
+        <em>"Como o Hill Climbing sempre escolhe o vizinho de maior valor heurístico em cada passo, ele garante encontrar o Máximo Global se o espaço de estados for finito."</em><br><br>
+        Esta afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com a ilusão da ganância local! Escolher o melhor vizinho imediato é uma decisão 'míope'. Se houver um máximo local no caminho, o algoritmo empaca nele e não alcança o pico mais alto (veja a Figura 1).">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Perfeito! O Hill Climbing é uma busca míope e gulosa. Ele fica preso no primeiro máximo local que encontrar, pois para descer e atravessar um vale rumo ao pico mais alto ele precisaria aceitar vizinhos piores, o que sua regra proíbe estritamente.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="Lembre-se: o Hill Climbing não guarda árvore, pilha ou fronteira. Ele armazena estritamente o estado corrente!">
+      <div class="exercise-header">
+        <h3>Exercício 3: Consumo de Memória RAM</h3>
+        <span class="exercise-tag recall">Active Recall / Complexidade</span>
+      </div>
+      <div class="question-text">
+        Qual é a complexidade assintótica de espaço (memória) da Busca Hill Climbing simples?<br>
+        Digite a notação Big-O correspondente (Ex: <code>O(1)</code>, <code>O(b)</code>, <code>O(m)</code> ou <code>O(b^d)</code>):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: O(1)" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Complexidade</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: O Problema do Platô</h3>
+        <span class="exercise-tag diagnostic">Topologia de Espaço</span>
+      </div>
+      <div class="question-text">
+        O que caracteriza um <strong>Platô (ou Planalto)</strong> no espaço de estados e por que ele paralisa o Hill Climbing clássico?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: isso descreve um Máximo Global.">
+          A) Uma região onde todos os nós possuem heurística igual ao objetivo final.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! Em um platô, todos os vizinhos possuem o mesmo valor do nó atual. O gradiente é zero e o algoritmo não tem indicação heurística de qual direção seguir para continuar subindo.">
+          B) Uma área plana contínua onde o estado atual e todos os seus vizinhos possuem exatamente o mesmo valor heurístico, anulando o gradiente de subida.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: custos negativos pertencem a grafos ponderados de busca em rotas (como UCS/Bellman-Ford), não à topologia do Hill Climbing.">
+          C) Uma região onde as arestas possuem custos negativos infinitos.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: oscilação entre eixos descreve uma Crista (Ridge), não um Platô.">
+          D) Uma crista estreita que força o algoritmo a oscilar lateralmente em ziguezague.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5" data-hint="Na Figura 1, o algoritmo sobe de S (h=3) para A (h=6) e depois para B (h=8). Em B, seus vizinhos são menores. Ele para em...">
+      <div class="exercise-header">
+        <h3>Exercício 5: Rastreamento do Ponto de Parada</h3>
+        <span class="exercise-tag recall">Active Recall de Rastreamento</span>
+      </div>
+      <div class="question-text">
+        No relevo da <strong>Figura 1</strong>, partindo do estado inicial <strong>S</strong>, em qual nó o Hill Climbing encerrará sua execução?<br>
+        (Digite apenas a letra do nó):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: B" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Ponto</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 6 -->
+    <section class="card-exercise" id="ex6">
+      <div class="exercise-header">
+        <h3>Exercício 6: Mitigação por Reinício Aleatório</h3>
+        <span class="exercise-tag diagnostic">Estratégias Avançadas</span>
+      </div>
+      <div class="question-text">
+        Como a técnica de <strong>Random-Restart Hill Climbing</strong> (Subida de Encosta com Reinício Aleatório) consegue contornar a armadilha dos máximos locais?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Ao iniciar repetidamente a partir de estados aleatórios distribuídos pela paisagem, a probabilidade de pelo menos um dos pontos cair na bacia de atração do Máximo Global aproxima-se de 100% conforme o número de reinícios aumenta.">
+          A) Executa múltiplas buscas independentes a partir de estados iniciais gerados aleatoriamente, retendo o melhor resultado entre todas as corridas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o Hill Climbing clássico com reinício aleatório não calcula resfriamento térmico (isso é Simulated Annealing).">
+          B) Reduz dinamicamente a temperatura do sistema simulando o recozimento do aço.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: converter em BFS consumiria memória exponencial O(b^d), destruindo o benefício da busca local.">
+          C) Alterna automaticamente para a BFS assim que detecta um platô.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: alterar os pesos das arestas violaria a definição do problema original.">
+          D) Inverte os sinais de todas as funções heurísticas para transformar o relevo.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 7 -->
+    <section class="card-exercise" id="ex7" data-hint="O nó B é um pico local: melhor que seus vizinhos, mas inferior ao pico supremo G. Esse obstáculo chama-se...">
+      <div class="exercise-header">
+        <h3>Exercício 7: Identificação do Obstáculo Topográfico</h3>
+        <span class="exercise-tag recall">Classificação de Falha</span>
+      </div>
+      <div class="question-text">
+        Na Figura 1, como se chama formalmente o tipo de obstáculo topográfico representado pelo nó <strong>B</strong> que impediu o algoritmo de atingir a meta G?<br>
+        (Digite o termo formal em português):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: Maximo Local" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Obstáculo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO FINAL: PONTOS DE TROPEÇO DINÂMICOS -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações ou erros nas seguintes armadilhas conceituais do Hill Climbing. Revise-as:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../lessons/0006-busca-custo-uniforme-ucs.html">← Lição Anterior: 0006 — UCS</a>
+      <a href="../index.html">Voltar ao Painel da Matéria</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
+      <a href="0008-busca-gulosa-greedy.html">Próxima Lição: 0008 — Busca Gulosa &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Significado de busca irrevogável
+      initMultipleChoice("ex1", "Hill Climbing: Busca Irrevogável sem memória nem backtracking");
+
+      // Ex 2: Falácia de otimalidade global
+      initTrueFalse("ex2", false, "Falácia da garantia de ótimo global no Hill Climbing",
+        "Cuidado: Hill Climbing fica preso em máximos locais!",
+        "Exato! É míope e para no primeiro pico local.");
+
+      // Ex 3: Memória O(1)
+      initInputExercise("ex3", ["o(1)", "1", "constante"], "Memória constante O(1) do Hill Climbing", (raw, clean) => {
+        return clean.includes("o1") || clean === "1" || clean.includes("constante");
+      });
+
+      // Ex 4: Problema do Platô
+      initMultipleChoice("ex4", "Platô: Região plana com gradiente zero");
+
+      // Ex 5: Ponto de parada em B
+      initInputExercise("ex5", ["b"], "Parada no máximo local B", (raw, clean) => {
+        return clean === "b";
+      });
+
+      // Ex 6: Random-Restart
+      initMultipleChoice("ex6", "Random-Restart Hill Climbing para escapar de máximos locais");
+
+      // Ex 7: Termo Máximo Local
+      initInputExercise("ex7", ["maximo local", "pico local", "máximo local"], "Conceito de Máximo Local", (raw, clean) => {
+        return clean.includes("maximo") || clean.includes("pico");
+      });
+    });
+  </script>
+</body>
+</html>

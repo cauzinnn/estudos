@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0006: Busca de Custo Uniforme (UCS) — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">intelcomp • Buscas Não Informadas (Cegas) • Lição 0006</div>
+      <h1>Busca de Custo Uniforme (UCS / Dijkstra)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Fila de prioridades por custo acumulado g(n), garantia de otimalidade com pesos arbitrários e a regra inegociável do teste de meta na retirada.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/0005-aprofundamento-iterativo-4-iteracoes-ids.html">← Lição 0005: IDS</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+    </div>
+
+    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <section class="card-theory">
+      <h2>1. Teoria Enxuta: O Modelo Mental da UCS</h2>
+      <p>
+        A <strong>Busca de Custo Uniforme</strong> (<em>Uniform-Cost Search — UCS</em>), equivalente ao Algoritmo de Dijkstra para IA, generaliza a BFS para grafos com <strong>custos de transição arbitrários e desiguais</strong>:
+      </p>
+      <ol>
+        <li>Em vez de expandir o nó com menor profundidade (arestas), expande sempre o nó com o <strong>menor custo acumulado <code>g(n)</code></strong> a partir da raiz.</li>
+        <li>Sua fronteira é obrigatoriamente uma <strong>Fila de Prioridades</strong> ordenada de forma crescente por <code>g(n)</code>.</li>
+      </ol>
+
+      <div class="callout pitfall">
+        <div class="callout-title">⚠️ A Regra Inegociável da UCS: Teste de Meta na RETIRADA</div>
+        <p style="margin-bottom: 0;">
+          Diferente da BFS (que pode testar a meta no momento da geração), <strong>a UCS é terminantemente proibida de testar a meta na geração</strong>!<br><br>
+          <em>Motivo:</em> O primeiro caminho gerado que atinge a meta pode ser uma rota direta cara (ex: custo 100). Um caminho muito mais barato (ex: custo 5) pode ainda estar esperando na fila para ser expandido em etapas menores.<br>
+          Somente quando um nó objetivo atinge o início da fila de prioridade e é <strong>desenfileirado para expansão</strong>, temos a prova matemática irrefutável de que nenhum outro caminho na fila custa menos que ele!
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Propriedades Formais de Prova</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Completude:</strong> Sim, desde que todo passo tenha custo estritamente positivo (<code>c &ge; &epsilon; &gt; 0</code>). Sem isso, o algoritmo pode entrar em loops infinitos somando infinitas arestas de custo zero.</li>
+          <li><strong>Otimalidade:</strong> <strong>SIM!</strong> Garante encontrar a rota de custo mínimo <code>C*</code> para quaisquer custos não negativos.</li>
+          <li><strong>Complexidades de Tempo e Espaço:</strong> <code>O(b^(1 + &lfloor;C* / &epsilon;&rfloor;))</code>, onde <code>C*</code> é o custo ótimo e <code>&epsilon;</code> é o menor custo de aresta.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: GRAFO DIDÁTICO E RASTREAMENTO COM CUSTOS -->
+    <section class="card-theory">
+      <h2>2. Grafo de Rastreamento (Inicial: S | Meta: G)</h2>
+      <p>
+        Observe o grafo ponderado abaixo. Existe uma aresta direta <code>S &rarr; G</code> de custo alto (10), e um caminho indireto <code>S &rarr; A &rarr; B &rarr; G</code> com custos baixos (1 + 2 + 2 = 5):
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="220" viewBox="0 0 540 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-ucs" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#6e7681"/>
+            </marker>
+          </defs>
+
+          <!-- Aresta direta cara S -> G (custo 10) -->
+          <path d="M 75 95 Q 260 20 445 95" fill="none" stroke="#f85149" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-ucs)"/>
+          <text x="260" y="45" font-family="sans-serif" font-weight="bold" font-size="12" fill="#f85149" text-anchor="middle">custo = 10 (Rota Direta Cara)</text>
+
+          <!-- Caminho de menor custo S -> A -> B -> G -->
+          <line x1="60" y1="110" x2="180" y2="150" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ucs)"/>
+          <text x="110" y="145" font-family="sans-serif" font-size="11" fill="#79c0ff">c=1</text>
+
+          <line x1="180" y1="150" x2="320" y2="150" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ucs)"/>
+          <text x="250" y="142" font-family="sans-serif" font-size="11" fill="#79c0ff">c=2</text>
+
+          <line x1="320" y1="150" x2="450" y2="110" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-ucs)"/>
+          <text x="395" y="145" font-family="sans-serif" font-size="11" fill="#79c0ff">c=2</text>
+
+          <!-- Nós -->
+          <circle cx="60" cy="110" r="18" fill="#1b2a4a" stroke="#58a6ff" stroke-width="2"/>
+          <text x="60" y="115" font-family="monospace" font-weight="bold" font-size="13" fill="#c9d1d9" text-anchor="middle">S</text>
+
+          <circle cx="180" cy="150" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="180" y="155" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">A</text>
+
+          <circle cx="320" cy="150" r="18" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="320" y="155" font-family="monospace" font-size="13" fill="#c9d1d9" text-anchor="middle">B</text>
+
+          <circle cx="450" cy="110" r="20" fill="#1a2e22" stroke="#3fb950" stroke-width="2"/>
+          <circle cx="450" cy="110" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="450" y="115" font-family="monospace" font-weight="bold" font-size="14" fill="#3fb950" text-anchor="middle">G</text>
+        </svg>
+        <div class="graph-caption">
+          Figura 1: A BFS escolheria o caminho de 1 passo S &rarr; G (custo 10). A UCS escolhe S &rarr; A &rarr; B &rarr; G (custo 5).
+        </div>
+      </div>
+
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Passo</th>
+              <th>Nó Desenfileirado (Menor g)</th>
+              <th>Filhos Gerados (com g calculado)</th>
+              <th>Fila de Prioridades [Nó: g]</th>
+              <th>Anotação de Mesa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>0</strong></td>
+              <td>—</td>
+              <td>—</td>
+              <td><code>[S: 0]</code></td>
+              <td>Inicialização com custo g(S) = 0.</td>
+            </tr>
+            <tr>
+              <td><strong>1</strong></td>
+              <td><code>S (g=0)</code></td>
+              <td>A (g=1), G (g=10)</td>
+              <td><code>[A: 1, G: 10]</code></td>
+              <td>G foi gerado com g=10, mas NÃO testamos meta agora!</td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td><code>A (g=1)</code></td>
+              <td>B (g=1+2=3)</td>
+              <td><code>[B: 3, G: 10]</code></td>
+              <td>B entra na frente de G porque seu custo 3 &lt; 10!</td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td><code>B (g=3)</code></td>
+              <td>G (g=3+2=5)</td>
+              <td><code>[G: 5, G: 10]</code></td>
+              <td>Um novo caminho até G com g=5 substitui/supera o de g=10!</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>4</strong></td>
+              <td><code>G (g=5)</code></td>
+              <td>—</td>
+              <td><code>[G: 10]</code></td>
+              <td><strong>G é retirado da frente da fila! Teste de meta positivo &rarr; Solução Ótima (Custo 5)!</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIOS PRÁTICOS (7 DESAFIOS DIAGNÓSTICOS) -->
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Momento Sagrado do Teste de Meta</h3>
+        <span class="exercise-tag diagnostic">Mecânica de Algoritmos</span>
+      </div>
+      <div class="question-text">
+        O que aconteceria no grafo da Figura 1 se aplicássemos o teste de meta no momento em que um nó é <strong>gerado</strong> em vez de quando é <strong>retirado</strong> da fila de prioridade?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o primeiro caminho gerado foi S -> G direto, de custo 10.">
+          A) O algoritmo encontraria o caminho ótimo S &rarr; A &rarr; B &rarr; G com custo 5 mais rápido.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! No Passo 1, S gera G com custo 10. Se testássemos na geração, a busca pararia imediatamente e retornaria a rota de custo 10, perdendo a rota ótima de custo 5 que ainda estava esperando na fila!">
+          B) A otimalidade seria destruída: a busca pararia no Passo 1 com a rota direta S &rarr; G de custo 10, ignorando a rota mais barata de custo 5.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: testar na geração não causa loop infinito; causa retorno de solução subótima precoce.">
+          C) O algoritmo entraria em loop infinito entre os nós S e A.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: a memória não é reduzida para O(1) pelo teste de meta.">
+          D) A complexidade de espaço cairia imediatamente para O(1).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Identificação de Falácia — BFS vs UCS</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Analise a afirmação:<br>
+        <em>"Como a BFS sempre encontra o caminho com o menor número de arestas, se todas as arestas tiverem custos idênticos a 1, a BFS e a UCS percorrem e expandem exatamente os mesmos nós na mesma ordem."</em><br><br>
+        Esta afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Perfeito! Quando todos os custos de arestas são iguais (c = 1), o custo g(n) é estritamente proporcional à profundidade d. A fila de prioridades por g(n) comporta-se de forma equivalente a uma fila FIFO por níveis.">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Cuidado: quando os custos são todos unitários, g(n) é simplesmente a profundidade do nó! Nesse caso especial, a UCS se degenera exatamente na BFS.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="Lembre-se do rastreamento: S gera A (g=1) e G (g=10). B é gerado por A com g=3.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Rastreamento do Menor Custo Acumulado</h3>
+        <span class="exercise-tag recall">Active Recall Numérico</span>
+      </div>
+      <div class="question-text">
+        No grafo da Figura 1, <strong>qual é o custo acumulado g(n) da rota ótima</strong> retornada pela UCS ao finalizar a busca? (Digite apenas o número):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 5" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Custo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: A Exigência de Custos Estritamente Positivos</h3>
+        <span class="exercise-tag diagnostic">Completude</span>
+      </div>
+      <div class="question-text">
+        Por que a teoria formal exige que cada aresta tenha um custo mínimo <code>c &ge; &epsilon; &gt; 0</code> para garantir que a UCS seja completa?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: heurísticas não são utilizadas na UCS (busca cega).">
+          A) Para impedir que a função heurística se torne inadmissível.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! Se existirem arestas de custo zero (ou infinitos passos de custo decrescente que convergem a um valor finito sem alcançar a meta), a UCS pode continuar explorando infinitamente essa sequência sem avançar em direção ao objetivo.">
+          B) Para evitar que a busca fique presa explorando uma sequência infinita de passos de custo nulo ou quase nulo sem jamais atingir a meta.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a fila de prioridades aceita custo zero tecnicamente, mas a completude é comprometida no grafo.">
+          C) Porque a estrutura de dados Heap estoura matematicamente se inserirmos o número 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o desempate alfabético independe de custos serem maiores que zero.">
+          D) Para garantir o desempate alfabético entre irmãos.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5" data-hint="No Passo 2, retiramos A (g=1). A gera B com custo g = 1 + 2 = 3. Quem fica na frente da fila? [B: 3, G: 10]!">
+      <div class="exercise-header">
+        <h3>Exercício 5: Rastreamento da Fila de Prioridades</h3>
+        <span class="exercise-tag recall">Active Recall / Mesa</span>
+      </div>
+      <div class="question-text">
+        No <strong>Passo 2</strong> da tabela, após expandir A, a fila contém os nós B (g=3) e G (g=10).<br><br>
+        <strong>Qual é o próximo nó retirado da fila para expansão no Passo 3?</strong> (Digite apenas a letra do nó):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: B" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Nó</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 6 -->
+    <section class="card-exercise" id="ex6">
+      <div class="exercise-header">
+        <h3>Exercício 6: Custos Negativos na UCS</h3>
+        <span class="exercise-tag diagnostic">Casos Limítrofes</span>
+      </div>
+      <div class="question-text">
+        Se um grafo contiver arestas com <strong>custos negativos</strong>, a UCS padrão continuará garantindo a solução ótima?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado! Com custos negativos, um nó já retirado com custo g pode ser barateado posteriormente por uma aresta negativa, violando a invariante fundamental de Dijkstra. Para custos negativos, são necessários algoritmos como Bellman-Ford!">
+          Sim, é garantido
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! A UCS baseia-se no fato de que o custo g(n) só aumenta ao longo do caminho. Se houver custos negativos, uma rota mais longa pode repentinamente ficar mais barata após um nó já ter sido expandido, quebrando a garantia ótima.">
+          Não, não há garantia
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 7 -->
+    <section class="card-exercise" id="ex7" data-hint="Digite a sequência completa de nós da rota ótima: raiz S, depois A, depois B, depois meta G.">
+      <div class="exercise-header">
+        <h3>Exercício 7: Sequência da Solução Ótima</h3>
+        <span class="exercise-tag recall">Síntese de Rota</span>
+      </div>
+      <div class="question-text">
+        Digite a sequência de nós que compõe a solução ótima encontrada pela UCS na Figura 1 (separados por vírgula, traço ou espaço):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: S, A, B, G" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Rota</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO FINAL: PONTOS DE TROPEÇO DINÂMICOS -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações ou erros nas seguintes armadilhas conceituais da UCS. Revise-as:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../lessons/0005-aprofundamento-iterativo-4-iteracoes-ids.html">← Lição Anterior: 0005 — IDS</a>
+      <a href="../index.html">Voltar ao Painel da Matéria</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
+      <a href="0007-busca-irrevogavel-hill-climbing.html">Próxima Lição: 0007 — Hill Climbing &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Momento do teste de meta na retirada
+      initMultipleChoice("ex1", "Teste de meta estritamente na retirada na UCS");
+
+      // Ex 2: Equivalência BFS e UCS com custos unitários
+      initTrueFalse("ex2", true, "Equivalência entre BFS e UCS com custos unitários",
+        "Exato! Para custos unitários, g(n) coincide com a profundidade d.",
+        "Cuidado: para custos unitários, UCS comporta-se como a BFS.");
+
+      // Ex 3: Custo acumulado ótimo
+      initInputExercise("ex3", ["5"], "Custo acumulado g(n) = 5 da rota ótima", (raw, clean) => {
+        return clean === "5";
+      });
+
+      // Ex 4: Exigência de custos positivos epsilon > 0
+      initMultipleChoice("ex4", "Exigência de passos >= epsilon > 0 para completude na UCS");
+
+      // Ex 5: Próximo nó retirado da fila
+      initInputExercise("ex5", ["b"], "Prioridade na fila: desempate por menor custo acumulado", (raw, clean) => {
+        return clean === "b";
+      });
+
+      // Ex 6: Falha com custos negativos
+      initTrueFalse("ex6", false, "Inaplicabilidade da UCS para custos negativos",
+        "Cuidado: custos negativos quebram a invariante de Dijkstra!",
+        "Exato! UCS requer custos não negativos.");
+
+      // Ex 7: Rota ótima final
+      initInputExercise("ex7", ["sabg", "s,a,b,g", "s->a->b->g", "s-a-b-g", "s a b g"], "Rota ótima S -> A -> B -> G", (raw, clean) => {
+        const norm = clean.replace(/[^a-z]/g, "");
+        return norm === "sabg";
+      });
+    });
+  </script>
+</body>
+</html>

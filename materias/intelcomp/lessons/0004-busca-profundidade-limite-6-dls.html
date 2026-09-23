@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0004: Busca em Profundidade Limitada (DLS) — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">intelcomp • Buscas Não Informadas (Cegas) • Lição 0004</div>
+      <h1>Busca com Limite de Profundidade (DLS — L=6)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Contenção do poço infinito da DFS através de poda artificial em profundidade L=6, os 3 retornos cruciais (Solução, Falha e Cutoff) e o dilema do diâmetro.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/0003-busca-com-retrocesso-backtracking.html">← Lição 0003: Backtracking</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+    </div>
+
+    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <section class="card-theory">
+      <h2>1. Teoria Enxuta: O Modelo Mental do DLS</h2>
+      <p>
+        A <strong>Busca em Profundidade Limitada</strong> (<em>Depth-Limited Search — DLS</em>) resolve a vulnerabilidade fatal da DFS em árvores infinitas: ela impõe um <strong>limite máximo de profundidade <code>L</code></strong> (neste estudo, fixado em <code>L = 6</code>).
+      </p>
+      <ol>
+        <li>Nós em profundidade <code>profundidade &lt; L</code> são expandidos normalmente.</li>
+        <li>Nós em profundidade <code>profundidade = L</code> são tratados como se não tivessem filhos (são podados e não geram descendentes).</li>
+        <li>A busca retrocede imediatamente ao atingir o patamar <code>L</code>.</li>
+      </ol>
+
+      <div class="callout pitfall">
+        <div class="callout-title">⚠️ A Maior Pegadinha de Prova: Os 3 Retornos do DLS</div>
+        <p>Ao contrário da BFS ou DFS comum (que retornam apenas Sucesso ou Falha), o DLS possui <strong>três retornos distintos</strong>:</p>
+        <ul style="margin-bottom: 0;">
+          <li><strong>1. Solução:</strong> O nó objetivo foi encontrado em profundidade <code>d &le; L</code>.</li>
+          <li><strong>2. Falha Definitiva (Failure):</strong> Todo o espaço de estados abaixo do limite foi examinado exaustivamente e <em>nenhum nó atingiu o corte</em>. Conclusão: a meta <strong>não existe</strong> no grafo!</li>
+          <li><strong>3. Cutoff (Corte por Limite):</strong> A meta não foi encontrada até o limite <code>L</code>, mas <em>pelo menos um nó folha atingiu profundidade L e foi podado</em>. Conclusão: a meta <strong>pode existir</strong> em profundidade maior que <code>L</code>!</li>
+        </ul>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Propriedades Formais de Prova</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Completude:</strong> Incompleta se a solução mais rasa estiver além do limite (<code>d &gt; L</code>).</li>
+          <li><strong>Otimalidade:</strong> Não é ótima (se <code>L &gt; d</code>, pode encontrar uma solução em profundidade maior antes de uma menor se estiver no ramo esquerdo).</li>
+          <li><strong>Tempo:</strong> <code>O(b^L)</code> no pior caso.</li>
+          <li><strong>Espaço (Memória):</strong> <code>O(b &times; L)</code> com fronteira em pilha (para <code>L = 6</code> e <code>b = 10</code>, retém no máximo 60 nós!).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: GRAFO DIDÁTICO E RASTREAMENTO COM L=6 -->
+    <section class="card-theory">
+      <h2>2. Grafo de Rastreamento com Corte em L = 6</h2>
+      <p>
+        Considere a cadeia de busca abaixo. A raiz é <strong>S</strong> (nível 0) e a meta real <strong>G</strong> está na profundidade 7 (além do corte <code>L = 6</code>). Observe a sinalização do <em>Cutoff</em> no nó N6:
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="160" viewBox="0 0 620 160" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-dls" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#6e7681"/>
+            </marker>
+          </defs>
+
+          <!-- Linha indicadora de corte L=6 -->
+          <line x1="490" y1="20" x2="490" y2="140" stroke="#f85149" stroke-width="2" stroke-dasharray="4,4"/>
+          <text x="490" y="15" font-family="sans-serif" font-size="11" fill="#f85149" text-anchor="middle">Limite L=6 (Corte)</text>
+
+          <!-- Arestas normais -->
+          <line x1="50" y1="80" x2="120" y2="80" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-dls)"/>
+          <line x1="120" y1="80" x2="190" y2="80" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-dls)"/>
+          <line x1="190" y1="80" x2="260" y2="80" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-dls)"/>
+          <line x1="260" y1="80" x2="330" y2="80" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-dls)"/>
+          <line x1="330" y1="80" x2="400" y2="80" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-dls)"/>
+          <line x1="400" y1="80" x2="490" y2="80" stroke="#2d3340" stroke-width="2" marker-end="url(#arrow-dls)"/>
+          
+          <!-- Aresta podada (bloqueada pelo corte) -->
+          <line x1="490" y1="80" x2="570" y2="80" stroke="#f85149" stroke-width="1.5" stroke-dasharray="2,2"/>
+          <text x="530" y="72" font-family="sans-serif" font-size="10" fill="#f85149">Podado</text>
+
+          <!-- Nós -->
+          <circle cx="50" cy="80" r="16" fill="#1b2a4a" stroke="#58a6ff" stroke-width="2"/>
+          <text x="50" y="85" font-family="monospace" font-weight="bold" font-size="12" fill="#c9d1d9" text-anchor="middle">S</text>
+          <text x="50" y="110" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">d=0</text>
+
+          <circle cx="120" cy="80" r="16" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="120" y="85" font-family="monospace" font-size="12" fill="#c9d1d9" text-anchor="middle">N1</text>
+          <text x="120" y="110" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">d=1</text>
+
+          <circle cx="190" cy="80" r="16" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="190" y="85" font-family="monospace" font-size="12" fill="#c9d1d9" text-anchor="middle">N2</text>
+          <text x="190" y="110" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">d=2</text>
+
+          <circle cx="260" cy="80" r="16" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="260" y="85" font-family="monospace" font-size="12" fill="#c9d1d9" text-anchor="middle">N3</text>
+          <text x="260" y="110" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">d=3</text>
+
+          <circle cx="330" cy="80" r="16" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="330" y="85" font-family="monospace" font-size="12" fill="#c9d1d9" text-anchor="middle">N4</text>
+          <text x="330" y="110" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">d=4</text>
+
+          <circle cx="400" cy="80" r="16" fill="#191f2a" stroke="#2d3340" stroke-width="1.5"/>
+          <text x="400" y="85" font-family="monospace" font-size="12" fill="#c9d1d9" text-anchor="middle">N5</text>
+          <text x="400" y="110" font-family="sans-serif" font-size="10" fill="#8b949e" text-anchor="middle">d=5</text>
+
+          <!-- N6 no limite de corte -->
+          <circle cx="490" cy="80" r="17" fill="#241a20" stroke="#f85149" stroke-width="2"/>
+          <text x="490" y="85" font-family="monospace" font-size="12" fill="#f85149" text-anchor="middle">N6</text>
+          <text x="490" y="110" font-family="sans-serif" font-size="10" fill="#f85149" text-anchor="middle">d=6</text>
+
+          <!-- Meta além do corte -->
+          <circle cx="570" cy="80" r="16" fill="#191f2a" stroke="#484f58" stroke-dasharray="3,3" stroke-width="1.5"/>
+          <text x="570" y="85" font-family="monospace" font-size="12" fill="#6e7681" text-anchor="middle">G</text>
+          <text x="570" y="110" font-family="sans-serif" font-size="10" fill="#6e7681" text-anchor="middle">d=7</text>
+        </svg>
+        <div class="graph-caption">
+          Figura 1: DLS com L=6. O nó N6 atinge o corte e não expande G. Retorno = <strong>Cutoff</strong>.
+        </div>
+      </div>
+
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Profundidade (d)</th>
+              <th>Nó em Avaliação</th>
+              <th>Decisão do Algoritmo</th>
+              <th>Status do Sinalizador</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>d = 0 a 5</td>
+              <td><code>S, N1, N2, N3, N4, N5</code></td>
+              <td>Profundidade &lt; L: expande sucessores normalmente.</td>
+              <td>Nenhum corte acionado.</td>
+            </tr>
+            <tr style="background-color: rgba(248, 81, 73, 0.08);">
+              <td><strong>d = 6 (Limite)</strong></td>
+              <td><code>N6</code></td>
+              <td><strong>Profundidade == L:</strong> Poda filhos! Retrocede imediatamente.</td>
+              <td><strong>cutoff_occurred = true</strong></td>
+            </tr>
+            <tr class="highlight-step">
+              <td>Fim da Busca</td>
+              <td>Árvore esgotada até L</td>
+              <td>Meta não encontrada, mas houve podas por profundidade.</td>
+              <td><strong>Retorno Final: CUTOFF</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIOS PRÁTICOS (7 DESAFIOS DIAGNÓSTICOS) -->
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: A Vulnerabilidade Central do DLS</h3>
+        <span class="exercise-tag diagnostic">Completude</span>
+      </div>
+      <div class="question-text">
+        Se escolhermos um limite <code>L = 6</code> para um problema cujo objetivo mais raso está situado na profundidade <code>d = 8</code>, qual será o comportamento da DLS?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o DLS nunca ultrapassa o limite pré-fixado L, mesmo que a meta esteja logo adiante.">
+          A) O DLS detecta a proximidade da meta e expande dinamicamente até d = 8.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como d > L, a meta é podada no corte L=6. O DLS termina sem encontrar a solução e retorna 'Cutoff', evidenciando sua incompletude quando o limite é subestimado.">
+          B) O algoritmo é incompleto para essa configuração: atinge o corte L=6, retrocede e retorna 'Cutoff' sem encontrar a meta.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o algoritmo não retorna 'Falha Definitiva' se houve nós podados pelo limite L!">
+          C) O algoritmo garante que a meta não existe e retorna 'Falha Definitiva' (Failure).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o DLS não entra em loop infinito; ele é justamente projetado para interromper a descida no nível L!">
+          D) O algoritmo entra em loop infinito entre os níveis 5 e 6.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Pegadinha de Prova — Falha Definitiva vs Cutoff</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Analise a proposição de exame:<br>
+        <em>"Quando o DLS (L=6) termina sem encontrar uma meta, ele sempre retorna o valor 'Falha Definitiva' (Failure), demonstrando conclusivamente que o espaço de estados não possui solução."</em><br><br>
+        Esta afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Armadilha clássica! Se algum nó foi podado por atingir a profundidade L=6, o retorno é obrigatoriamente CUTOFF, e não Falha! A meta pode estar perfeitamente no nível 7.">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Perfeito! Se algum nó foi interrompido pelo limite L, o retorno é Cutoff (a meta pode existir abaixo de L). Só há Falha Definitiva se todo o espaço de busca tiver profundidade menor que L e nenhuma meta foi encontrada.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="A memória da DLS é linear O(b × L), onde b é o fator de ramificação e L é o limite de profundidade.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Consumo de Memória do DLS (L=6)</h3>
+        <span class="exercise-tag recall">Active Recall Numérico</span>
+      </div>
+      <div class="question-text">
+        Considere um problema com fator de ramificação médio <strong>b = 10</strong> submetido ao DLS com limite <strong>L = 6</strong>.<br><br>
+        Quantos nós o algoritmo manterá na memória na pior das hipóteses (considere fronteira com pilha que guarda os irmãos em cada nível)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 60" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Memória</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4" data-hint="Lembre-se dos 3 retornos: Solução, Falha e Cutoff. Quando nós são podados no limite sem achar a meta, o retorno é...">
+      <div class="exercise-header">
+        <h3>Exercício 4: Active Recall do Retorno no Cenário da Figura 1</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        No grafo da <strong>Figura 1</strong>, a busca iniciou em S, desceu até N6 (profundidade 6 = L) onde foi podada sem alcançar a meta G (profundidade 7).<br><br>
+        <strong>Qual é o nome exato do valor de retorno emitido pela função DLS ao finalizar?</strong>
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o retorno da função" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Retorno</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: O Dilema da Escolha do Limite L</h3>
+        <span class="exercise-tag diagnostic">Tomada de Decisão</span>
+      </div>
+      <div class="question-text">
+        Em termos práticos, qual é a principal dificuldade em aplicar o DLS diretamente em problemas do mundo real onde não conhecemos a estrutura prévia do grafo?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o consumo de memória do DLS é excelente (linear O(b × L)), não sendo este o gargalo.">
+          A) O consumo de memória RAM estoura rapidamente antes de atingir L=6.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! Se escolhermos L muito pequeno (L < d), o DLS falha por incompletude. Se escolhermos L muito grande para garantir segurança (ex: L igual ao diâmetro máximo do grafo), o tempo de execução no pior caso O(b^L) torna-se astronômico!">
+          B) Se L for escolhido menor que a profundidade da solução, o algoritmo falha; se L for muito grande, o tempo de CPU torna-se proibitivo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o DLS não calcula funções heurísticas, sendo uma busca puramente cega.">
+          C) A impossibilidade matemática de formular uma função heurística admissível.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o DLS funciona perfeitamente com custos de aresta, embora não garanta otimalidade.">
+          D) O DLS só pode ser executado em grafos não direcionados com pesos negativos.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 6 -->
+    <section class="card-exercise" id="ex6">
+      <div class="exercise-header">
+        <h3>Exercício 6: Condição para 'Falha Definitiva'</h3>
+        <span class="exercise-tag diagnostic">Lógica Formal</span>
+      </div>
+      <div class="question-text">
+        Sob qual condição estrita o DLS (L=6) pode retornar legitimamente <strong>'Falha Definitiva' (Failure)</strong> em vez de 'Cutoff'?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Se a árvore inteira tem profundidade máxima m < 6 (nenhum ramo atingiu o nível 6) e nenhuma folha é meta, o algoritmo provou que a meta simplesmente não existe em nenhum lugar do grafo!">
+          A) Quando todos os ramos da árvore terminam naturalmente em folhas em profundidades menores que 6, sem que nenhum nó tenha sofrido poda por corte.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: se nós atingirem profundidade 6 e forem cortados, o retorno é Cutoff!">
+          B) Quando pelo menos 10 nós atingem a profundidade 6 sem encontrar a meta.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: loops em profundidade não causam falha definitiva; causam cutoff se interceptados em L=6.">
+          C) Quando um ciclo infinito é detectado no nível 3.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: custos de arestas não alteram a condição de retorno do DLS.">
+          D) Apenas se todas as arestas tiverem custo zero.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 7 -->
+    <section class="card-exercise" id="ex7" data-hint="Se L=6 e a meta estiver na profundidade 4, o que o DLS retorna? Solução!">
+      <div class="exercise-header">
+        <h3>Exercício 7: Previsão de Saída com Meta em Profundidade 4</h3>
+        <span class="exercise-tag recall">Síntese de Casos</span>
+      </div>
+      <div class="question-text">
+        Se no mesmo grafo executarmos o DLS com <code>L = 6</code>, mas a meta estiver localizada na profundidade <code>d = 4</code>, <strong>qual será o resultado retornado pelo DLS</strong>?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: Solução" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Saída</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO FINAL: PONTOS DE TROPEÇO DINÂMICOS -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações ou erros nas seguintes armadilhas conceituais do DLS. Revise-as:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../lessons/0003-busca-com-retrocesso-backtracking.html">← Lição Anterior: 0003 — Backtracking</a>
+      <a href="../index.html">Voltar ao Painel da Matéria</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
+      <a href="0005-aprofundamento-iterativo-4-iteracoes-ids.html">Próxima Lição: 0005 — IDS &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Incompletude quando d > L
+      initMultipleChoice("ex1", "Incompletude do DLS quando meta d > limite L");
+
+      // Ex 2: Falácia de Falha vs Cutoff
+      initTrueFalse("ex2", false, "Diferença crucial entre Falha Definitiva e Cutoff no DLS",
+        "Cuidado: podas em profundidade L geram retorno Cutoff, e NÃO Falha Definitiva!",
+        "Exato! Se houve corte em profundidade L, o retorno é Cutoff.");
+
+      // Ex 3: Cálculo de memória linear O(b * L)
+      initInputExercise("ex3", ["60"], "Memória linear O(b * L) do DLS", (raw, clean) => {
+        return clean === "60";
+      });
+
+      // Ex 4: Active Recall do Cutoff
+      initInputExercise("ex4", ["cutoff", "corte"], "Retorno Cutoff no DLS quando nós são podados", (raw, clean) => {
+        return clean.includes("cutoff") || clean.includes("corte");
+      });
+
+      // Ex 5: Dilema da escolha de L
+      initMultipleChoice("ex5", "Dilema de escolha do limite L no DLS");
+
+      // Ex 6: Condição estrita de Falha Definitiva
+      initMultipleChoice("ex6", "Condição para retorno Falha Definitiva (m < L sem meta)");
+
+      // Ex 7: Meta antes do limite d <= L
+      initInputExercise("ex7", ["solucao", "sucesso", "solução", "caminho"], "Retorno de Solução quando d <= L", (raw, clean) => {
+        return clean.includes("soluc") || clean.includes("sucess");
+      });
+    });
+  </script>
+</body>
+</html>

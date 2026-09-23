@@ -9,6 +9,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
     onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
 </head>
 <body>
   <div class="container">
@@ -23,7 +24,7 @@
 
     <div class="nav-links">
       <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../lessons/0001-busca-em-largura-bfs.html">← Voltar à Lição 0001 (BFS)</a>
+      <a href="0002-formulas-e-heuristicas-guia-rapido.html">📄 Ficha: Buscas Informadas / Heurísticas &rarr;</a>
     </div>
 
     <!-- TABELA COMPARATIVA -->
@@ -142,15 +143,23 @@
       <div class="callout exam-tip">
         <div class="callout-title">Regra 5: Memória Linear da DFS vs Exponencial da BFS</div>
         <p style="margin-bottom: 0;">
-          A BFS consome memória exponencial $O(b^d)$, guardando todas as folhas de um nível na RAM. A DFS consome apenas memória linear $O(b \cdot m)$ (o caminho atual mais irmãos imediatos). Para $b=10$ e profundidade 10: BFS requer $\sim 10^{10}$ nós (inviável na prática), enquanto a DFS requer apenas $10 \times 10 = 100$ nós.
+          A BFS consome memória exponencial O(b^d), guardando todas as folhas de um nível na RAM. A DFS consome apenas memória linear O(b × m) (o caminho atual mais irmãos imediatos). Para b = 10 e profundidade 10: BFS requer ~10^10 nós (inviável na prática), enquanto a DFS requer apenas 10 × 10 = 100 nós.
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">Regra 6: Backtracking — O Campeão Absoluto de Memória O(m)</div>
+        <p style="margin-bottom: 0;">
+          Se a memória for o gargalo supremo, o Backtracking supera até mesmo a DFS: ele gera apenas <strong>1 filho por vez sob demanda</strong>. Não há irmãos guardados na RAM, mantendo estritamente <strong>O(m)</strong> nós na memória (apenas o caminho atual da raiz até a folha).
         </p>
       </div>
     </section>
 
     <div class="lesson-nav">
       <a href="../index.html">← Voltar ao Painel da Matéria</a>
-      <a href="../lessons/0001-busca-em-largura-bfs.html">← Exercícios: Lição 0001 (BFS)</a>
-      <a href="../lessons/0002-busca-em-profundidade-dfs.html">Exercícios: Lição 0002 (DFS) &rarr;</a>
+      <a href="../lessons/0001-busca-em-largura-bfs.html">← Lição 0001 (BFS)</a>
+      <a href="../lessons/0002-busca-em-profundidade-dfs.html">← Lição 0002 (DFS)</a>
+      <a href="../lessons/0003-busca-com-retrocesso-backtracking.html">Lição 0003 (Backtracking) &rarr;</a>
     </div>
 
   </div>

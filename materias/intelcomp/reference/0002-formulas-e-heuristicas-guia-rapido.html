@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Referência: Buscas Informadas (Heurísticas) — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">intelcomp • Ficha de Consulta Rápida • Módulo 2</div>
+      <h1>Ficha de Referência: Buscas Informadas e Heurísticas</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Resumo de bolso para exames: funções de avaliação f(n), teoremas de admissibilidade e consistência, comparativo assintótico e heurísticas clássicas.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0001-tabela-buscas-cegas.html">📄 Ficha de Consulta: Buscas Cegas</a>
+      <a href="../lessons/0009-busca-a-estrela-astar.html">← Lição 0009: A*</a>
+      <a href="../lessons/0010-a-estrela-aprofundamento-iterativo-ida.html">Lição 0010: IDA* &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: TABELA COMPARATIVA DAS BUSCAS HEURÍSTICAS -->
+    <section class="card-theory">
+      <h2>1. Comparativo das Buscas Heurísticas (Informadas)</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Algoritmo</th>
+              <th>Função f(n)</th>
+              <th>Estrutura da Fronteira</th>
+              <th>Completo?</th>
+              <th>Ótimo?</th>
+              <th>Espaço (RAM)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hill Climbing (Irrevogável)</strong></td>
+              <td><code>f(n) = h(n)</code> (ou valor)</td>
+              <td>Nenhuma (apenas estado atual)</td>
+              <td>Não (para em máximos locais)</td>
+              <td>Não (míope)</td>
+              <td><code>O(1)</code> <em>(constante)</em></td>
+            </tr>
+            <tr>
+              <td><strong>Busca Gulosa (Greedy Best-First)</strong></td>
+              <td><code>f(n) = h(n)</code></td>
+              <td>Fila de Prioridades por <em>h</em></td>
+              <td>Não em árvore com ciclos</td>
+              <td>Não (ignora <em>g</em>)</td>
+              <td><code>O(b^m)</code> <em>(exponencial)</em></td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>Algoritmo A* (A-Star)</strong></td>
+              <td><code>f(n) = g(n) + h(n)</code></td>
+              <td>Fila de Prioridades por <em>f</em></td>
+              <td>Sim (se passos &gt; 0)</td>
+              <td><strong>Sim</strong> (se admissível / consistente)</td>
+              <td><code>O(b^d)</code> <em>(gargalo)</em></td>
+            </tr>
+            <tr>
+              <td><strong>IDA* (Iterative Deepening A*)</strong></td>
+              <td><code>f(n) = g(n) + h(n)</code></td>
+              <td>Pilha com backtracking e corte por <em>f</em></td>
+              <td>Sim (se passos &gt; 0)</td>
+              <td><strong>Sim</strong> (se admissível)</td>
+              <td><code>O(b &times; d)</code> <em>(linear!)</em></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: DEFINIÇÕES FORMAIS DAS HEURÍSTICAS -->
+    <section class="card-theory">
+      <h2>2. Teoremas Fundamentais de Heurísticas</h2>
+
+      <div class="callout definition">
+        <div class="callout-title">1. Admissibilidade (Otimismo Teórico) — Obrigatória para Árvores</div>
+        <p style="margin-bottom: 0;">
+          Uma heurística <code>h(n)</code> é <strong>admissível</strong> se ela <u>nunca superestima</u> o custo real para alcançar a meta a partir de <em>n</em>:<br>
+          <code>0 &le; h(n) &le; h*(n), &forall; n</code> (onde <code>h*(n)</code> é o custo real ótimo).<br>
+          <em>Garantia:</em> Assegura a otimalidade do A* em <strong>busca em árvore</strong> (sem conjunto de fechados).
+        </p>
+      </div>
+
+      <div class="callout exam-tip">
+        <div class="callout-title">2. Consistência / Monotonicidade — Obrigatória para Grafos</div>
+        <p style="margin-bottom: 0;">
+          Uma heurística <code>h(n)</code> é <strong>consistente</strong> se satisfaz a <strong>Desigualdade Triangular</strong> para toda transição de <em>n</em> para <em>n'</em> via ação de custo <code>c(n, a, n')</code>:<br>
+          <code>h(n) &le; c(n, a, n') + h(n')</code> e <code>h(G) = 0</code> para qualquer meta <em>G</em>.<br>
+          <em>Teorema:</em> Toda heurística consistente é também admissível! Ela garante que os valores de <code>f(n)</code> nunca diminuem ao longo de uma rota (<code>f(n') &ge; f(n)</code>), permitindo descartar estados repetidos sem perder a otimalidade em busca em grafo.
+        </p>
+      </div>
+
+      <div class="callout pitfall">
+        <div class="callout-title">3. Heurísticas Típicas de Prova (Exemplo: 8-Puzzle / Tabuleiro)</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>h1 (Peças Fora do Lugar):</strong> Conta quantas peças não estão na posição final. É admissível (cada peça fora do lugar precisa de pelo menos 1 movimento).</li>
+          <li><strong>h2 (Distância de Manhattan):</strong> Soma das distâncias horizontais e verticais de cada peça até sua posição correta. É admissível e <strong>domina h1</strong> (ou seja, <code>h2(n) &ge; h1(n)</code> para todo <em>n</em>).</li>
+          <li><em>Regra de Dominância:</em> Se <code>h2</code> domina <code>h1</code>, o A* utilizando <code>h2</code> expandirá <strong>menos nós (ou no máximo igual)</strong> do que utilizando <code>h1</code>!</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 3: REGRAS DE OURO PARA EXAMES -->
+    <section class="card-theory">
+      <h2>3. Regras de Ouro para a Prova</h2>
+      <ol style="margin-bottom: 0;">
+        <li><strong>Teste de Meta no A* e na UCS:</strong> Ocorre estritamente quando o nó é <strong>desenfileirado da fila de prioridades</strong>, nunca na geração!</li>
+        <li><strong>Atualização do Limite no IDA*:</strong> O novo patamar de corte é <strong>o menor valor de f entre todos os nós podados</strong> na iteração anterior. Jamais incremente somando +1!</li>
+        <li><strong>Memória:</strong> Quando a questão citar falta de memória RAM para A*, a solução padrão é o <strong>IDA*</strong> ou <strong>SMA*</strong> (Simplified Memory-Bounded A*).</li>
+      </ol>
+    </section>
+
+    <div class="lesson-nav">
+      <a href="../index.html">← Voltar ao Painel da Matéria</a>
+      <a href="0001-tabela-buscas-cegas.html">📄 Consultar Ficha de Buscas Cegas</a>
+      <a href="../lessons/0009-busca-a-estrela-astar.html">Exercícios: Lição 0009 (A*)</a>
+    </div>
+
+  </div>
+</body>
+</html>
