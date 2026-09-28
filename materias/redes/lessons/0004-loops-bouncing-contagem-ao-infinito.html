@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0004: Loops, Bouncing Effect e Contagem ao Infinito — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Módulo 2: Vetor de Distância • Lição 0004</div>
+      <h1>Instabilidades em DV: Loops, Bouncing Effect e Contagem ao Infinito</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Por que "más notícias viajam devagar", a formação de dependências circulares fantasmas, o ricochete de pacotes e o trade-off da métrica infinita igual a 16.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+    </div>
+
+    <!-- BLOCO 1: O NASCIMENTO DE UM LOOP DE DOIS NÓS -->
+    <section class="card-theory">
+      <h2>1. A Falácia da Informação Míope e o Nascimento do Loop</h2>
+      <p>
+        Em redes de computadores com Vetor de Distância vigora a máxima: <em>"Boas notícias viajam rápido, mas más notícias viajam devagar"</em>.
+      </p>
+      <p>
+        Considere a rota estabelecida: $A \to B \to C$. O nó $B$ tem $D_B(C) = 1$ e o nó $A$ tem $D_A(C) = 2$ (passando por $B$).
+      </p>
+      <p>
+        Suponha que o enlace $B-C$ quebre repentinamente:
+      </p>
+      <ul>
+        <li>$B$ detecta a falha e atualiza imediatamente $D_B(C) = \infty$.</li>
+        <li>Antes que $B$ consiga avisar $A$, o nó $A$ envia seu vetor periódico normal dizendo: <code>"Eu alcanço C com custo 2"</code>.</li>
+        <li>$B$ recebe o anúncio de $A$. Como $B$ não conhece a topologia, $B$ pensa: <em>"Opa! Minha rota direta caiu, mas $A$ conhece um caminho para $C$ que custa apenas 2! Vou usar $A$!"</em></li>
+        <li>$B$ atualiza sua rota: $D_B(C) = c(B,A) + D_A(C) = 1 + 2 = 3$, com próximo salto apontando para $A$!</li>
+      </ul>
+      <p>
+        <strong>O desastre está consumado:</strong> $B$ aponta para $A$, e $A$ aponta para $B$. Qualquer pacote para $C$ ficará girando em círculo!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1: DIAGNÓSTICO DO ERRO DE B -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Diagnóstico da Dependência Circular</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Qual é a falha conceitual de projeto que permite que o roteador $B$ adote $A$ como próximo salto para alcançar $C$ logo após a queda do enlace direto $B-C$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A soma de verificação do cabeçalho de transporte não se aplica aos algoritmos de rota; ela detecta erros de bits no tráfego, não dependências lógicas de nós.">
+          A ausência de validação do checksum no pacote de anúncio impede a checagem de erros lógicos na transmissão.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como o vetor de distância envia apenas números escalares sem a lista de nós intermediários, B ignora totalmente que o caminho de custo 2 anunciado por A dependia do próprio B, que acabou de cair!">
+          O roteador B não sabe que a rota que A oferecia dependia e passava exatamente pelo próprio nó B que caiu.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Enlaces Ethernet detectam perda de sinal em milissegundos. O problema não é a demora da camada física, mas a semântica cega do algoritmo distribuído.">
+          A interface física demorou excessivamente para detectar a ausência de modulação de portadora no enlace.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Protocolos de vetor de distância não utilizam tabelas de base topológica unificada; isso é uma propriedade exclusiva do OSPF/IS-IS.">
+          O algoritmo de Bellman-Ford não foi executado com o número de sequência criptográfico atualizado na base.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: O EFEITO RICOCHETE (BOUNCING EFFECT) -->
+    <section class="card-theory">
+      <h2>2. O Efeito Ricochete (Bouncing Effect)</h2>
+      <p>
+        Uma vez instalado o loop entre $A$ e $B$, inicia-se uma reação em cadeia destrutiva:
+      </p>
+      <ul>
+        <li>$B$ envia agora um vetor dizendo que alcança $C$ com custo <strong>3</strong>.</li>
+        <li>$A$ recebe o anúncio vindo do seu próximo salto atual ($B$). Pela regra mandatória, $A$ é obrigado a atualizar sua tabela: $D_A(C) = c(A,B) + D_B(C) = 1 + 3 = \mathbf{4}$!</li>
+        <li>$A$ envia seu novo vetor para $B$ anunciando custo 4.</li>
+        <li>$B$ atualiza para $1 + 4 = \mathbf{5}$ e anuncia de volta para $A$.</li>
+      </ul>
+      <p>
+        Os pacotes destinados a $C$ ficam <strong>ricocheteando</strong> entre $A$ e $B$ no enlace $E_1$ até seus TTLs expirarem, enquanto os contadores aumentam progressivamente a cada rodada de fofoca.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 2: ACTIVE RECALL / RASTREAMENTO DO BOUNCING -->
+    <section class="card-exercise" id="ex2" data-hint="B anunciou D_B(C) = 3 para A. O enlace entre A e B tem custo 1. Pela regra de Bellman-Ford, A atualiza para custo(A,B) + D_B(C) = 1 + 3. Digite o valor.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Rastreamento do Passo do Ricochete</h3>
+        <span class="exercise-tag recall">Active Recall / Mesa</span>
+      </div>
+      <div class="question-text">
+        Logo após o roteador $B$ ter atualizado erroneamente seu custo para o destino $C$ como sendo $3$ via $A$, ele transmite essa atualização para $A$ pelo enlace $E_1$ (custo $1$).<br><br>
+        Como $A$ utilizava $B$ como seu próximo salto para $C$, <strong>qual é o novo valor de métrica que o roteador A registrará em sua tabela para o destino C?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 4" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Métrica</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: CONTAGEM AO INFINITO E REDE PARTICIONADA -->
+    <section class="card-theory">
+      <h2>3. A Contagem ao Infinito (Count to Infinity)</h2>
+      <p>
+        Se houver uma rota alternativa na rede (por exemplo, um enlace lento ou longo de custo 10), o loop de métrica continuará subindo ($3 \to 4 \to 5 \to \dots$) até que ultrapasse 10. Quando atingir 11, o roteador finalmente migrará para a rota alternativa.
+      </p>
+      <p>
+        Porém, se a rede for <strong>particionada</strong> (o destino tornou-se completamente inalcançável fisicamente), não existe nenhuma rota alternativa!
+      </p>
+      <p>
+        Sem nenhum mecanismo adicional, $A$ e $B$ continuariam incrementando a métrica eternamente ($20, 50, 100, 1000 \dots$). Isso é a <strong>Contagem ao Infinito</strong> pura.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3: IDENTIFICAÇÃO DE FALÁCIA -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: A Falácia da Convergência Espontânea</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Avalie a seguinte afirmação sobre a recuperação de falhas em redes particionadas:<br>
+        <em>"Quando um roteador de destino é completamente desconectado da rede por quebra física de cabos, o algoritmo de Bellman-Ford básico consegue convergir espontaneamente para métrica de inalcançabilidade em no máximo três trocas de vetores, pois a ausência de sinal elétrico é propagada como distância infinita imediatamente por toda a malha."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa ilusão! Em Bellman-Ford básico sem extensões, os nós vizinhos alimentam um ao outro em dependência mútua, subindo o contador indefinidamente (+1 a cada rodada). Sem um teto artificial estipulado, a contagem nunca para espontaneamente!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! Sem um teto estipulado, o Bellman-Ford básico entra em contagem ao infinito perpétua quando uma rede é particionada, já que cada nó incrementa a estimativa recebida do parceiro acreditando que ele possui uma saída válida!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: A SOLUÇÃO DE CONTORNO DO RIP: INFINITO = 16 -->
+    <section class="card-theory">
+      <h2>4. A Solução do RIP: Teto de Métrica ($\infty = 16$)</h2>
+      <p>
+        Para estancar a contagem ao infinito, o protocolo <strong>RIP</strong> (Routing Information Protocol) adota uma solução pragmática e radical:
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Definição de Infinito no RIP</div>
+        <p style="margin-bottom: 0;">
+          O infinito é fixado no valor <strong>16</strong>. Qualquer rota cuja métrica atinja 16 é imediatamente rotulada como inalcançável e marcada para exclusão.
+        </p>
+      </div>
+      <p>
+        <strong>O Trade-off de Engenharia:</strong> Isso garante que a contagem ao infinito cesse em no máximo 16 rodadas. Contudo, impõe uma restrição severa de arquitetura: <strong>o diâmetro máximo utilizável de qualquer rede RIP é de exatamente 15 saltos!</strong> Uma rede que exija 16 roteadores em linha reta é inoperável sob RIP.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 4: ACTIVE RECALL / DIÂMETRO MÁXIMO DO RIP -->
+    <section class="card-exercise" id="ex4" data-hint="Infinito é 16. O maior número de saltos que um pacote pode atravessar antes de atingir a métrica infinita é 16 - 1 = 15. Digite o número 15.">
+      <div class="exercise-header">
+        <h3>Exercício 4: O Diâmetro Máximo de uma Rede RIP</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        Em decorrência direta da escolha de fixar o infinito em 16 para limitar o tempo de convergência na contagem ao infinito:<br><br>
+        <strong>Qual é o número MÁXIMO de saltos (diâmetro máximo da rede) permitido entre uma origem e um destino para que a rota ainda seja considerada válida pelo protocolo RIP?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 15" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Diâmetro</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 5: POR QUE 32 BITS SE O MÁXIMO É 16? -->
+    <section class="card-theory">
+      <h2>5. Por que 32 Bits para uma Métrica que vai até 16?</h2>
+      <p>
+        No cabeçalho da mensagem do protocolo RIP, o campo <em>Métrica</em> é codificado ocupando <strong>32 bits inteiros (4 bytes)</strong>, apesar de os valores úteis serem restritos entre 1 e 16.
+      </p>
+      <p>
+        Essa decisão de design do comitê IETF deveu-se a duas razões de engenharia:
+      </p>
+      <ol>
+        <li><strong>Alinhamento de Memória:</strong> Na época de criação do RIP (arquiteturas BSD Unix de 32 bits), campos alinhados em palavras de 32 bits aceleravam drasticamente a leitura e escrita direta em registradores de CPU sem overhead de máscara de bits.</li>
+        <li><strong>Flexibilidade Futura:</strong> Havia a expectativa de permitir métricas compostas ou a transição para outros algoritmos onde a resolução de loops deixasse de depender do teto 16.</li>
+      </ol>
+    </section>
+
+    <!-- EXERCÍCIO 5: DIAGNÓSTICO DO CAMPO DE 32 BITS NO RIP -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Decisão de Arquitetura no Formato do RIP</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Por que o protocolo RIP reserva uma palavra inteira de 32 bits para armazenar a métrica em suas mensagens de anúncio, se os valores úteis de saltos variam unicamente entre 0 e 16?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O RIP clássico utiliza estritamente a contagem de saltos como métrica (métrica unitária). Ele não mede vazão em bits por segundo nem tempo de propagação físico.">
+          Para permitir o registro de medições dinâmicas de largura de banda e jitter em enlaces de alta frequência.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! Alinhamento em 32 bits otimiza os ciclos de barramento de memória em sistemas operacionais e permitia espaço reservado caso outros algoritmos ou métricas fossem adotados futuramente!">
+          Para otimizar o alinhamento de leitura na memória de 32 bits e prover espaço para futuras métricas alternativas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A autenticação no RIPv2 substitui uma entrada inteira de rota por um cabeçalho especial de autenticação, não utilizando o campo de métrica de 32 bits para isso.">
+          Para armazenar a chave criptográfica simétrica MD5 compartilhada entre os roteadores participantes do domínio.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O número de sequência da rota é uma característica de protocolos baseados em estado de enlace (OSPF) ou de vetor de distância sem loops como DSDV/BGP, não existindo no RIP clássico.">
+          Para incluir o número de sequência anti-replay que impede a injeção de pacotes duplicados por atacantes.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nos seguintes conceitos. Revise-os antes de estudar Split Horizon e Poison Reverse:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0003-vetor-de-distancia-bellman-ford.html">← Lição Anterior: 0003 — Vetor de Distância</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
+      <a href="0005-split-horizon-poison-reverse-timers.html">Próxima Lição: 0005 — Split Horizon e Poison Reverse &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Diagnóstico da dependência circular
+      initMultipleChoice("ex1", "Causa do loop em DV: B desconhece que a rota anunciada por A passava pelo próprio B");
+
+      // Ex 2: Bouncing effect (1 + 3 = 4)
+      initInputExercise("ex2", ["4"], "Rastreamento do Bouncing Effect: A calcula 1 + 3 = 4");
+
+      // Ex 3: Falácia da convergência espontânea em rede particionada
+      initTrueFalse("ex3", false, "Sem parâmetros de corte (teto 16), o Bellman-Ford entra em contagem infinita perpétua",
+        "Atenção: Em rede particionada, o Bellman-Ford básico nunca para de contar sem o teto 16!",
+        "Exato! Em rede particionada, os nós aumentam o contador perpetuamente sem convergência espontânea.");
+
+      // Ex 4: Diâmetro máximo do RIP (15 saltos)
+      initInputExercise("ex4", ["15"], "Diâmetro máximo utilizável no RIP: 15 saltos (16 = infinito)");
+
+      // Ex 5: Alinhamento de 32 bits no RIP
+      initMultipleChoice("ex5", "Alinhamento em palavras de 32 bits e espaço para métricas futuras no RIP");
+    });
+  </script>
+</body>
+</html>

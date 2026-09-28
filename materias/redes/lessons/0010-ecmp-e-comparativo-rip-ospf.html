@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0010: ECMP e Comparativo Sistemático RIP vs OSPF — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Módulo 3: Estado de Enlace • Lição 0010</div>
+      <h1>ECMP (Equal-Cost Multi-Path) e Comparativo RIP vs OSPF</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Balanceamento de carga em caminhos equivalentes, a armadilha do desordenamento no TCP mitigada por hash de 5-tupla e a matriz definitiva de decisão RIP x OSPF.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+    </div>
+
+    <!-- BLOCO 1: ECMP E BALANCEAMENTO DE CARGA -->
+    <section class="card-theory">
+      <h2>1. Mecânica de Múltiplos Caminhos de Custo Igual (ECMP)</h2>
+      <p>
+        Quando o algoritmo de Dijkstra detecta que dois ou mais caminhos para o mesmo destino possuem <strong>métrica acumulada rigorosamente idêntica</strong>, o OSPF instala todos eles como próximos saltos válidos na FIB.
+      </p>
+      <p>
+        As vantagens para a engenharia de tráfego são expressivas:
+      </p>
+      <ul>
+        <li><strong>Aumento da Vazão Agregada:</strong> O tráfego divide-se entre múltiplos enlaces físicos simultâneos.</li>
+        <li><strong>Redução de Jitter e Atraso Médio:</strong> Evita a saturação de um único gargalo.</li>
+        <li><strong>Tolerância a Falhas Rápida:</strong> Se um enlace cair, apenas a fração do tráfego que passava por ele precisa ser deslocada, sem congelar a conectividade global da rede.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 1: VANTAGENS DO ECMP -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Benefícios Estratégicos do ECMP no OSPF</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Quais são os principais benefícios de desempenho obtidos ao habilitar a funcionalidade de <em>Equal-Cost Multi-Path</em> (ECMP) em uma rede roteada por OSPF?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O ECMP não elimina pacotes Hello; os subprotocolos OSPF continuam operando normalmente para monitorar a saúde de cada enlace.">
+          Eliminação completa do envio de pacotes Hello nas interfaces de modo a poupar banda de trânsito.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O ECMP distribui o tráfego agregando capacidade de múltiplos enlaces, reduz o atraso médio de enfileiramento e mantém conectividade parcial mesmo se um enlace falhar!">
+          Maior vazão agregada pelo balanceamento de tráfego, redução de atrasos médios e failover mais suave em falhas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: O cálculo de caminhos múltiplos de mesmo custo exige ligeiramente MAIS tempo de processamento de CPU do algoritmo de Dijkstra, e não menos.">
+          Redução drástica do consumo de ciclos de CPU nos roteadores ao desativar as rotinas de cálculo do Dijkstra.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A convergência para a métrica infinita 16 é um comportamento do Bellman-Ford no RIP, não tendo nenhuma relação com ECMP no OSPF.">
+          Aceleração da convergência para a métrica infinita igual a dezesseis em caso de loops acíclicos no domínio.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: A ARMADILHA DO ECMP PARA O TCP -->
+    <section class="card-theory">
+      <h2>2. A Armadilha do ECMP: Desordem de Pacotes no TCP</h2>
+      <p>
+        Distribuir pacotes por <em>Round-Robin ingênuo</em> (pacote 1 pelo enlace A, pacote 2 pelo enlace B) introduz um risco fatal:
+      </p>
+      <div class="callout pitfall">
+        <div class="callout-title">⚠️ O Colapso da Janela de Congestionamento TCP</div>
+        <p style="margin-bottom: 0;">
+          Dois enlaces físicos nunca possuem latência de propagação idêntica em microssegundos. Se o pacote 2 ultrapassar o pacote 1, o receptor TCP detecta uma lacuna na sequência e emite <strong>DUP-ACKs (confirmações duplicadas)</strong>. Ao receber 3 DUP-ACKs, a pilha TCP de origem assume que houve perda de pacote no meio, dispara o <em>Fast Retransmit</em> e <strong>corta sua janela de congestionamento (cwnd) pela metade</strong>! A velocidade do download despenca drasticamente por uma falha aparente de congestionamento.
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 2: IDENTIFICAÇÃO DE FALÁCIA -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: A Falácia do Round-Robin por Pacote</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Avalie a seguinte assertiva de engenharia de redes:<br>
+        <em>"A alternância estrita de pacotes individuais (Packet-by-Packet Round-Robin) em enlaces ECMP é a melhor prática recomendada para fluxos TCP de alta velocidade, pois duplica a vazão sem acarretar nenhum impacto colateral negativo na pilha de transporte dos hospedeiros."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa falácia grave! Round-robin por pacote causa desordenamento de segmentos TCP (jitter diferencial). O TCP receptor emite DUP-ACKs e o remetente corta sua janela cwnd ao meio por engano, arruinando a performance!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! Distribuir pacotes individuais por caminhos com latências ligeiramente desiguais causa entrega fora de ordem. O TCP interpreta a desordem como perda de pacotes, disparando DUP-ACKs e cortando a janela de congestionamento pela metade!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: A SOLUÇÃO: HASH DE 5-TUPLA -->
+    <section class="card-theory">
+      <h2>3. A Solução Técnica: Hashing Consistente de 5-Tupla</h2>
+      <p>
+        Para preservar os benefícios do ECMP sem prejudicar o TCP, os roteadores modernos aplicam uma função matemática de <strong>Hash sobre a 5-tupla</strong> do cabeçalho IP e de Transporte:
+      </p>
+      <p style="text-align: center; font-size: 1.1rem; margin: 0.5rem 0;">
+        $$\text{Enlace} = \text{Hash}\big(\text{IP Orig}, \text{IP Dest}, \text{Porta Orig}, \text{Porta Dest}, \text{Protocolo}\big) \pmod K$$
+      </p>
+      <p>
+        <strong>Propriedade Invariante:</strong> Como todos os pacotes de uma mesma sessão TCP possuem rigorosamente os mesmos 5 campos, o resultado do hash é constante. Todos os pacotes daquele fluxo seguem pelo <strong>mesmíssimo enlace físico</strong>, garantindo entrega em ordem estrita! Sessões diferentes recebem hashes diferentes, equilibrando a carga global.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3: IDENTIFICAÇÃO DOS CAMPOS DA 5-TUPLA -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: Os 5 Campos do Hash de Fluxo TCP</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Quais são os cinco campos de cabeçalho inspecionados pelos circuitos de comutação para calcular o hash de fluxo que impede o desordenamento de pacotes em enlaces ECMP?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O campo Time to Live (TTL) e a soma de verificação (Checksum) mudam a cada roteador intermediário, sendo proibidos em funções de hash estáveis de fluxo.">
+          Time to Live, Checksum de cabeçalho, Endereço IP de Origem, Endereço IP de Destino e Prioridade de TOS.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! A clássica 5-tupla (5-tuple) é composta por: IP Origem, IP Destino, Porta Origem, Porta Destino e Protocolo (TCP). Esses campos são fixos do início ao fim de uma sessão TCP!">
+          Endereço IP de Origem, Endereço IP de Destino, Porta de Origem, Porta de Destino e Protocolo de Transporte.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Endereços físicos MAC são sobrescritos salto a salto a cada enlace Ethernet, não sendo identificadores de camada de rede de ponta a ponta.">
+          Endereço MAC de Origem, Endereço MAC de Destino, VLAN ID de entrada, MTU do enlace e Tamanho Total.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O número de sequência e o número de confirmação do TCP mudam a cada pacote transmitido, o que violaria a estabilidade do caminho para a mesma sessão.">
+          Número de Sequência TCP, Número de Confirmação ACK, Janela Deslizante, Flags de Controle e Checksum.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: COMPARATIVO SISTEMÁTICO RIP VS OSPF -->
+    <section class="card-theory">
+      <h2>4. Comparativo Sistemático Profundo: RIP vs. OSPF</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Dimensão de Projeto</th>
+              <th>RIP (Routing Information Protocol)</th>
+              <th>OSPF (Open Shortest Path First)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Algoritmo de Base</strong></td>
+              <td>Bellman-Ford distribuído por vizinhança</td>
+              <td>Dijkstra centralizado em base local (SPF)</td>
+            </tr>
+            <tr>
+              <td><strong>Métrica de Rota</strong></td>
+              <td>Contagem de saltos ($1$ a $15$; $16 = \infty$)</td>
+              <td>Custo inversamente proporcional à velocidade</td>
+            </tr>
+            <tr>
+              <td><strong>Visão Topológica</strong></td>
+              <td>Míope: conhece apenas a métrica dos vizinhos</td>
+              <td>Global: mapa geométrico idêntico em toda a área</td>
+            </tr>
+            <tr>
+              <td><strong>Convergência e Loops</strong></td>
+              <td>Lenta; sujeito a bouncing e contagem ao infinito</td>
+              <td>Rápida; imune a loops de cálculo intra-área</td>
+            </tr>
+            <tr>
+              <td><strong>Robustez a Perdas</strong></td>
+              <td>Repetição periódica inteira a cada 30 segundos</td>
+              <td>Inundação com ACKs explícitos e retransmissões</td>
+            </tr>
+            <tr>
+              <td><strong>Escalabilidade</strong></td>
+              <td>Baixíssima (redes com até 15 saltos)</td>
+              <td>Altíssima (divisão hierárquica em áreas)</td>
+            </tr>
+            <tr>
+              <td><strong>Consumo de Hardware</strong></td>
+              <td>Muito baixo (memória e processamento mínimos)</td>
+              <td>Moderado a alto (armazena LSDB e roda Dijkstra)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 4: DIAGNÓSTICO DO COMPARATIVO ARQUITETURAL -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Análise Crítica RIP vs. OSPF</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Em relação à robustez a perdas de mensagens de sinalização na rede, como o protocolo OSPF assegura a integridade de sua sincronização em contraste com o mecanismo do RIP?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O OSPF não utiliza o TCP; ele roda diretamente sobre o cabeçalho IP (protocolo número 89) com confiabilidade implementada em sua própria camada de aplicação de roteamento.">
+          O OSPF delega a garantia de entrega à conexão orientada a fluxo TCP sobre a porta padrão cento e setenta e nove.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O RIP apoia-se passivamente na repetição periódica de seus vetores a cada 30s. O OSPF implementa confiabilidade explícita: cada LSA transmitido exige uma confirmação explícita (LSAck), havendo retransmissão imediata se um ACK não chegar!">
+          O OSPF exige confirmações explícitas (LSAck) para seus anúncios, enquanto o RIP depende de retransmissões periódicas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A contagem ao infinito é um defeito grave do Vetor de Distância (RIP), e não uma ferramenta de confiabilidade do OSPF.">
+          O OSPF recorre à contagem controlada até o infinito para detectar pacotes que tenham sido corrompidos por ruído.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A regra de Split Horizon é uma técnica do Vetor de Distância (RIP) para atenuar loops de dois nós, não tendo relação com confirmações no OSPF.">
+          O OSPF aplica o envenenamento reverso com métrica dezesseis sempre que um pacote de dados é descartado no meio.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5: ACTIVE RECALL / MÉTRICA MÁXIMA DO RIP -->
+    <section class="card-exercise" id="ex5" data-hint="No RIP a métrica máxima válida é 15 saltos (16 já é inalcançável). No OSPF, o campo de métrica padrão possui 16 bits de custo, atingindo até 65.535. Digite '15'.">
+      <div class="exercise-header">
+        <h3>Exercício 5: Limite Métrico de Escalabilidade</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        Enquanto o OSPF suporta métricas de enlace expressas em números inteiros de 16 bits (custos de até 65.535), <strong>qual é o maior valor numérico de métrica útil que uma rota válida pode atingir no protocolo RIP</strong> antes de ser sumariamente descartada como inalcançável? (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 15" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Métrica</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nos seguintes conceitos. Revise-os antes de encarar o Simulado Geral de Exame:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0009-ospf-subprotocolos-hello-exchange-dr.html">← Lição Anterior: 0009 — Subprotocolos OSPF e DR</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
+      <a href="0011-simulado-geral-exame-completo.html">Próxima Lição: 0011 — Simulado Geral de Prova &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Benefícios do ECMP
+      initMultipleChoice("ex1", "Benefícios do ECMP: vazão agregada, menor latência média e resiliência a falhas");
+
+      // Ex 2: Falácia do Round-Robin por pacote
+      initTrueFalse("ex2", false, "Round-robin por pacote causa desordem no TCP, DUP-ACKs e corte de janela",
+        "Atenção: Round-robin de pacotes desordena o TCP e colapsa a janela de congestionamento!",
+        "Exato! Round-robin por pacote induz retransmissões espúrias no TCP.");
+
+      // Ex 3: 5-tupla do hash
+      initMultipleChoice("ex3", "Campos da 5-tupla de fluxo: IP Origem, IP Destino, Porta Origem, Porta Destino, Protocolo");
+
+      // Ex 4: Confiabilidade OSPF vs RIP
+      initMultipleChoice("ex4", "Robustez OSPF vs RIP: ACKs explícitos (LSAck) no OSPF vs repetição periódica no RIP");
+
+      // Ex 5: Métrica máxima útil no RIP (15)
+      initInputExercise("ex5", ["15"], "Métrica útil máxima no RIP: 15 saltos (16 = infinito)");
+    });
+  </script>
+</body>
+</html>

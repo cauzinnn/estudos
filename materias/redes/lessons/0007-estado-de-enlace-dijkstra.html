@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0007: Estado de Enlace e Algoritmo SPF de Dijkstra — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Módulo 3: Estado de Enlace • Lição 0007</div>
+      <h1>Estado de Enlace e o Algoritmo SPF de Dijkstra</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Inundação confiável de LSAs, a base topológica unificada (LSDB), rastreamento formal de mesa dos conjuntos C, O e R, e derivação da tabela de encaminhamento (FIB).
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+    </div>
+
+    <!-- BLOCO 1: A FILOSOFIA LINK STATE E A LSDB -->
+    <section class="card-theory">
+      <h2>1. A Filosofia Link State (LS): Mapa Global Unificado</h2>
+      <p>
+        Enquanto o Vetor de Distância opera por fofoca ("diga aos vizinhos o que sabe do mundo"), os protocolos de <strong>Estado do Enlace</strong> operam pela lógica inversa:
+      </p>
+      <p style="text-align: center; font-style: italic; color: var(--accent);">
+        "Diga a todo o mundo exatamente o que você sabe sobre os seus vizinhos imediatos."
+      </p>
+      <p>
+        Cada roteador descobre seus enlaces diretos e seus custos, empacota essas informações em um <strong>LSA (Link State Advertisement)</strong> e o inunda por toda a área.
+      </p>
+      <p>
+        Todos os nós recebem esses LSAs e constroem em memória uma <strong>Link State Database (LSDB) rigorosamente idêntica</strong>: o grafo geométrico completo da topologia. Com a LSDB em mãos, cada roteador executa localmente o <strong>Algoritmo de Dijkstra</strong> para gerar sua própria árvore de caminhos mínimos, <strong>imune a loops de contagem ao infinito!</strong>
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1: IMUNIDADE A LOOPS NO LS -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: A Causa da Imunidade a Loops em Estado de Enlace</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Por que o cálculo de rotas no algoritmo de Estado de Enlace (Dijkstra) não é vulnerável ao problema da contagem ao infinito que assola o Vetor de Distância?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O Dijkstra suporta grafos complexos com qualquer número arbitrário de ciclos e malhas fechadas. O impedimento de loops não decorre da topologia física.">
+          Porque as redes que utilizam protocolos de estado de enlace são obrigadas a possuir topologia estritamente acíclica.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Cada nó possui o mapa completo e idêntico da rede inteira em sua LSDB. O menor caminho é calculado sobre uma estrutura de dados global conhecida, sem depender de intermediários cegos!">
+          Porque cada roteador calcula caminhos sobre uma base com o mapa topológico completo e idêntico da rede inteira.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A métrica 16 é um artifício do Bellman-Ford no RIP. O OSPF suporta métricas de até 16 ou 32 bits (custos de até 65.535 ou mais) sem restrição de 16 saltos.">
+          Porque a métrica máxima nos protocolos de estado de enlace é limitada por hardware ao teto estrito de dezesseis saltos.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A regra de Split Horizon é uma técnica corretiva do Vetor de Distância, não sendo utilizada no cálculo de caminhos mínimos do Dijkstra.">
+          Porque a regra do Split Horizon desativa todas as interfaces que transportam pacotes com destino a redes vizinhas.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: FORMULAÇÃO DE DIJKSTRA: C, O E R -->
+    <section class="card-theory">
+      <h2>2. Os Três Conjuntos do Algoritmo de Dijkstra (SPF)</h2>
+      <p>
+        Para derivar a árvore de menor caminho da raiz $S$ para todos os nós $V$, o algoritmo manipula três conjuntos:
+      </p>
+      <ul>
+        <li><strong>$C$ (Confirmados):</strong> Nós para os quais o caminho ótimo definitivo já foi comprovado. Inicia com $C = \{S\}$.</li>
+        <li><strong>$R$ (Restantes):</strong> Nós da rede ainda não confirmados ($R = V - C$).</li>
+        <li><strong>$O$ (Tentativos):</strong> Lista de caminhos candidatos ordenados por <strong>custo acumulado crescente</strong>.</li>
+      </ul>
+      <div class="callout definition">
+        <div class="callout-title">📌 Mecânica do Passo a Passo de Mesa</div>
+        <ol style="margin-bottom: 0;">
+          <li>Remove de $O$ o caminho $P$ de menor custo acumulado. Seja $U$ o nó folha de $P$.</li>
+          <li><strong>Teste de Otimização:</strong> Se $U \in C$, o caminho $P$ é <u>descartado</u> (pois já encontramos antes um caminho melhor ou igual para $U$).</li>
+          <li>Se $U \notin C$, então $P$ é o caminho mínimo definitivo para $U$! Move-se $U$ de $R$ para $C$.</li>
+          <li>Concatena-se $P$ com todos os enlaces que saem de $U$, inserindo os novos caminhos na lista ordenada $O$.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 2: IDENTIFICAÇÃO DE FALÁCIA -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: A Invariante dos Nós Confirmados</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Analise a seguinte afirmativa sobre a execução de mesa do Dijkstra:<br>
+        <em>"Se ao remover o menor caminho da lista de candidatos tentativos $O$ descobrirmos que seu nó terminal $U$ já pertence ao conjunto dos confirmados $C$, devemos recalcular e substituir a rota antiga gravada em $C$ por esse novo caminho candidato."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa confusão! Como a lista O é ordenada por custo crescente, o PRIMEIRO caminho a admitir U em C foi garantidamente o de menor custo. Qualquer caminho posterior retirado de O para U terá custo maior ou igual, devendo ser estritamente descartado!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! Uma vez que um nó entra em C, seu caminho ótimo está matematicamente selado (em grafos com custos não-negativos). Qualquer caminho retirado posteriormente de O que termine em U é subótimo e é simplesmente descartado!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: GRAFO DA LISTA 3 UFRJ -->
+    <section class="card-theory">
+      <h2>3. Topologia de Prova UFRJ (Grafo de 6 Nós e 10 Enlaces)</h2>
+      <p>
+        Considere a rede com os nós $A, B, C, D, E, F$ e seus respectivos custos simétricos de enlace:
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="260" viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg">
+          <!-- Arestas -->
+          <!-- A-B (4), A-D (6), A-E (10) -->
+          <line x1="80" y1="130" x2="200" y2="50" stroke="#30363d" stroke-width="2.5"/>
+          <line x1="80" y1="130" x2="200" y2="210" stroke="#30363d" stroke-width="2.5"/>
+          <line x1="80" y1="130" x2="330" y2="130" stroke="#30363d" stroke-width="2.5"/>
+
+          <!-- B-C (6), B-D (7), B-E (5) -->
+          <line x1="200" y1="50" x2="400" y2="50" stroke="#30363d" stroke-width="2.5"/>
+          <line x1="200" y1="50" x2="200" y2="210" stroke="#30363d" stroke-width="2.5"/>
+          <line x1="200" y1="50" x2="330" y2="130" stroke="#30363d" stroke-width="2.5"/>
+
+          <!-- D-E (6) -->
+          <line x1="200" y1="210" x2="330" y2="130" stroke="#30363d" stroke-width="2.5"/>
+
+          <!-- C-E (7), C-F (4) -->
+          <line x1="400" y1="50" x2="330" y2="130" stroke="#30363d" stroke-width="2.5"/>
+          <line x1="400" y1="50" x2="490" y2="130" stroke="#30363d" stroke-width="2.5"/>
+
+          <!-- E-F (2) -->
+          <line x1="330" y1="130" x2="490" y2="130" stroke="#3fb950" stroke-width="3"/>
+
+          <!-- Rótulos -->
+          <text x="130" y="80" font-family="monospace" font-size="12" fill="#79c0ff">E2(4)</text>
+          <text x="125" y="185" font-family="monospace" font-size="12" fill="#79c0ff">E1(6)</text>
+          <text x="190" y="140" font-family="monospace" font-size="12" fill="#79c0ff">E4(10)</text>
+          
+          <text x="300" y="42" font-family="monospace" font-size="12" fill="#79c0ff">E5(6)</text>
+          <text x="175" y="130" font-family="monospace" font-size="12" fill="#79c0ff">E3(7)</text>
+          <text x="245" y="85" font-family="monospace" font-size="12" fill="#79c0ff">E6(5)</text>
+
+          <text x="250" y="185" font-family="monospace" font-size="12" fill="#79c0ff">E7(6)</text>
+          <text x="380" y="100" font-family="monospace" font-size="12" fill="#79c0ff">E8(7)</text>
+          <text x="455" y="80" font-family="monospace" font-size="12" fill="#79c0ff">E9(4)</text>
+          <text x="410" y="145" font-family="monospace" font-weight="bold" font-size="13" fill="#7ee787">E10(2)</text>
+
+          <!-- Nós -->
+          <circle cx="80" cy="130" r="20" fill="#1f6feb" stroke="#58a6ff" stroke-width="2"/>
+          <text x="80" y="135" font-family="monospace" font-weight="bold" font-size="15" fill="#fff" text-anchor="middle">A</text>
+
+          <circle cx="200" cy="50" r="18" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="200" y="55" font-family="monospace" font-weight="bold" font-size="14" fill="#f0f6fc" text-anchor="middle">B</text>
+
+          <circle cx="200" cy="210" r="18" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="200" y="215" font-family="monospace" font-weight="bold" font-size="14" fill="#f0f6fc" text-anchor="middle">D</text>
+
+          <circle cx="330" cy="130" r="18" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="330" y="135" font-family="monospace" font-weight="bold" font-size="14" fill="#f0f6fc" text-anchor="middle">E</text>
+
+          <circle cx="400" cy="50" r="18" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="400" y="55" font-family="monospace" font-weight="bold" font-size="14" fill="#f0f6fc" text-anchor="middle">C</text>
+
+          <circle cx="490" cy="130" r="20" fill="#238636" stroke="#3fb950" stroke-width="2"/>
+          <text x="490" y="135" font-family="monospace" font-weight="bold" font-size="15" fill="#fff" text-anchor="middle">F</text>
+        </svg>
+        <div class="graph-caption">
+          Figura 2: Grafo ponderado com 6 roteadores. Raiz de cálculo: <strong>A</strong> | Destino desafiador: <strong>F</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 3: RASTREAMENTO DO CAMINHO MÍNIMO ATÉ F -->
+    <section class="card-exercise" id="ex3" data-hint="Compare os caminhos de A até F: via C (A->B->C->F: 4 + 6 + 4 = 14) contra o caminho via E (A->B->E->F: 4 + 5 + 2 = 11). Qual é a menor soma?">
+      <div class="exercise-header">
+        <h3>Exercício 3: Rastreamento do Menor Caminho até F</h3>
+        <span class="exercise-tag recall">Active Recall / Prova UFRJ</span>
+      </div>
+      <div class="question-text">
+        Executando o algoritmo de Dijkstra na topologia da Figura 2 tendo o roteador <strong>A</strong> como nó raiz:<br><br>
+        <strong>Qual é o custo mínimo acumulado definitivo do caminho de menor distância entre o nó A e o nó F?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 11" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Custo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: DA ÁRVORE SPF À TABELA DE ENCAMINHAMENTO (FIB) -->
+    <section class="card-theory">
+      <h2>4. Derivação da Tabela de Encaminhamento (FIB)</h2>
+      <p>
+        O algoritmo de Dijkstra produz a árvore geradora de caminhos mais curtos (<em>Shortest Path Tree</em>).
+      </p>
+      <p>
+        Para construir a tabela de repasse (FIB), o roteador $A$ precisa registrar, para cada destino, qual é o <strong>vizinho direto imediato (Próximo Salto / Next Hop)</strong> na interface de saída:
+      </p>
+      <ul>
+        <li>Para o destino $B$: caminho $A-B$ $\to$ Next Hop = <strong>B</strong>.</li>
+        <li>Para o destino $D$: caminho $A-D$ $\to$ Next Hop = <strong>D</strong>.</li>
+        <li>Para o destino $E$: caminho $A-B-E$ $\to$ Next Hop = <strong>B</strong>.</li>
+        <li>Para o destino $C$: caminho $A-B-C$ $\to$ Next Hop = <strong>B</strong>.</li>
+        <li>Para o destino $F$: caminho $A-B-E-F$ $\to$ Next Hop = <strong>B</strong>.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 4: DETERMINAÇÃO DO NEXT-HOP NA FIB -->
+    <section class="card-exercise" id="ex4" data-hint="O caminho ótimo de A para F é A -> B -> E -> F. O primeiro salto ao sair de A é o vizinho B. Digite 'B'.">
+      <div class="exercise-header">
+        <h3>Exercício 4: Mapeamento de Próximo Salto na Tabela FIB</h3>
+        <span class="exercise-tag recall">Active Recall / Mesa</span>
+      </div>
+      <div class="question-text">
+        Na tabela de encaminhamento (FIB) do roteador <strong>A</strong>, <strong>qual é o identificador do roteador vizinho configurado no campo Próximo Salto (Next Hop)</strong> para despachar os pacotes cujo destino final seja a estação conectada ao nó <strong>F</strong>? (Digite apenas a letra do nó, ex: B).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: B" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Next Hop</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 5: COMPLEXIDADE COMPUTACIONAL -->
+    <section class="card-theory">
+      <h2>5. Complexidade Computacional: Dijkstra vs. Bellman-Ford</h2>
+      <p>
+        A complexidade computacional do algoritmo de Dijkstra depende da estrutura de dados usada para gerenciar a lista de caminhos tentativos $O$:
+      </p>
+      <ul>
+        <li><strong>Implementação Simples (Busca Linear):</strong> $O(V^2)$, onde $V$ é o número de roteadores.</li>
+        <li><strong>Implementação com Heap Binário (Min-Heap / Fila de Prioridade):</strong> $O((V + E) \log V)$ ou $O(M \log M)$, onde $E$ (ou $M$) é o número de enlaces.</li>
+      </ul>
+      <p>
+        Em redes esparsas comuns de telecomunicações, o Dijkstra converge muito mais rapidamente em CPU que o Bellman-Ford distribuído ($O(N \cdot M^2)$ rodadas com trocas contínuas).
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 5: COMPLEXIDADE DO DIJKSTRA COM HEAP -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Escala Computacional com Fila de Prioridade</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Qual é a complexidade assintótica de tempo do algoritmo de Dijkstra quando implementado eficientemente com uma estrutura de fila de prioridades (Heap) em um grafo com $N$ roteadores e $M$ enlaces?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: Complexidade puramente linear O(M) seria atingível apenas se as arestas tivessem custos unitários invariáveis (como em uma busca em largura BFS pura).">
+          Complexidade de tempo puramente linear O(M) onde o número de arestas dita a busca em profundidade no grafo.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Com uso de heaps binários na fila de prioridade de caminhos tentativos, as operações de extração do mínimo e relaxamento de enlaces operam na ordem assintótica de O(M log N) ou O(M log M)!">
+          Complexidade na ordem de O(M log M) permitindo convergência muito mais célere que o Bellman-Ford tradicional.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: N elevado ao cubo (O(N^3)) é a complexidade do algoritmo de Floyd-Warshall para caminhos mínimos entre todos os pares, e não do Dijkstra de fonte única.">
+          Complexidade polinomial de ordem cúbica O(N^3) necessária para recalcular todas as permutações de pares de nós.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Complexidade exponencial O(2^N) inviabilizaria qualquer protocolo de estado de enlace na Internet real. O Dijkstra pertence à classe polinomial P.">
+          Complexidade exponencial da ordem de O(2^N) gerada pela explosão combinatória da inundação de anúncios no meio.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nos seguintes conceitos. Revise-os antes de avançar para a arquitetura em áreas do OSPF:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0006-protocolo-rip-v1-v2-ripng.html">← Lição Anterior: 0006 — Protocolo RIP</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
+      <a href="0008-ospf-arquitetura-areas-lsas.html">Próxima Lição: 0008 — OSPF e Áreas &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Imunidade a loops no LS
+      initMultipleChoice("ex1", "Causa da imunidade a loops no LS: LSDB unificada e cálculo independente");
+
+      // Ex 2: Invariante dos nós confirmados C
+      initTrueFalse("ex2", false, "Nós em C já possuem caminho ótimo comprovado e candidatos posteriores são descartados",
+        "Atenção: Caminhos posteriores para nós já presentes em C são SEMPRE descartados!",
+        "Exato! Uma vez que um nó entra em C, seu caminho ótimo está selado e alternativas são descartadas.");
+
+      // Ex 3: Custo mínimo até F (4 + 5 + 2 = 11)
+      initInputExercise("ex3", ["11"], "Dijkstra da UFRJ: caminho ótimo A-B-E-F com custo 11");
+
+      // Ex 4: Next hop na FIB (B)
+      initInputExercise("ex4", ["b", "B"], "Next hop na FIB de A para destino F: roteador vizinho B");
+
+      // Ex 5: Complexidade O(M log M)
+      initMultipleChoice("ex5", "Complexidade do Dijkstra com Heap: O(M log M)");
+    });
+  </script>
+</body>
+</html>

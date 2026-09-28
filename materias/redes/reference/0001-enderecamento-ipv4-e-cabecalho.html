@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Referência 0001: Endereçamento IPv4 e Cabeçalho — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Ficha de Consulta Rápida • Módulo 1</div>
+      <h1>Ficha 0001: Endereçamento IPv4, Máscaras e Cabeçalho</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Guia de consulta para provas: classes legadas, cálculo de sub-redes CIDR/VLSM, campos do cabeçalho IPv4, fragmentação e opções de roteamento pela fonte.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha 0002: Algoritmos e Protocolos (DV vs LS) &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: CLASSES HISTÓRICAS DE ENDEREÇOS IP -->
+    <section class="card-theory">
+      <h2>1. Classes Históricas de Endereços IP (Classful)</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Classe</th>
+              <th>Bits Iniciais (1º Octeto)</th>
+              <th>Faixa do 1º Octeto</th>
+              <th>Máscara Padrão</th>
+              <th>Bits Rede / Host</th>
+              <th>Finalidade Primária</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Classe A</strong></td>
+              <td><code>0...</code></td>
+              <td><code>1.0.0.0</code> a <code>127.255.255.255</code></td>
+              <td><code>255.0.0.0</code> (/8)</td>
+              <td>8 / 24</td>
+              <td>Redes gigantescas ($2^{24} - 2 \approx 16,7$M hosts)</td>
+            </tr>
+            <tr>
+              <td><strong>Classe B</strong></td>
+              <td><code>10...</code></td>
+              <td><code>128.0.0.0</code> a <code>191.255.255.255</code></td>
+              <td><code>255.255.0.0</code> (/16)</td>
+              <td>16 / 16</td>
+              <td>Redes médias a grandes ($2^{16} - 2 = 65.534$ hosts)</td>
+            </tr>
+            <tr>
+              <td><strong>Classe C</strong></td>
+              <td><code>110...</code></td>
+              <td><code>192.0.0.0</code> a <code>223.255.255.255</code></td>
+              <td><code>255.255.255.0</code> (/24)</td>
+              <td>24 / 8</td>
+              <td>Redes locais pequenas ($2^8 - 2 = 254$ hosts)</td>
+            </tr>
+            <tr>
+              <td><strong>Classe D</strong></td>
+              <td><code>1110...</code></td>
+              <td><code>224.0.0.0</code> a <code>239.255.255.255</code></td>
+              <td>Não se aplica</td>
+              <td>Não há divisão host</td>
+              <td><strong>Multicast</strong> (grupos de difusão seletiva)</td>
+            </tr>
+            <tr>
+              <td><strong>Classe E</strong></td>
+              <td><code>1111...</code></td>
+              <td><code>240.0.0.0</code> a <code>255.255.255.255</code></td>
+              <td>Não se aplica</td>
+              <td>Não há divisão host</td>
+              <td>Reservado para pesquisas futuras / experimental</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout pitfall">
+        <div class="callout-title">⚠️ Endereços Reservados Notáveis</div>
+        <ul style="margin-bottom: 0;">
+          <li><code>127.0.0.0/8</code>: Loopback local (ex: <code>127.0.0.1</code>). Datagramas nunca saem para o enlace físico.</li>
+          <li><code>0.0.0.0/0</code>: Rota padrão (default route) ou host sem IP durante inicialização DHCP.</li>
+          <li><code>255.255.255.255</code>: Broadcast limitado na rede local (não é repassado por roteadores).</li>
+          <li>RFC 1918 (Privados): <code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>, <code>192.168.0.0/16</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: CÁLCULO DE SUB-REDES CIDR E VLSM -->
+    <section class="card-theory">
+      <h2>2. Máscaras de Sub-rede e Aritmética Binária de Prefixo</h2>
+      <p>
+        Dada uma máscara com comprimento de prefixo $/n$, o número de bits reservados para endereçamento de hospedeiros (hosts) é $h = 32 - n$.
+      </p>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Prefixo CIDR</th>
+              <th>Máscara Decimal (Último Octeto)</th>
+              <th>Bits de Host ($h$)</th>
+              <th>Total de IPs ($2^h$)</th>
+              <th>IPs Válidos ($2^h - 2$)</th>
+              <th>Caso Típico de Uso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>/23</code></td><td><code>255.255.254.0</code> (.0)</td><td>9 bits</td><td>512</td><td>510</td><td>Campus departamental</td></tr>
+            <tr><td><code>/24</code></td><td><code>255.255.255.0</code> (.0)</td><td>8 bits</td><td>256</td><td>254</td><td>Rede LAN tradicional</td></tr>
+            <tr><td><code>/25</code></td><td><code>255.255.255.128</code> (.128)</td><td>7 bits</td><td>128</td><td>126</td><td>Divisão de LAN ao meio</td></tr>
+            <tr><td><code>/26</code></td><td><code>255.255.255.192</code> (.192)</td><td>6 bits</td><td>64</td><td>62</td><td>Sub-rede de servidores</td></tr>
+            <tr><td><code>/27</code></td><td><code>255.255.255.224</code> (.224)</td><td>5 bits</td><td>32</td><td>30</td><td>Laboratórios de informática</td></tr>
+            <tr><td><code>/28</code></td><td><code>255.255.255.240</code> (.240)</td><td>4 bits</td><td>16</td><td>14</td><td>VLAN de infraestrutura</td></tr>
+            <tr><td><code>/29</code></td><td><code>255.255.255.248</code> (.248)</td><td>3 bits</td><td>8</td><td>6</td><td>Pool de roteadores de borda</td></tr>
+            <tr class="highlight-step"><td><code>/30</code></td><td><code>255.255.255.252</code> (.252)</td><td>2 bits</td><td>4</td><td><strong>2</strong></td><td><strong>Enlaces ponto-a-ponto entre roteadores</strong></td></tr>
+            <tr><td><code>/31</code></td><td><code>255.255.255.254</code> (.254)</td><td>1 bit</td><td>2</td><td>2 (RFC 3021)</td><td>Enlaces ponto-a-ponto modernos</td></tr>
+            <tr><td><code>/32</code></td><td><code>255.255.255.255</code> (.255)</td><td>0 bits</td><td>1</td><td>1 (Host route)</td><td>Interface Loopback de roteador</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📐 Fórmulas Obrigatórias de Prova</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Endereço de Rede (Sub-rede):</strong> Aplique operação AND binária bit a bit entre o endereço IP e a máscara. Todos os $h$ bits de host tornam-se <code>0</code>.</li>
+          <li><strong>Endereço de Broadcast:</strong> Mantenha os $n$ bits de prefixo e preencha todos os $h$ bits de host com <code>1</code>.</li>
+          <li><strong>Primeiro Endereço Útil:</strong> $\text{Endereço de Rede} + 1$.</li>
+          <li><strong>Último Endereço Útil:</strong> $\text{Endereço de Broadcast} - 1$.</li>
+          <li><strong>Armadilha do Prefixo Inválido:</strong> Um endereço só pode representar uma rede válida se <u>todos</u> os seus bits variáveis forem estritamente zero! Ex: <code>136.27.33.0/23</code> é <strong>inválido</strong> como rede, pois o 23º bit é <code>1</code> ($33 = 00100001_2$ e o bit 23 pertence à parte variável). A rede correta é <code>136.27.32.0/23</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 3: CABEÇALHO IPV4 E FRAGMENTAÇÃO -->
+    <section class="card-theory">
+      <h2>3. Estrutura do Cabeçalho IPv4 (20 a 60 Bytes)</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Tamanho</th>
+              <th>Descrição e Comportamento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Versão</strong></td>
+              <td>4 bits</td>
+              <td>Valor binário <code>0100</code> ($4$).</td>
+            </tr>
+            <tr>
+              <td><strong>IHL (Header Length)</strong></td>
+              <td>4 bits</td>
+              <td>Comprimento em palavras de 32 bits (4 bytes). Mínimo = $5$ ($5 \times 4 = 20$ bytes sem opções). Máximo = $15$ ($60$ bytes).</td>
+            </tr>
+            <tr>
+              <td><strong>DSCP / ECN (antigo TOS)</strong></td>
+              <td>8 bits</td>
+              <td>6 bits para DSCP (Differentiated Services) e 2 bits para ECN (Explicit Congestion Notification: ECT e CE).</td>
+            </tr>
+            <tr>
+              <td><strong>Total Length</strong></td>
+              <td>16 bits</td>
+              <td>Tamanho total do datagrama (cabeçalho + dados) em bytes. Máximo teórico: $65.535$ bytes.</td>
+            </tr>
+            <tr>
+              <td><strong>Identification (ID)</strong></td>
+              <td>16 bits</td>
+              <td>Identificador único para permitir a remontagem dos fragmentos pelo hospedeiro de destino.</td>
+            </tr>
+            <tr>
+              <td><strong>Flags</strong></td>
+              <td>3 bits</td>
+              <td>Bit 0: reservado (0). Bit 1: <strong>DF (Don't Fragment)</strong> — se 1 e pacote &gt; MTU, roteador descarta e envia ICMP Type 3 Code 4. Bit 2: <strong>MF (More Fragments)</strong> — 1 se há fragmentos seguintes, 0 no último fragmento.</td>
+            </tr>
+            <tr>
+              <td><strong>Fragment Offset</strong></td>
+              <td>13 bits</td>
+              <td>Posição dos dados deste fragmento em relação ao datagrama original, medido em <strong>unidades de 8 bytes (64 bits)</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Time to Live (TTL)</strong></td>
+              <td>8 bits</td>
+              <td>Contador decrementado por cada roteador. Evita loops eternos. Se chegar a 0, pacote é descartado e gera <code>ICMP Time Exceeded (Tipo 11)</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Protocol</strong></td>
+              <td>8 bits</td>
+              <td>Identifica a camada superior: <strong>1</strong> = ICMP, <strong>6</strong> = TCP, <strong>17</strong> = UDP, <strong>89</strong> = OSPF.</td>
+            </tr>
+            <tr>
+              <td><strong>Header Checksum</strong></td>
+              <td>16 bits</td>
+              <td>Soma de verificação cobrindo <em>apenas</em> o cabeçalho IP. Recalculado a cada salto porque o TTL é decrementado.</td>
+            </tr>
+            <tr>
+              <td><strong>IP Origem / Destino</strong></td>
+              <td>32 bits cada</td>
+              <td>Endereço IPv4 de 4 octetos do remetente original e do destinatário final (não mudam ao longo dos saltos normais).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 4: COMPARATIVO: OPÇÕES IP VS TÚNEL IP-IN-IP -->
+    <section class="card-theory">
+      <h2>4. Encapsulamento IP-em-IP vs Roteamento pela Fonte (Source Routing)</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Critério</th>
+              <th>Encapsulamento IP dentro de IP (Túnel)</th>
+              <th>Loose Source Routing (LSR)</th>
+              <th>Strict Source Routing (SSR)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mecanismo</strong></td>
+              <td>Adiciona um novo cabeçalho IPv4 externo de 20 bytes a cada túnel.</td>
+              <td>Utiliza o campo de Opções do cabeçalho IPv4 existente.</td>
+              <td>Utiliza o campo de Opções do cabeçalho IPv4 existente.</td>
+            </tr>
+            <tr>
+              <td><strong>Caminho no Roteador</strong></td>
+              <td><strong>Fast Path</strong> (hardware/ASIC) nos roteadores intermediários.</td>
+              <td><strong>Slow Path</strong> (CPU/Software) em todos os roteadores do caminho.</td>
+              <td><strong>Slow Path</strong> (CPU/Software) em todos os roteadores do caminho.</td>
+            </tr>
+            <tr>
+              <td><strong>Overhead por Salto</strong></td>
+              <td>20 bytes por túnel/destino forçado.</td>
+              <td>4 bytes por endereço IP forçado.</td>
+              <td>4 bytes por endereço IP forçado.</td>
+            </tr>
+            <tr>
+              <td><strong>Limite de Saltos</strong></td>
+              <td>Sem limite formal fixo (limitado apenas pelo MTU e fragmentação).</td>
+              <td><strong>No máximo 9 destinos</strong> (campo de opções limitado a 40 bytes: $40 - 3 = 37$ bytes livres).</td>
+              <td><strong>No máximo 9 destinos</strong> (mesmo limite de 40 bytes de opções).</td>
+            </tr>
+            <tr>
+              <td><strong>Garantia de Trajetória</strong></td>
+              <td>Força a passagem pelos túneis, mas entre eles o pacote pode passar por nós extras.</td>
+              <td>Força passagem pelos nós listados, permitindo saltos intermediários livres.</td>
+              <td><strong>Estrita:</strong> o próximo nó da lista <u>deve ser vizinho direto</u>; se não for, pacote é descartado!</td>
+            </tr>
+            <tr>
+              <td><strong>Pode ser emulado por IP-in-IP?</strong></td>
+              <td>—</td>
+              <td>Sim, criando túneis sucessivos.</td>
+              <td><strong>Não!</strong> Não há como o túnel garantir que apenas os nós listados sejam visitados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout definition">
+        <div class="callout-title">📢 Mensagens ICMP Redirect (Tipo 5)</div>
+        <p style="margin-bottom: 0;">
+          Enviadas por um roteador $R_A$ para uma estação quando $R_A$ percebe que o próximo salto ideal para aquele destino é outro roteador $R_B$ <strong>pertencente à mesma rede local de onde o pacote acabou de entrar</strong> (interface de entrada = interface de saída). Permite que a estação atualize sua tabela local e envie datagramas subsequentes diretamente a $R_B$, eliminando saltos duplos desnecessários na LAN.
+        </p>
+      </div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Voltar ao Painel da Matéria</a>
+      <a href="../lessons/0001-enderecamento-ipv4-classes-cidr.html">Iniciar Lição 0001: IPv4 e CIDR &rarr;</a>
+    </div>
+
+  </div>
+</body>
+</html>

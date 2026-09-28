@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0005: Split Horizon, Poison Reverse e Temporizadores — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Módulo 2: Vetor de Distância • Lição 0005</div>
+      <h1>Mitigação de Loops: Split Horizon, Poison Reverse e Timers</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Mecanismos de contenção de instabilidades: omissão de rotas no Split Horizon, envenenamento reverso com métrica 16, a vulnerabilidade fatal a loops de 3 nós e os temporizadores do RIP.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+    </div>
+
+    <!-- BLOCO 1: SPLIT HORIZON SIMPLES -->
+    <section class="card-theory">
+      <h2>1. Split Horizon Simples (Horizonte Dividido)</h2>
+      <p>
+        A regra do <strong>Split Horizon simples</strong> parte de uma premissa lógica trivial:
+      </p>
+      <p style="text-align: center; font-style: italic; color: var(--accent);">
+        "Se o nó A utiliza o nó B como seu próximo salto para alcançar o destino X, não faz nenhum sentido A anunciar a B que sabe chegar a X."
+      </p>
+      <p>
+        Na versão simples do algoritmo, o roteador $A$ <strong>omite completamente</strong> o destino $X$ de qualquer vetor de distância transmitido pela interface conectada a $B$. Como $B$ não recebe anúncio de $X$ vindo de $A$, $B$ nunca cometerá o erro de tentar alcançar $X$ passando por $A$ caso sua rota direta caia.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1: MECÂNICA OPERACIONAL DO SPLIT HORIZON -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Regra Operacional do Split Horizon Simples</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Em que consiste a implementação padrão da regra do <em>Split Horizon</em> simples em um roteador executando Vetor de Distância?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: Anunciar com distância infinita é a definição do Poison Reverse (envenenamento reverso), e não do Split Horizon simples, que atua por supressão/omissão.">
+          O roteador anuncia todos os destinos conhecidos por todas as interfaces, marcando com métrica infinita os enlaces lentos.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! No Split Horizon simples, se um destino é alcançado através da interface eth0, esse destino simplesmente não é listado nas atualizações enviadas pela interface eth0.">
+          O roteador omite dos anúncios transmitidos em uma interface os destinos cuja rota de saída utilize essa mesma interface.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Desativar a interface física deixaria a rede sem conectividade para os outros destinos legítimos. O Split Horizon filtra apenas as mensagens de anúncio lógico.">
+          O roteador desativa temporariamente a porta física do enlace para evitar a propagação de pacotes de dados duplicados.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Protocolos DV não utilizam divisão hierárquica em áreas; isso é uma propriedade exclusiva de protocolos Link State como o OSPF.">
+          O roteador divide a topologia em duas áreas independentes para impedir que o tráfego atravesse a fronteira de domínio.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: SPLIT HORIZON COM POISON REVERSE -->
+    <section class="card-theory">
+      <h2>2. Split Horizon com Envenenamento Reverso (Poison Reverse)</h2>
+      <p>
+        No <strong>Split Horizon com Poison Reverse</strong>, em vez de simplesmente omitir a rota para $X$ no anúncio enviado a $B$, o nó $A$ anuncia explicitamente:
+      </p>
+      <p style="text-align: center; font-size: 1.15rem; color: var(--error); margin: 0.5rem 0;">
+        $$D_A(X) = \infty \quad (\text{Métrica } 16)$$
+      </p>
+      <ul>
+        <li><strong>Vantagem:</strong> Elimina ambiguidades imediatamente. Se $B$ perder a rota direta para $X$, $B$ sabe categoricamente que $A$ é uma rota "envenenada" ($\infty$), quebrando loops de 2 nós no primeiro instante, mesmo se pacotes forem perdidos.</li>
+        <li><strong>Trade-off:</strong> Como não há omissão de entradas, os pacotes de atualização transportam mais dados, consumindo ligeiramente mais banda de controle.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 2: FALÁCIA DO POISON REVERSE -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: A Falácia da Economia de Tráfego</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Analise a seguinte afirmação sobre otimização de protocolo:<br>
+        <em>"A técnica de Split Horizon com Poison Reverse é computacionalmente preferida em relação ao Split Horizon simples porque reduz o volume de tráfego de controle na rede, uma vez que pacotes que anunciam distância infinita são comprimidos e ocupam menos bytes no meio físico."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa inversão! O Poison Reverse gera MAIS tráfego que o Split Horizon simples. O Split Horizon simples omite as rotas (pacote menor). O Poison Reverse precisa incluir explicitamente cada entrada envenenada com métrica 16 (pacote maior)!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! O Poison Reverse consome MAIS banda de rede porque precisa transmitir todas as rotas envenenadas (com custo 16) explicitamente no pacote, enquanto o Split Horizon simples simplesmente omite essas entradas economizando bytes.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: A VULNERABILIDADE FATAL (LOOPS DE 3 OU MAIS NÓS) -->
+    <section class="card-theory">
+      <h2>3. A Pegadinha Fatal: Onde o Split Horizon Falha!</h2>
+      <p>
+        Uma das maiores fontes de erro em exames de redes é assumir que o Split Horizon resolve <em>todos</em> os loops de roteamento.
+      </p>
+      <div class="callout pitfall">
+        <div class="callout-title">⚠️ O Calcanhar de Aquiles: Ciclos de 3 ou Mais Nós</div>
+        <p style="margin-bottom: 0;">
+          Considere três roteadores em anel: $A \to B \to C \to A$. Cada um aprende a rota para um destino através de uma interface <strong>diferente</strong> daquela pela qual ele transmite para o próximo vizinho do anel. Como a rota não está sendo enviada de volta pela mesma interface de entrada, o Split Horizon <strong>não atua</strong>! O loop circular de 3 nós persiste e o algoritmo continuará contando até o infinito (16).
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 3: DIAGNÓSTICO DO LOOP TRIANGULAR -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: Limitações Estruturais do Split Horizon</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Por que o mecanismo de <em>Split Horizon</em> (mesmo com Poison Reverse) é matematicamente incapaz de prevenir a ocorrência de loops de roteamento que envolvam 3 ou mais roteadores (ex: ciclo $A \to B \to C \to A$)?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O temporizador de 30 segundos afeta a frequência de envio, mas não altera a lógica topológica de filtragem por interface do Split Horizon.">
+          Porque os temporizadores periódicos de trinta segundos impedem a sincronização de relógios em topologias não-lineares.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! O Split Horizon só impede anunciar uma rota de volta pela MESMA interface por onde foi aprendida. Em um ciclo triangular, o nó A aprende por eth0 e anuncia para B por eth1; logo, a regra do Split Horizon não é acionada e o loop propaga-se livremente!">
+          Porque cada nó recebe o anúncio por uma interface e o propaga por uma interface diferente, sem violar a regra local.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A métrica 16 limita o diâmetro, mas não tem relação com o motivo de o Split Horizon falhar em filtrar ciclos fechados de 3 nós.">
+          Porque a métrica infinita igual a dezesseis perde a validade lógica quando o número de roteadores no ciclo é ímpar.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O algoritmo de Bellman-Ford não exige sincronismo estrito de rodadas para manter a regra de split horizon ativa.">
+          Porque o protocolo de transporte UDP descarta os números de sequência necessários para rastrear caminhos triangulares.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: TRIGGERED UPDATES E ACELERAÇÃO DE CONVERGÊNCIA -->
+    <section class="card-theory">
+      <h2>4. Atualizações Disparadas (Triggered Updates)</h2>
+      <p>
+        No RIP comum, os nós transmitem anúncios a cada 30 segundos. Se um enlace cair no segundo 1, esperar até o segundo 30 para avisar os vizinhos daria tempo suficiente para que roteadores adjacentes espalhassem rotas obsoletas.
+      </p>
+      <p>
+        As <strong>Triggered Updates (Atualizações Disparadas)</strong> rompem esse atraso:
+      </p>
+      <ul>
+        <li>Assim que uma métrica de rota sofre alteração (especialmente quando uma rota cai e passa para 16), o roteador <strong>gera e envia imediatamente um vetor de atualização</strong>, sem aguardar o temporizador periódico!</li>
+        <li>Isso faz as "más notícias" viajarem muito mais depressa, reduzindo a janela de tempo em que loops podem se consolidar.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 4: ACTIVE RECALL / TRIGGERED UPDATES -->
+    <section class="card-exercise" id="ex4" data-hint="Termo em inglês 'Triggered Updates' ou em português 'Atualizações Disparadas'. Digite 'Triggered Updates' ou 'Atualizações Disparadas'.">
+      <div class="exercise-header">
+        <h3>Exercício 4: Mecanismo de Anúncio Imediato</h3>
+        <span class="exercise-tag recall">Active Recall / Conceito</span>
+      </div>
+      <div class="question-text">
+        Qual é a denominação técnica do mecanismo de aceleração de convergência no qual um roteador transmite imediatamente uma mensagem de atualização logo após detectar a alteração de custo de uma rota, rompendo o ciclo de espera do temporizador periódico de 30 segundos?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: Triggered Updates" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Termo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 5: TEMPORIZADORES DO RIP -->
+    <section class="card-theory">
+      <h2>5. O Ciclo de Vida de uma Rota: Os Temporizadores do RIP</h2>
+      <p>
+        O RIP emprega três temporizadores rigorosamente orquestrados para gerenciar rotas:
+      </p>
+      <ul>
+        <li><strong>Periodic Timer (30s):</strong> Intervalo regular de envio de vetores completos (com uma variação aleatória de jitter de $\pm 5$s para evitar sincronização em fase).</li>
+        <li><strong>Route Timeout / Invalidation Timer (180s):</strong> Se nenhuma atualização for recebida para uma rota por 180 segundos, o roteador assume que o destino caiu e marca sua métrica como <strong>16 ($\infty$)</strong>. A rota entra em estado de lixo.</li>
+        <li><strong>Garbage Collection / Flush Timer (120s):</strong> Período adicional de 120s durante o qual a rota continua sendo anunciada aos vizinhos como inalcançável (métrica 16). Ao expirar, a rota é <strong>permanentemente excluída</strong> da tabela.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 5: DIAGNÓSTICO DO TEMPORIZADOR DE 180S -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Rastreamento do Ciclo de Expiração de Rotas</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Se um roteador RIP deixa repentinamente de receber anúncios periódicos referentes a uma determinada rede remota, qual evento ocorrerá exatamente após o transcurso de <strong>180 segundos</strong> de silêncio?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A rota não é apagada da tabela após 180s! Ela é marcada com métrica 16 e mantida por mais 120 segundos (Garbage Collection Timer) para que os vizinhos sejam informados da inalcançabilidade.">
+          A rota é imediatamente removida e purgada da memória RAM sem qualquer aviso prévio aos roteadores adjacentes.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! Ao atingir o Route Timeout de 180 segundos, a rota é declarada inalcançável e sua métrica é alterada para 16 (infinito), iniciando a contagem do temporizador de coleta de lixo (120s)!">
+          A rota tem sua métrica alterada para dezesseis e é mantida em quarentena antes de sua exclusão definitiva.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: ICMP Destination Unreachable é enviado quando um pacote de dados não encontra rota de saída, não sendo o processo interno do timer de 180s do RIP.">
+          O roteador emite mensagens de erro ICMP Redirect para todas as estações de trabalho conectadas à rede local.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A métrica não é dobrada; ela salta imediatamente para o valor máximo permitido de inalcançabilidade (16).">
+          A métrica da rota é duplicada preventivamente para estimular o tráfego a procurar caminhos alternativos mais rápidos.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nos seguintes conceitos. Revise-os antes de avançar para a lição detalhada do RIP:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0004-loops-bouncing-contagem-ao-infinito.html">← Lição Anterior: 0004 — Loops e Bouncing</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
+      <a href="0006-protocolo-rip-v1-v2-ripng.html">Próxima Lição: 0006 — Protocolo RIP &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Regra operacional do Split Horizon
+      initMultipleChoice("ex1", "Split Horizon simples: omissão de rotas na mesma interface de saída");
+
+      // Ex 2: Falácia do Poison Reverse e tráfego
+      initTrueFalse("ex2", false, "Poison Reverse gera MAIS tráfego que o Split Horizon simples",
+        "Atenção: Poison Reverse gera mais tráfego porque anuncia explicitamente todas as rotas com custo 16!",
+        "Exato! O Poison Reverse consome mais banda por não omitir as entradas.");
+
+      // Ex 3: Ineficácia em loops de 3 ou mais nós
+      initMultipleChoice("ex3", "Vulnerabilidade do Split Horizon a ciclos de 3 ou mais nós (interfaces de entrada e saída diferentes)");
+
+      // Ex 4: Triggered Updates
+      initInputExercise("ex4", ["triggered updates", "atualizacoes disparadas", "atualizações disparadas", "triggered update"], "Triggered Updates: anúncio imediato ao mudar métrica");
+
+      // Ex 5: Timeout de 180s no RIP
+      initMultipleChoice("ex5", "Temporizador de 180s: marca rota como inalcançável (métrica 16)");
+    });
+  </script>
+</body>
+</html>

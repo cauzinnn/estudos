@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Referência 0002: Algoritmos e Protocolos de Roteamento — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Ficha de Consulta Rápida • Módulos 2 e 3</div>
+      <h1>Ficha 0002: Algoritmos e Protocolos de Roteamento (DV vs LS)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Resumo de alta densidade para provas: formulações de Bellman-Ford e Dijkstra, comparação RIP x OSPF x BGP, mitigação de loops e tipos de LSAs.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0001-enderecamento-ipv4-e-cabecalho.html">📄 Ficha 0001: IPv4 e Cabeçalho</a>
+    </div>
+
+    <!-- SEÇÃO 1: COMPARATIVO SISTEMÁTICO RIP VS OSPF VS BGP -->
+    <section class="card-theory">
+      <h2>1. Matriz de Decisão: RIP vs OSPF vs BGP</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Característica</th>
+              <th>RIP (RIPv1 / RIPv2)</th>
+              <th>OSPF (v2 / v3)</th>
+              <th>BGP (BGP-4)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Classificação</strong></td>
+              <td>IGP — Vetor de Distância (DV)</td>
+              <td>IGP — Estado de Enlace (LS)</td>
+              <td>EGP — Vetor de Caminho (Path Vector)</td>
+            </tr>
+            <tr>
+              <td><strong>Algoritmo Base</strong></td>
+              <td>Bellman-Ford Distribuído</td>
+              <td>Dijkstra (Shortest Path First - SPF)</td>
+              <td>Vetor de Caminho com Políticas (AS-PATH)</td>
+            </tr>
+            <tr>
+              <td><strong>Visão Topológica</strong></td>
+              <td>Míope: conhece apenas métricas dos vizinhos</td>
+              <td>Global: mapa topológico idêntico (LSDB)</td>
+              <td>Grafo de Sistemas Autônomos (AS) interconectados</td>
+            </tr>
+            <tr>
+              <td><strong>Métrica</strong></td>
+              <td>Contagem de saltos ($1$ a $15$; $16 = \infty$)</td>
+              <td>Custo inversamente proporcional à largura de banda</td>
+              <td>Atributos de política (LocalPref, AS-PATH, MED)</td>
+            </tr>
+            <tr>
+              <td><strong>Escalabilidade</strong></td>
+              <td>Muito baixa (diâmetro máximo = 15 saltos)</td>
+              <td>Alta (suporta divisão hierárquica em Áreas)</td>
+              <td>Extrema (&gt; 900.000 prefixos na Internet global)</td>
+            </tr>
+            <tr>
+              <td><strong>Loops de Roteamento</strong></td>
+              <td>Sujeito a loops temporários e contagem ao infinito</td>
+              <td>Livre de loops intra-área (grafo SPF determinístico)</td>
+              <td>Livre de loops (detecção imediata no atributo <code>AS-PATH</code>)</td>
+            </tr>
+            <tr>
+              <td><strong>Transporte</strong></td>
+              <td>UDP porta 520 (Broadcast no v1, Multicast <code>224.0.0.9</code> no v2)</td>
+              <td>Direto sobre IP (protocolo 89, Multicast <code>224.0.0.5</code> / <code>224.0.0.6</code>)</td>
+              <td>Conexão TCP confiável na porta 179</td>
+            </tr>
+            <tr>
+              <td><strong>Complexidade Computacional</strong></td>
+              <td>$O(N \cdot M^2)$ na propagação de rodadas</td>
+              <td>$O(N \log M)$ com fila de prioridade</td>
+              <td>Processamento contínuo de atualizações baseadas em eventos</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: FORMULAÇÕES MATEMÁTICAS E REGRAS DE RASTREAMENTO -->
+    <section class="card-theory">
+      <h2>2. Formulações Formais: Bellman-Ford e Dijkstra SPF</h2>
+      
+      <div class="callout definition">
+        <div class="callout-title">📐 Vetor de Distância — Equação de Bellman-Ford</div>
+        <p>
+          Seja $D_x(y)$ a estimativa de menor custo do nó $x$ para o destino $y$. A atualização para todo vizinho $v \in Vizinhos(x)$ obedece a:
+        </p>
+        <p style="text-align: center; font-size: 1.15rem; margin: 0.5rem 0;">
+          $$D_x(y) = \min_{v} \big\{ c(x,v) + D_v(y) \big\}$$
+        </p>
+        <p style="margin-bottom: 0;">
+          O próximo salto adotado por $x$ para $y$ é o vizinho $v^*$ que atinge o mínimo. Se um vizinho anuncia um custo alterado através da interface já utilizada por $x$, $x$ <strong>deve atualizar imediatamente sua tabela</strong>, mesmo que a métrica tenha piorado!
+        </p>
+      </div>
+
+      <div class="callout definition" style="margin-top: 1rem;">
+        <div class="callout-title">📐 Estado de Enlace — Algoritmo SPF de Dijkstra</div>
+        <p>
+          Divide os nós em três conjuntos dinâmicos durante o cálculo a partir da fonte $S$:
+        </p>
+        <ul style="margin-bottom: 0;">
+          <li><strong>$C$ (Confirmados):</strong> Nós cujo caminho mínimo definitivo a partir de $S$ já foi demonstrado. Inicialmente $C = \{S\}$.</li>
+          <li><strong>$O$ (Tentativos):</strong> Lista de caminhos candidatos ordenados por custo acumulado crescente. Inicialmente contém os enlaces diretos saindo de $S$.</li>
+          <li><strong>$R$ (Restantes):</strong> Nós do grafo ainda não admitidos em $C$ ($R = V - C$).</li>
+          <li><strong>Passo Crítico de Mesa:</strong> Remove-se de $O$ o caminho $P$ de menor custo acumulado terminando em $U$. Se $U \in C$, descarta $P$. Se $U \notin C$, move $U$ para $C$, concatena $P$ aos enlaces de $U$ e insere os novos caminhos em $O$.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 3: MITIGAÇÃO DE LOOPS NO VETOR DE DISTÂNCIA -->
+    <section class="card-theory">
+      <h2>3. Mecanismos de Mitigação de Loops no DV</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Mecanismo</th>
+              <th>Regra de Operação</th>
+              <th>Eficácia / Limitação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Métrica Máxima ($\infty = 16$)</strong></td>
+              <td>Qualquer rota que atinja 16 é considerada inalcançável e descartada.</td>
+              <td>Limita a contagem até o infinito no tempo, mas restringe o diâmetro da rede a 15 saltos.</td>
+            </tr>
+            <tr>
+              <td><strong>Split Horizon Simples</strong></td>
+              <td>Se o nó $A$ usa o nó $B$ como próximo salto para o destino $X$, $A$ <u>omite</u> o anúncio de $X$ na interface conectada a $B$.</td>
+              <td>Evita loops simples de 2 nós entre vizinhos diretos.</td>
+            </tr>
+            <tr>
+              <td><strong>Split Horizon com Poison Reverse</strong></td>
+              <td>Em vez de omitir, $A$ anuncia explicitamente para $B$ que $D_A(X) = 16$ ($\infty$).</td>
+              <td>Mais robusto que a omissão: destrói premissas falsas instantaneamente. Gera tráfego de controle ligeiramente maior.</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>Pegadinha Fatal de Prova:</strong></td>
+              <td colspan="2">
+                <strong>Nem o Split Horizon nem o Poison Reverse evitam loops envolvendo 3 ou mais nós!</strong><br>
+                Em um ciclo triangular $A \to B \to C \to A$, cada roteador aprende a rota de uma interface diferente daquela para onde envia, mascarando a dependência mútua e permitindo a contagem ao infinito.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Triggered Updates</strong></td>
+              <td>Envia um vetor imediatamente assim que uma rota muda, sem aguardar o timer de 30s.</td>
+              <td>Acelera drasticamente a convergência após falhas de enlace.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 4: ARQUITETURA OSPF, LSAs E ELEIÇÃO DE DR -->
+    <section class="card-theory">
+      <h2>4. OSPF: Arquitetura, LSAs e Roteador Designado (DR)</h2>
+      
+      <h3>4.1 Tipos Fundamentais de LSA (Link State Advertisements)</h3>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Nome Oficial</th>
+              <th>Gerador (Originador)</th>
+              <th>Escopo de Inundação</th>
+              <th>Conteúdo Descrito</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tipo 1</strong></td>
+              <td>Router-LSA</td>
+              <td>Todo roteador da área</td>
+              <td>Apenas dentro da mesma Área</td>
+              <td>Lista de interfaces locais, vizinhos diretos e métricas.</td>
+            </tr>
+            <tr>
+              <td><strong>Tipo 2</strong></td>
+              <td>Network-LSA</td>
+              <td>Roteador Designado (DR)</td>
+              <td>Apenas dentro da mesma Área</td>
+              <td>Representa a pseudo-rede multiacesso e todos os roteadores conectados.</td>
+            </tr>
+            <tr>
+              <td><strong>Tipo 3</strong></td>
+              <td>Summary-LSA (Redes)</td>
+              <td>Area Border Router (ABR)</td>
+              <td>Inundado para áreas vizinhas</td>
+              <td>Prefixo de sub-rede e custo acumulado até outra área.</td>
+            </tr>
+            <tr>
+              <td><strong>Tipo 4</strong></td>
+              <td>Summary-LSA (ASBR)</td>
+              <td>Area Border Router (ABR)</td>
+              <td>Inundado para áreas vizinhas</td>
+              <td>Informa aos roteadores internos a rota e custo para atingir o ASBR.</td>
+            </tr>
+            <tr>
+              <td><strong>Tipo 5</strong></td>
+              <td>AS-External-LSA</td>
+              <td>Autonomous System Boundary Router (ASBR)</td>
+              <td>Inundado por todo o AS (exceto Stub)</td>
+              <td>Rotas redistribuídas de fora do AS (ex: BGP, estáticas).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>4.2 Eleição de DR/BDR e Redução de Adjacências</h3>
+      <div class="callout definition">
+        <div class="callout-title">📐 Fórmula de Adjacências em Redes Multiacesso (Broadcast / NBMA)</div>
+        <p>
+          Em uma rede com $N$ roteadores interconectados por switch/Ethernet:
+        </p>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Sem DR (Malha Completa de Adjacências):</strong> $\frac{N(N - 1)}{2}$ adjacências e $N(N - 1)$ enlaces na LSDB.</li>
+          <li><strong>Com DR (Topologia em Estrela Virtual):</strong> Apenas <strong>$N$ adjacências</strong> e <strong>$2N$ enlaces</strong> na LSDB (cada roteador estabelece adjacência estrita apenas com o DR e o BDR!).</li>
+          <li><strong>Endereços Multicast Específicos:</strong>
+            <ul>
+              <li><code>224.0.0.5</code> (<strong>AllSPFRouters</strong>): Escutado por <u>todos</u> os roteadores OSPF no segmento.</li>
+              <li><code>224.0.0.6</code> (<strong>AllDRouters</strong>): Escutado <u>exclusivamente</u> pelo DR e pelo BDR.</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <h3>4.3 ECMP (Equal-Cost Multi-Path) e Preservação de Ordem TCP</h3>
+      <p style="margin-bottom: 0;">
+        Quando múltiplos caminhos possuem métrica rigorosamente idêntica, o OSPF divide o tráfego entre eles. Para evitar o desordenamento de pacotes TCP (que geraria DUP-ACKs e redução de janela de congestionamento), os roteadores utilizam uma <strong>função de hash sobre a 5-tupla</strong>:
+        <br>
+        <code>Hash(IP Origem, IP Destino, Porta Origem, Porta Destino, Protocolo) mod K</code>.
+        <br>
+        Isso garante que todos os pacotes pertencentes à mesma sessão TCP sigam rigorosamente pelo mesmo enlace físico!
+      </p>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Voltar ao Painel da Matéria</a>
+      <a href="0001-enderecamento-ipv4-e-cabecalho.html">📄 Ficha 0001: IPv4 e Cabeçalho</a>
+      <a href="../lessons/0007-estado-de-enlace-dijkstra.html">Lição 0007: Dijkstra SPF &rarr;</a>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0003: Vetor de Distância e Algoritmo de Bellman-Ford — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Módulo 2: Vetor de Distância • Lição 0003</div>
+      <h1>Vetor de Distância e Algoritmo de Bellman-Ford</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Filosofia distribuída de "diga aos vizinhos o que você sabe sobre todo o mundo", a equação fundamental de Bellman-Ford, rastreamento de convergência e a regra mandatária de atualização.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+    </div>
+
+    <!-- BLOCO 1: FILOSOFIA DISTRIBUÍDA E A EQUAÇÃO DE BELLMAN-FORD -->
+    <section class="card-theory">
+      <h2>1. A Filosofia do Vetor de Distância (Distance Vector - DV)</h2>
+      <p>
+        No paradigma de Vetor de Distância, <strong>nenhum roteador possui o mapa completo da rede</strong>. A filosofia operacional resume-se em:
+      </p>
+      <p style="text-align: center; font-style: italic; color: var(--accent);">
+        "Envie aos seus vizinhos diretos tudo o que você sabe sobre a distância para todos os destinos da rede."
+      </p>
+      <p>
+        Cada roteador $x$ mantém uma tabela local com: Destino ($y$), Custo Estimado ($D_x(y)$) e Próximo Salto ($v$). Periodicamente, os nós trocam seus vetores e recalculam suas rotas pela <strong>Equação de Bellman-Ford</strong>:
+      </p>
+      <p style="text-align: center; font-size: 1.15rem; margin: 0.5rem 0;">
+        $$D_x(y) = \min_{v \in Vizinhos(x)} \big\{ c(x,v) + D_v(y) \big\}$$
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1: VISÃO TOPOLÓGICA NO VETOR DE DISTÂNCIA -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: O Modelo Mental do Roteador em Bellman-Ford</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Qual é a extensão real do conhecimento topológico que um roteador possui ao operar estritamente sob o algoritmo de Vetor de Distância clássico?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A base topológica unificada com a lista de todos os nós e enlaces do sistema é a definição exclusiva dos protocolos de Estado do Enlace (OSPF/IS-IS), não do Vetor de Distância.">
+          O roteador armazena o mapa completo da topologia da rede, contendo todos os nós e o custo de cada enlace individual.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O algoritmo DV baseia-se em 'fofoca distribuída'. O roteador conhece apenas a métrica final e por qual porta/vizinho deve despachar o pacote, ignorando completamente o trajeto subsequente!">
+          O roteador conhece apenas o custo acumulado até cada destino e qual dos seus vizinhos imediatos serve como próximo salto.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A sequência ordenada de sistemas autônomos intermediários (AS-PATH) é a característica distintiva do BGP (Vetor de Caminho), não do Bellman-Ford intra-domínio.">
+          O roteador inspeciona a sequência explícita de todos os saltos intermediários que o pacote percorrerá até o destino final.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Um roteador DV mantém estimativas de rotas para toda a rede alcançável, e não apenas para destinos situados a um único salto de distância.">
+          O roteador limita o encaminhamento exclusivamente aos dispositivos situados a exatamente um salto físico de distância.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: GRAFO DIDÁTICO E INICIALIZAÇÃO -->
+    <section class="card-theory">
+      <h2>2. Grafo de Rastreamento Didático (Topologia UFRJ)</h2>
+      <p>
+        Considere a rede abaixo com 5 roteadores ($A, B, C, D, E$) e 6 enlaces. Todos os enlaces possuem custo unitário ($1$), <strong>exceto o enlace 6 ($C-E$) que possui custo $8$</strong>:
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="220" viewBox="0 0 540 220" xmlns="http://www.w3.org/2000/svg">
+          <!-- Arestas -->
+          <line x1="100" y1="60" x2="270" y2="60" stroke="#30363d" stroke-width="2.5"/>
+          <line x1="270" y1="60" x2="440" y2="60" stroke="#30363d" stroke-width="2.5"/>
+          <line x1="100" y1="160" x2="270" y2="60" stroke="#30363d" stroke-width="2.5"/>
+          <line x1="100" y1="60" x2="100" y2="160" stroke="#30363d" stroke-width="2.5"/>
+          <line x1="100" y1="160" x2="440" y2="160" stroke="#30363d" stroke-width="2.5"/>
+          <line x1="440" y1="60" x2="440" y2="160" stroke="#f85149" stroke-width="2.5" stroke-dasharray="4,4"/>
+
+          <!-- Rótulos de peso de enlace -->
+          <rect x="175" y="45" width="28" height="20" rx="4" fill="#161b22" stroke="#30363d"/>
+          <text x="189" y="59" font-family="monospace" font-size="12" fill="#79c0ff" text-anchor="middle">E1(1)</text>
+
+          <rect x="345" y="45" width="28" height="20" rx="4" fill="#161b22" stroke="#30363d"/>
+          <text x="359" y="59" font-family="monospace" font-size="12" fill="#79c0ff" text-anchor="middle">E2(1)</text>
+
+          <rect x="195" y="115" width="28" height="20" rx="4" fill="#161b22" stroke="#30363d"/>
+          <text x="209" y="129" font-family="monospace" font-size="12" fill="#79c0ff" text-anchor="middle">E3(1)</text>
+
+          <rect x="75" y="100" width="28" height="20" rx="4" fill="#161b22" stroke="#30363d"/>
+          <text x="89" y="114" font-family="monospace" font-size="12" fill="#79c0ff" text-anchor="middle">E4(1)</text>
+
+          <rect x="255" y="165" width="28" height="20" rx="4" fill="#161b22" stroke="#30363d"/>
+          <text x="269" y="179" font-family="monospace" font-size="12" fill="#79c0ff" text-anchor="middle">E5(1)</text>
+
+          <rect x="445" y="100" width="34" height="20" rx="4" fill="#161b22" stroke="#f85149"/>
+          <text x="462" y="114" font-family="monospace" font-weight="bold" font-size="12" fill="#ff7b72" text-anchor="middle">E6(8)</text>
+
+          <!-- Nós -->
+          <circle cx="100" cy="60" r="20" fill="#1f6feb" stroke="#58a6ff" stroke-width="2"/>
+          <text x="100" y="65" font-family="monospace" font-weight="bold" font-size="15" fill="#fff" text-anchor="middle">A</text>
+
+          <circle cx="270" cy="60" r="20" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="270" y="65" font-family="monospace" font-weight="bold" font-size="15" fill="#f0f6fc" text-anchor="middle">B</text>
+
+          <circle cx="440" cy="60" r="20" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="440" y="65" font-family="monospace" font-weight="bold" font-size="15" fill="#f0f6fc" text-anchor="middle">C</text>
+
+          <circle cx="100" cy="160" r="20" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="100" y="165" font-family="monospace" font-weight="bold" font-size="15" fill="#f0f6fc" text-anchor="middle">D</text>
+
+          <circle cx="440" cy="160" r="20" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="440" y="165" font-family="monospace" font-weight="bold" font-size="15" fill="#f0f6fc" text-anchor="middle">E</text>
+        </svg>
+        <div class="graph-caption">
+          Figura 1: Topologia base. Enlaces E1 a E5 possuem métrica 1. O enlace E6 (C-E) possui métrica 8.
+        </div>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 2: ACTIVE RECALL / RASTREAMENTO DA 1ª RODADA -->
+    <section class="card-exercise" id="ex2" data-hint="Ao ligar a rede, cada nó tem distância zero para si e infinito para os outros. Quando A envia seu vetor (A=0), B soma o custo do enlace E1 (1) e atualiza sua rota para A: custo 1.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Rastreamento da Primeira Atualização</h3>
+        <span class="exercise-tag recall">Active Recall / Mesa</span>
+      </div>
+      <div class="question-text">
+        A rede acabou de ser ligada. O roteador <strong>A</strong> envia seu primeiro vetor de distância contendo <code>(A=0)</code> para seus vizinhos diretos <strong>B</strong> e <strong>D</strong>.<br><br>
+        Ao receber este anúncio através do enlace $E_1$ (custo $1$), <strong>qual é o custo acumulado que o roteador B registra em sua tabela para alcançar o destino A?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 1" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Métrica</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: RASTREAMENTO DE CONVERGÊNCIA EM MÚLTIPLOS SALTOS -->
+    <section class="card-theory">
+      <h2>3. Propagação em Cascata e Seleção de Menor Custo</h2>
+      <p>
+        No passo seguinte, <strong>B</strong> envia seu novo vetor <code>(B=0, A=1)</code> para seus vizinhos $A, C, D$.
+      </p>
+      <ul>
+        <li>O roteador <strong>C</strong> recebe o anúncio de B pelo enlace $E_2$ (custo 1).</li>
+        <li>C calcula: $D_C(A) = c(C, B) + D_B(A) = 1 + 1 = 2$. Como $2 < \infty$, C cria a rota para $A$ com custo $2$ via $B$.</li>
+      </ul>
+      <p>
+        Observe o roteador <strong>E</strong> para alcançar o destino <strong>C</strong>:
+      </p>
+      <ul>
+        <li>Pelo enlace direto $E_6$, o custo é $8$ via $C$.</li>
+        <li>Pelo caminho $E \to D \to B \to C$, o custo é $c(E,D) + c(D,B) + c(B,C) = 1 + 1 + 1 = 3$ via $D$!</li>
+      </ul>
+      <p>
+        Como $3 < 8$, o algoritmo de Bellman-Ford seleciona o caminho via $D$, ignorando o enlace direto de alta métrica!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3: CONVERGÊNCIA E CUSTO MÍNIMO FINAL -->
+    <section class="card-exercise" id="ex3" data-hint="O caminho de menor custo de C até D sai de C, passa por B (custo 1) e de B vai para D (custo 1). Some os custos dos enlaces.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Métrica de Caminho Mínimo Convergido</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        Após a convergência completa do algoritmo de Bellman-Ford na topologia da Figura 1, <strong>qual é o custo total mínimo registrado na tabela de C para alcançar o nó D?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 2" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Custo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: A REGRA MANDATÓRIA DE ATUALIZAÇÃO -->
+    <section class="card-theory">
+      <h2>4. A Regra de Atualização Incondicional do Próximo Salto</h2>
+      <p>
+        Existe uma regra essencial de Bellman-Ford que frequentemente confunde alunos:
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Invariante de Dependência de Rota</div>
+        <p style="margin-bottom: 0;">
+          Se o roteador $X$ atualmente utiliza o vizinho $V$ como seu próximo salto para o destino $Y$, e $V$ anuncia um novo custo $D_V(Y)$ <strong>que piorou (aumentou)</strong>, $X$ é <strong>estritamente obrigado</strong> a atualizar sua tabela para $c(X,V) + D_V(Y)$!
+        </p>
+      </div>
+      <p>
+        $X$ não tem a opção de "manter a métrica antiga menor", porque a métrica antiga de $X$ dependia inteiramente da promessa de $V$. Se o caminho através de $V$ degradou ou caiu, o caminho de $X$ automaticamente degradou junto!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 4: FALÁCIA DA ATUALIZAÇÃO SELETIVA -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: A Falácia da Rejeição de Métricas Piores</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Considere a seguinte afirmação teórica:<br>
+        <em>"No algoritmo de Bellman-Ford, um roteador apenas aceita atualizar uma entrada de sua tabela de roteamento se a nova métrica recebida for estritamente menor que a métrica atualmente gravada, descartando qualquer atualização que aumente o custo da rota."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa falácia grave! Se o anúncio de custo maior vier exatamente do vizinho que é o seu próximo salto atual, você é OBRIGADO a aceitar o aumento! Rejeitar o anúncio faria o roteador operar com uma rota fantasma que não existe mais.">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! Se a métrica piorar através do próximo salto atualmente em uso, o roteador é forçado a atualizar para o valor maior. Ele só descarta métricas piores se elas vierem de outros vizinhos alternativos!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5: DIAGNÓSTICO DE DESEMPATE E ESCOLHA DE ROTA -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Rota de E para C na Topologia</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Na Figura 1, por que o roteador <strong>E</strong> escolhe enviar pacotes destinados a <strong>C</strong> através do roteador <strong>D</strong> (percorrendo 3 saltos) em vez de utilizar o enlace direto $E_6$ conectado diretamente a C?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O Bellman-Ford não prioriza enlaces por número menor de saltos brutos se os custos forem ponderados. A métrica do enlace E6 é 8, não 1.">
+          Porque os protocolos de vetor de distância proíbem enlaces diretos que ultrapassem mais de seis saltos lógicos na topologia.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! O algoritmo minimiza a soma total das métricas. O caminho E -> D -> B -> C custa 1 + 1 + 1 = 3, enquanto o enlace direto E6 custa 8. Como 3 é estritamente menor que 8, o caminho de 3 saltos é o ótimo!">
+          Porque a soma dos custos no trajeto através de D totaliza três, sendo estritamente inferior ao custo oito do enlace direto.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Enlaces simétricos possuem o mesmo custo nos dois sentidos. O enlace E6 não é unidirecional; ele apenas possui custo alto (8).">
+          Porque o enlace físico direto entre os roteadores C e E foi configurado em modo unidirecional exclusivo de recepção.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A regra de Split Horizon impede anunciar rotas de volta, mas não impede o cálculo de menor caminho em enlaces diretos.">
+          Porque a técnica do Split Horizon desativa preventivamente qualquer enlace direto com custo superior a cinco unidades.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nos seguintes conceitos. Revise-os antes de analisar falhas e loops:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0002-cabecalho-ipv4-opcoes-encaminhamento.html">← Lição Anterior: 0002 — Cabeçalho e Opções</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
+      <a href="0004-loops-bouncing-contagem-ao-infinito.html">Próxima Lição: 0004 — Loops e Contagem ao Infinito &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Visão topológica DV
+      initMultipleChoice("ex1", "Visão topológica do Vetor de Distância: apenas vizinhos e métrica acumulada");
+
+      // Ex 2: 1ª rodada (B atualiza A com custo 1)
+      initInputExercise("ex2", ["1"], "Rastreamento da 1ª rodada de Bellman-Ford: custo unitário 1");
+
+      // Ex 3: Custo convergido de C para D (C-B-D = 2)
+      initInputExercise("ex3", ["2"], "Custo de caminho mínimo de C até D convergido: 1 + 1 = 2");
+
+      // Ex 4: Falácia da atualização de métrica pior pelo próximo salto atual
+      initTrueFalse("ex4", false, "Obrigação de atualizar se a métrica piorar pelo próximo salto atual",
+        "Atenção: Se o próximo salto atual piorar a métrica, você DEVE atualizar para o valor maior!",
+        "Exato! A métrica piorada pelo próximo salto atual é obrigatoriamente aceita.");
+
+      // Ex 5: Escolha do caminho E-D-B-C (custo 3 < 8)
+      initMultipleChoice("ex5", "Minimização de custo no Bellman-Ford: 3 saltos de peso 1 vencem enlace direto de peso 8");
+    });
+  </script>
+</body>
+</html>

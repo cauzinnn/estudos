@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0001: Endereçamento IPv4, Classes e CIDR/VLSM — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Módulo 1: Camada de Rede • Lição 0001</div>
+      <h1>Endereçamento IPv4: Classes, Sub-redes e CIDR/VLSM</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Estrutura de 32 bits, identificação de classes legadas, cálculo estrito de sub-redes ($2^h - 2$), a armadilha do prefixo com bits variáveis e análise de saídas <code>ifconfig</code>.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Ficha de Referência: IPv4 e Cabeçalho</a>
+    </div>
+
+    <!-- BLOCO 1: CLASSES HISTÓRICAS DE IP -->
+    <section class="card-theory">
+      <h2>1. O Modelo Mental das Classes Históricas (A, B, C, D)</h2>
+      <p>
+        No esquema de endereçamento com classes (<em>classful</em>, RFC 791), a fronteira entre a porção de rede (<em>NetID</em>) e a porção de host (<em>HostID</em>) era determinada rigidamente pelos bits mais significativos do primeiro octeto:
+      </p>
+      <ul>
+        <li><strong>Classe A:</strong> Inicia com <code>0...</code> (faixa <code>1</code> a <code>126</code>). Máscara padrão <code>255.0.0.0</code> (/8).</li>
+        <li><strong>Classe B:</strong> Inicia com <code>10...</code> (faixa <code>128</code> a <code>191</code>). Máscara padrão <code>255.255.0.0</code> (/16).</li>
+        <li><strong>Classe C:</strong> Inicia com <code>110...</code> (faixa <code>192</code> a <code>223</code>). Máscara padrão <code>255.255.255.0</code> (/24).</li>
+        <li><strong>Classe D:</strong> Inicia com <code>1110...</code> (faixa <code>224</code> a <code>239</code>). Utilizada para difusão seletiva (<strong>Multicast</strong>). Não possui divisão de hosts.</li>
+      </ul>
+      <p>
+        Qualquer endereço cujo primeiro octeto comece por <code>224</code> a <code>239</code> não pode ser atribuído a uma placa de rede comum de hospedeiro, servindo apenas como endereço de grupo multicast.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1: DIAGNÓSTICO DE CLASSE -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Identificação Rápida de Classe e Semântica</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Ao configurar manualmente um servidor de banco de dados em uma rede corporativa, um operador tentou atribuir o endereço IP <code>229.0.2.45</code> à placa de rede da máquina. O sistema operacional rejeitou a atribuição com mensagem de erro. Qual é o diagnóstico técnico correto para essa recusa?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A Classe E inicia em 240.0.0.0 até 255.255.255.255 (bits 1111). O octeto 229 inicia com bits 1110, pertencendo à Classe D de multicast, e não à Classe E experimental.">
+          A faixa de endereços que se inicia em duzentos e vinte e nove pertence à Classe E experimental, proibida para hosts.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Endereços no intervalo 224.0.0.0 a 239.255.255.255 pertencem à Classe D (Multicast). Grupos multicast são destinos lógicos para múltiplos nós receptores, sendo formalmente inválidos como identificadores unicast de interface de host!">
+          O endereço informado pertence à Classe D de multicast, não sendo permitido atribuí-lo como unicast para uma interface.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: As faixas de loopback utilizam exclusivamente o prefixo 127.0.0.0/8 (RFC 1122). O endereço 229.0.2.45 não tem qualquer relação com o stack de loopback local.">
+          O primeiro octeto informado coincide com o bloco de loopback local, que apenas permite o tráfego interno do host.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A Classe C cobre estritamente de 192.0.0.0 até 223.255.255.255. O número 229 é estritamente maior que 223, entrando no espaço de Classe D.">
+          A máscara de sub-rede padrão da Classe C não permite a alocação de endereços com o último octeto menor que cinquenta.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: MÁSCARAS DE SUB-REDE E HOSPEDEIROS ÚTEIS -->
+    <section class="card-theory">
+      <h2>2. Máscara de Sub-rede e o Cálculo de Capacidade Útil</h2>
+      <p>
+        Uma máscara de sub-rede separa os 32 bits do endereço IPv4 em $n$ bits de rede e $h = 32 - n$ bits de host. O número total de combinações é $2^h$.
+      </p>
+      <p>
+        No entanto, <strong>dois endereços são obrigatoriamente reservados por padrão</strong> em cada bloco:
+      </p>
+      <ul>
+        <li><strong>Endereço de Rede:</strong> Todos os $h$ bits de host iguais a <code>0</code> (identifica a sub-rede).</li>
+        <li><strong>Endereço de Broadcast:</strong> Todos os $h$ bits de host iguais a <code>1</code> (envio para todos da sub-rede).</li>
+      </ul>
+      <p>
+        Logo, a quantidade máxima de máquinas que podem receber IP válido em uma sub-rede é sempre dada por:
+      </p>
+      <p style="text-align: center; font-size: 1.15rem; margin: 0.5rem 0;">
+        $$\text{Hospedeiros Úteis} = 2^h - 2$$
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 2: ACTIVE RECALL / CÁLCULO DE MÁQUINAS -->
+    <section class="card-exercise" id="ex2" data-hint="Máscara 255.255.252.0 possui 22 bits fixos (252 = 11111100 em binário). Logo, restam h = 32 - 22 = 10 bits para hospedeiros. Calcule 2^10 - 2.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Cálculo Rigoroso de Hospedeiros Úteis</h3>
+        <span class="exercise-tag recall">Active Recall / Cálculo</span>
+      </div>
+      <div class="question-text">
+        Seu departamento recebeu a faixa de endereços de rede <code>136.27.32.0</code> com máscara de sub-rede <code>255.255.252.0</code>.<br><br>
+        <strong>Quantas máquinas (hospedeiros com IP válido) podem ser endereçadas simultaneamente neste laboratório?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 510" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Cálculo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: A FALÁCIA DO PREFIXO COM BITS VARIÁVEIS -->
+    <section class="card-theory">
+      <h2>3. A Regra de Ouro: Identificadores de Sub-rede Válidos</h2>
+      <p>
+        Para que um endereço represente legitimamente o <strong>identificador de uma sub-rede</strong>, todos os bits da porção de hospedeiro devem ser estritamente iguais a <code>0</code>.
+      </p>
+      <p>
+        Considere a máscara <code>255.255.254.0</code> (/23). Ela possui $23$ bits fixos de rede e $9$ bits variáveis de host ($h = 9$).
+      </p>
+      <p>
+        No 3º octeto ($8$ bits), os primeiros $7$ bits são rede e o último bit é host. Portanto, no 3º octeto, apenas números <strong>pares</strong> (onde o bit menos significativo é zero, como 32, 34, 36) podem iniciar um bloco /23! Se o número for ímpar (ex: 33), o 23º bit é <code>1</code>, o que viola a regra do identificador de rede.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3: IDENTIFICAÇÃO DE FALÁCIA -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: A Pegadinha da Validação de Prefixo</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Um administrador de redes cadastrou em um roteador a rota para a sub-rede declarada como <code>136.27.33.0/23</code> (máscara <code>255.255.254.0</code>).<br><br>
+        A afirmação: <em>"O endereço 136.27.33.0 é um identificador de sub-rede perfeitamente válido para a máscara 255.255.254.0, pois seu último octeto termina em zero."</em> é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa armadilha clássica! Uma máscara /23 possui 9 bits de host (todo o 4º octeto + 1 bit do 3º octeto). O número 33 em binário é 00100001. O bit menos significativo é 1, pertencendo à parte de host! Logo, 136.27.33.0 é um endereço de host dentro da rede 136.27.32.0/23, e NÃO o identificador de rede!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! A máscara /23 fixa 23 bits. Como 33 em binário é 00100001, o 23º bit tem valor 1. Em um identificador de sub-rede, todos os bits variáveis de host devem ser 0. O endereço correto dessa rede é 136.27.32.0/23!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: SUBDIVISÃO DE BLOCOS (VLSM E /30) -->
+    <section class="card-theory">
+      <h2>4. Subdivisão Máxima: Enlaces Ponto a Ponto (/30)</h2>
+      <p>
+        Em topologias de roteamento, enlaces diretos conectando dois roteadores exigem apenas dois IPs úteis (um para cada interface).
+      </p>
+      <p>
+        A menor sub-rede útil tradicional para esse propósito é a <strong>/30</strong> (máscara <code>255.255.255.252</code>):
+      </p>
+      <ul>
+        <li>$h = 32 - 30 = 2$ bits de host.</li>
+        <li>Total de IPs: $2^2 = 4$.</li>
+        <li>IPs úteis para roteadores: $4 - 2 = 2$ máquinas.</li>
+      </ul>
+      <p>
+        Ao particionar um bloco maior $/A$ em sub-redes $/B$, o número de sub-redes criadas é $2^{B - A}$.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 4: SUBDIVISÃO EM SUB-REDES /30 -->
+    <section class="card-exercise" id="ex4" data-hint="De /23 para /30 são 30 - 23 = 7 bits emprestados para sub-redes. Calcule 2^7 para o número de sub-redes e multiplique por 2 máquinas por enlace.">
+      <div class="exercise-header">
+        <h3>Exercício 4: Engenharia de Sub-redes Ponto a Ponto</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        Considere a faixa alocada <code>146.164.80.0/23</code>. Um engenheiro precisa dividi-la no <strong>maior número possível de sub-redes úteis /30</strong> para conectar pares de roteadores.<br><br>
+        <strong>Quantos endereços IP válidos de máquinas estarão disponíveis no total, somando todas as sub-redes /30 obtidas?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 128" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Capacidade</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 5: ENGENHARIA REVERSA DE SAÍDA IFCONFIG -->
+    <section class="card-theory">
+      <h2>5. Parsing Real de Configuração de Roteadores (<code>ifconfig</code>)</h2>
+      <p>
+        Em sistemas operacionais de roteamento (como Linux em roteadores de borda), o comando <code>ifconfig</code> ou <code>ip addr</code> exibe o IP configurado e a máscara em formato decimal:
+      </p>
+      <pre><code>eth0: inet addr: 146.164.5.210  Mask: 255.255.255.192</code></pre>
+      <p>
+        Para obter o prefixo CIDR e a sub-rede conectada:
+      </p>
+      <ul>
+        <li><code>255.255.255.192</code> em binário possui $26$ bits <code>1</code> $\to$ prefixo <code>/26</code>. O passo da sub-rede é $256 - 192 = 64$.</li>
+        <li>As sub-redes no último octeto pulam de 64 em 64: <code>.0</code>, <code>.64</code>, <code>.128</code>, <code>.192</code>.</li>
+        <li>O IP <code>.210</code> situa-se entre <code>.192</code> e <code>.255</code>. Logo, a sub-rede conectada é <code>146.164.5.192/26</code>.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 5: ACTIVE RECALL / IFCONFIG ETH1 -->
+    <section class="card-exercise" id="ex5" data-hint="IP = 146.164.69.253 com máscara 255.255.255.224. 224 corresponde a /27 (passo de 256 - 224 = 32). Identifique o múltiplo de 32 imediatamente inferior a 253. Formato: x.x.x.x/yy">
+      <div class="exercise-header">
+        <h3>Exercício 5: Rastreamento de Sub-rede a partir de Log Real</h3>
+        <span class="exercise-tag recall">Active Recall / Terminal</span>
+      </div>
+      <div class="question-text">
+        Analise a linha extraída da interface <code>eth1</code> de um roteador em produção:<br>
+        <code>eth1 inet addr:146.164.69.253 Bcast:146.164.69.255 Mask:255.255.255.224</code><br><br>
+        <strong>Digite a sub-rede IP conectada a esta interface</strong> no formato padrão de prefixo CIDR (ex: <code>x.x.x.x/yy</code>):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 146.164.69.0/27" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Sub-rede</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 6: PARSING IFCONFIG ETH2 (BROADCAST E ÚLTIMO VÁLIDO) -->
+    <section class="card-exercise" id="ex6">
+      <div class="exercise-header">
+        <h3>Exercício 6: Fronteiras de Sub-rede com Máscara .128</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Dada a saída da interface <code>eth2</code>: <code>inet addr: 146.164.69.1 Mask: 255.255.255.128</code>. Qual é, respectivamente, o endereço de identificação da sub-rede e o último endereço de host válido utilizável?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A máscara 255.255.255.128 divide o bloco em duas metades de 128 endereços. O IP .1 está na primeira metade (0 a 127). O endereço .254 pertence à segunda sub-rede (.128 a .255).">
+          Identificador de rede 146.164.69.0/25 e o último endereço de host válido igual a 146.164.69.254.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! Com máscara /25, o bloco vai de .0 a .127. O identificador de rede é 146.164.69.0, o broadcast é 146.164.69.127 e o último host utilizável é exatamente 146.164.69.126!">
+          Identificador de rede 146.164.69.0/25 e o último endereço de host válido igual a 146.164.69.126.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: 146.164.69.127 tem todos os 7 bits de host iguais a 1 (0b01111111), sendo reservado obrigatoriamente para o broadcast da sub-rede, não podendo ser configurado em máquina.">
+          Identificador de rede 146.164.69.0/25 e o último endereço de host válido igual a 146.164.69.127.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O endereço 146.164.69.128 é o identificador da sub-rede seguinte (/25), não tendo relação com o último host do primeiro bloco.">
+          Identificador de rede 146.164.69.128/25 e o último endereço de host válido igual a 146.164.69.254.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO FINAL: PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nos seguintes conceitos. Revise-os antes de avançar para o cabeçalho e fragmentação:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Voltar ao Painel da Matéria</a>
+      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Consultar Ficha de Referência</a>
+      <a href="0002-cabecalho-ipv4-opcoes-encaminhamento.html">Próxima Lição: 0002 — Cabeçalho e Opções &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Diagnóstico de Classe D Multicast
+      initMultipleChoice("ex1", "Endereços Multicast Classe D não podem ser atribuídos a hosts unicast");
+
+      // Ex 2: Cálculo de Hospedeiros Úteis (2^10 - 2 = 1022)
+      initInputExercise("ex2", ["1022", "1.022"], "Cálculo de máquinas úteis: 2^h - 2");
+
+      // Ex 3: Falácia do Prefixo Inválido
+      initTrueFalse("ex3", false, "Prefixo com bits variáveis em 1 é inválido como identificador de sub-rede",
+        "Atenção: 136.27.33.0/23 possui o 23º bit igual a 1, sendo inválido como identificador de sub-rede!",
+        "Exato! O endereço de rede exige que todos os 9 bits de host sejam 0. O correto é 136.27.32.0/23.");
+
+      // Ex 4: Subdivisão em /30 (128 sub-redes x 2 = 256 máquinas)
+      initInputExercise("ex4", ["256"], "Sub-redes /30: 128 enlaces x 2 hosts = 256 máquinas úteis");
+
+      // Ex 5: Parsing ifconfig eth1 (146.164.69.224/27)
+      initInputExercise("ex5", ["146.164.69.224/27"], "Parsing de ifconfig: sub-rede 146.164.69.224/27", (raw, clean) => {
+        return clean.replace(/\s+/g, "") === "146.164.69.224/27";
+      });
+
+      // Ex 6: Parsing ifconfig eth2
+      initMultipleChoice("ex6", "Fronteiras de sub-rede /25: identificador .0 e último host .126");
+    });
+  </script>
+</body>
+</html>

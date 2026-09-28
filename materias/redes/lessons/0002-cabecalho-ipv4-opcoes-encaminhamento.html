@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0002: Cabeçalho IPv4, Fragmentação e Opções de Encaminhamento — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Módulo 1: Camada de Rede • Lição 0002</div>
+      <h1>Cabeçalho IPv4, Fragmentação, Roteamento pela Fonte e ICMP</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Estrutura de 20 a 60 bytes, aritmética de Fragment Offset em blocos de 8 octetos, a armadilha do Slow Path em opções, túneis IP-em-IP e ICMP Redirect.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Ficha de Referência: IPv4 e Cabeçalho</a>
+    </div>
+
+    <!-- BLOCO 1: O CABEÇALHO IPV4 E O CAMPO IHL -->
+    <section class="card-theory">
+      <h2>1. Estrutura Básica do Cabeçalho e o Campo IHL</h2>
+      <p>
+        O cabeçalho IPv4 varia entre <strong>20 e 60 bytes</strong>. Como o campo <em>IHL</em> (Internet Header Length) possui apenas 4 bits (valores de 0 a 15), ele codifica o comprimento em <strong>palavras de 32 bits (4 bytes)</strong>:
+      </p>
+      <ul>
+        <li><strong>Sem opções (padrão):</strong> $IHL = 5$ ($5 \times 4 = 20$ bytes).</li>
+        <li><strong>Com opções máximas:</strong> $IHL = 15$ ($15 \times 4 = 60$ bytes, restando $40$ bytes para opções).</li>
+        <li><strong>Time to Live (TTL):</strong> Decrementado por cada roteador; se chegar a zero, o pacote é destruído e gera <code>ICMP Time Exceeded (Tipo 11)</code>.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 1: IHL E DECODIFICAÇÃO DE CABEÇALHO -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Interpretação de Campos do Cabeçalho IPv4</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Ao capturar um datagrama IPv4 bruto em uma interface, o analisador de protocolos revelou que o primeiro byte do pacote tinha o valor hexadecimal <code>0x45</code>. Qual é a interpretação técnica precisa desse byte inicial?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: Os primeiros 4 bits (0x4) indicam a versão IPv4. Os 4 bits seguintes (0x5) representam o IHL em palavras de 32 bits (5 x 4 = 20 bytes). O TTL fica no 9º byte do cabeçalho.">
+          O pacote pertence à versão quatro do protocolo IP e possui o contador de saltos Time to Live configurado para cinco.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O primeiro nibble (0100_2 = 4) define IPv4. O segundo nibble (0101_2 = 5) define o IHL igual a 5 palavras de 4 bytes, confirmando um cabeçalho padrão de 20 bytes sem opções adicionais!">
+          O pacote pertence à versão quatro do protocolo IP e possui cabeçalho padrão de vinte bytes sem opções adicionais.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: O protocolo de transporte é identificado no décimo byte do cabeçalho (ex: 6 para TCP, 17 para UDP). O valor 0x45 não codifica o protocolo superior.">
+          O pacote pertence à versão quatro do protocolo IP e transporta em sua carga útil um segmento do protocolo de controle TCP.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O campo DSCP/TOS ocupa o segundo byte inteiro do cabeçalho IPv4. O valor 0x45 é composto exclusivamente pelos campos Versão e IHL.">
+          O pacote pertence à versão quatro do protocolo IP e define no campo de serviço diferenciado prioridade de nível cinco.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: FRAGMENTAÇÃO E A UNIDADE DE 8 OCTETOS -->
+    <section class="card-theory">
+      <h2>2. Fragmentação: MTU, Flags e Fragment Offset</h2>
+      <p>
+        Quando um datagrama excede a <em>MTU</em> (Maximum Transmission Unit) de um enlace, ele precisa ser fragmentado (a menos que a flag <strong>DF - Don't Fragment</strong> esteja ativada):
+      </p>
+      <ul>
+        <li>O cabeçalho IP (20 bytes) é replicado em cada fragmento.</li>
+        <li>A flag <strong>MF (More Fragments)</strong> vale <code>1</code> em todos os fragmentos, exceto no último (onde vale <code>0</code>).</li>
+        <li>O campo <strong>Fragment Offset</strong> possui 13 bits e indica a posição dos dados do fragmento em relação ao payload original, medido obrigatoriamente em <strong>blocos de 8 octetos (64 bits)</strong>:</li>
+      </ul>
+      <p style="text-align: center; font-size: 1.15rem; margin: 0.5rem 0;">
+        $$\text{Fragment Offset} = \frac{\text{Bytes de dados acumulados anteriores}}{8}$$
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 2: CÁLCULO ATIVO DO FRAGMENT OFFSET -->
+    <section class="card-exercise" id="ex2" data-hint="Datagrama total = 3000 bytes (20 bytes cabeçalho + 2980 bytes dados). Enlace com MTU = 1500 bytes pode transportar no máximo 1500 - 20 = 1480 bytes de dados por fragmento. 1480 é múltiplo de 8. O offset do 2º fragmento é 1480 / 8. Digite o número inteiro resultante.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Cálculo Numérico de Fragment Offset</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        Um datagrama IPv4 de <strong>3.000 bytes</strong> (20 bytes de cabeçalho + 2.980 bytes de dados) chega a um roteador que precisa encaminhá-lo por um enlace Ethernet cuja <strong>MTU é de 1.500 bytes</strong>.<br><br>
+        O roteador divide o datagrama. O 1º fragmento transporta o cabeçalho de 20 bytes e 1.480 bytes de dados (atingindo a MTU de 1.500 bytes).<br><br>
+        <strong>Qual é o valor exato registrado no campo <em>Fragment Offset</em> do 2º fragmento?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 185" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Offset</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: FAST PATH VS SLOW PATH E O CUSTO DAS OPÇÕES -->
+    <section class="card-theory">
+      <h2>3. Comutação no Hardware: Fast Path vs. Slow Path</h2>
+      <p>
+        Roteadores modernos encaminham a imensa maioria dos pacotes através do <strong>Fast Path</strong>: chips dedicados (ASICs / NPUs) processam o cabeçalho padrão de 20 bytes em microssegundos no plano de dados sem intervenção de software.
+      </p>
+      <p>
+        Entretanto, quando um datagrama IPv4 possui o campo de <strong>Opções</strong> preenchido ($IHL > 5$), o hardware não consegue processá-lo na linha de velocidade do enlace. O pacote é forçado para o <strong>Slow Path</strong> (plano de controle), sendo enviado à CPU principal do roteador.
+      </p>
+      <p>
+        Isso aumenta drasticamente a latência e abre brechas para ataques de negação de serviço (DoS) por sobrecarga do processador do roteador.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3: FALÁCIA DO FAST PATH -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: Arquitetura de Roteadores — A Falácia do Desempenho</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Avalie a seguinte afirmação sobre a engenharia de tráfego na Internet:<br>
+        <em>"A utilização de opções no cabeçalho IPv4 (como Record Route ou Source Routing) é amplamente encorajada em redes de alta performance corporativas, pois os circuitos integrados ASIC de roteadores modernos processam cabeçalhos com opções exatamente na mesma taxa de velocidade do Fast Path que pacotes IPv4 convencionais."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa falácia grave! Praticamente nenhum roteador comercial processa opções IP no Fast Path. Pacotes com opções são desviados para o processador central (Slow Path), gerando gargalos colossais de desempenho e risco de colapso por esgotamento de CPU!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! Pacotes com opções do IP violam o formato fixo de 20 bytes acelerado por hardware e são obrigatoriamente desviados para a CPU (Slow Path), degradando violentamente a taxa de repasse. Por isso operadores frequentemente descartam pacotes com opções em suas bordas.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: ROTEAMENTO PELA FONTE VS TÚNEL IP-EM-IP -->
+    <section class="card-theory">
+      <h2>4. Loose / Strict Source Routing vs. Encapsulamento IP-em-IP</h2>
+      <p>
+        Para forçar que um datagrama atravesse uma sequência pré-determinada de roteadores, existem duas abordagens fundamentais:
+      </p>
+      <ul>
+        <li><strong>Roteamento pela Fonte (Opções IP):</strong>
+          <ul>
+            <li><em>Loose Source Routing (LSR):</em> O pacote deve passar pelos roteadores listados, mas pode passar por nós intermediários livres entre eles.</li>
+            <li><em>Strict Source Routing (SSR):</em> O próximo roteador listado <u>deve ser vizinho físico direto</u>; se não for, o pacote é descartado.</li>
+          </ul>
+        </li>
+        <li><strong>Encapsulamento IP dentro de IP (Túnel RFC 2003):</strong> Adiciona um cabeçalho IP externo para cada nó intermediário forçado. Não utiliza o campo de opções, trafegando pelo <strong>Fast Path</strong> nos nós internos ao túnel!</li>
+      </ul>
+      <p>
+        <strong>Diferença crucial de capacidade:</strong> Como o cabeçalho IP possui no máximo 60 bytes, o espaço reservado para opções é de <strong>40 bytes</strong> ($60 - 20$). Subtraindo 3 bytes de cabeçalho da opção de rota, restam 37 bytes. Como cada IP consome 4 bytes, cabem no máximo $\lfloor 37 / 4 \rfloor = 9$ endereços intermediários forçados!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 4: TÚNEL IP VS STRICT SOURCE ROUTING -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Limitações Estruturais do IP-em-IP</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Por que a técnica de encapsulamento IP dentro de IP (túnel IP) <strong>NÃO</strong> é capaz de implementar a semântica da opção <em>Strict Source Routing</em> (SSR)?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O encapsulamento IP-em-IP não altera a soma de verificação da carga interna; cada cabeçalho externo possui seu próprio checksum independente de 16 bits.">
+          Porque a adição de múltiplos cabeçalhos IP invalida o cálculo do checksum das mensagens de controle de transporte TCP.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! O túnel IP-em-IP garante apenas que o pacote seja entregue ao destino do cabeçalho externo, mas o trajeto até lá segue a tabela de rotas convencional, podendo passar por qualquer outro roteador intermediário no caminho. O SSR exige que os nós da rota sejam estritamente vizinhos diretos sem saltos alheios!">
+          Porque o túnel garante a entrega ao próximo ponto mas não impede que roteadores extras sejam atravessados no trajeto.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A opção SSR é limitada a 9 destinos intermediários pelo espaço de 40 bytes de opções, enquanto o IP-em-IP suporta muitos mais nós (limitado apenas pelo MTU).">
+          Porque o cabeçalho do encapsulamento possui limitação máxima de apenas nove saltos intermediários em sua estrutura.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: O protocolo IP em túnel trafega perfeitamente pelo Fast Path na maioria dos roteadores internos. O impedimento do SSR é puramente de garantia de topologia direta salto a salto.">
+          Porque os roteadores de borda descartam automaticamente pacotes tunelados por operarem exclusivamente no modo lento.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5: ACTIVE RECALL / LIMITE DE SALTOS NO SOURCE ROUTING -->
+    <section class="card-exercise" id="ex5" data-hint="Espaço máximo de opções = 40 bytes. 3 bytes são consumidos pelo cabeçalho da opção (Option Type, Length, Pointer). Restam 37 bytes livres. Cada endereço IPv4 consome 4 bytes. Calcule a divisão inteira 37 / 4.">
+      <div class="exercise-header">
+        <h3>Exercício 5: Limite Físico de Saltos no Loose/Strict Source Routing</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        O cabeçalho IPv4 pode ter no máximo 60 bytes, dos quais 20 bytes compõem o cabeçalho base obrigatório, restando no máximo 40 bytes para o campo de opções.<br><br>
+        Sabendo que a opção de roteamento pela fonte consome <strong>3 bytes de controle</strong> (tipo, tamanho e ponteiro) e que cada endereço IPv4 exige <strong>4 bytes</strong>:<br><br>
+        <strong>Qual é o número MÁXIMO de endereços de destinos intermediários que podem ser forçados na rota através desta opção?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 9" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Capacidade</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 5: ICMP REDIRECT E OTIMIZAÇÃO DE NEXT-HOP -->
+    <section class="card-theory">
+      <h2>5. Mensagens de Redirecionamento ICMP (ICMP Redirect)</h2>
+      <p>
+        Uma mensagem <strong>ICMP Redirect (Tipo 5)</strong> é gerada por um roteador $R_A$ para informar uma estação de origem que ela escolheu um próximo salto subótimo.
+      </p>
+      <p>
+        Ela é disparada sob uma condição operacional estrita:
+      </p>
+      <ul>
+        <li>O pacote entra pela interface física $X$ de $R_A$.</li>
+        <li>A tabela de encaminhamento de $R_A$ determina que o melhor próximo salto para o destino está <strong>na mesma interface física $X$</strong> (interface de entrada igual à interface de saída!).</li>
+      </ul>
+      <p>
+        $R_A$ encaminha o pacote para o outro roteador $R_B$ e envia o ICMP Redirect para a estação de origem, informando-a para enviar tráfegos futuros para aquele destino diretamente a $R_B$, eliminando o salto duplicado na rede local.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 6: GATILHO DO ICMP REDIRECT -->
+    <section class="card-exercise" id="ex6">
+      <div class="exercise-header">
+        <h3>Exercício 6: Mecânica de Disparo do ICMP Redirect</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Qual evento topológico e de comutação no plano de dados força um roteador $R_A$ a emitir uma mensagem ICMP Redirect para um computador na rede local?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A expiração do contador TTL para zero gera a mensagem ICMP Time Exceeded (Tipo 11), e não ICMP Redirect.">
+          Quando o campo Time to Live atinge o valor zero durante o processamento do cabeçalho IPv4 em trânsito no roteador.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! O gatilho mandatário para a geração de ICMP Redirect é o roteador receber o pacote e perceber que o próximo salto correto reside exatamente na mesma sub-rede/interface física por onde o pacote acabou de entrar!">
+          Quando o pacote é encaminhado pela mesma interface física por onde entrou para alcançar um melhor próximo salto.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Pacotes cujo tamanho supera a MTU com a flag DF (Don't Fragment) em 1 geram a mensagem ICMP Destination Unreachable / Fragmentation Needed (Tipo 3, Código 4).">
+          Quando o tamanho do pacote excede a unidade máxima de transmissão e o cabeçalho possui a flag Don't Fragment ligada.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Inconsistências de checksum de cabeçalho causam o descarte silencioso do pacote (RFC 791) sem envio de mensagem ICMP de redirecionamento.">
+          Quando a soma de verificação do cabeçalho apresenta divergência com relação aos dados transmitidos pelo remetente.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nos seguintes conceitos. Revise-os antes de iniciar Vetor de Distância:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0001-enderecamento-ipv4-classes-cidr.html">← Lição Anterior: 0001 — IPv4 e CIDR</a>
+      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Consultar Ficha de Referência</a>
+      <a href="0003-vetor-de-distancia-bellman-ford.html">Próxima Lição: 0003 — Vetor de Distância &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Decodificação IHL 0x45
+      initMultipleChoice("ex1", "Campo IHL no cabeçalho IPv4 (0x45 = IPv4, 20 bytes sem opções)");
+
+      // Ex 2: Cálculo de Fragment Offset (1480 / 8 = 185)
+      initInputExercise("ex2", ["185"], "Cálculo de Fragment Offset em blocos de 8 octetos: 1480 / 8 = 185");
+
+      // Ex 3: Falácia do Fast Path em Opções IP
+      initTrueFalse("ex3", false, "Opções no IPv4 desviam pacotes para o Slow Path (CPU)",
+        "Cuidado: Opções IP exigem processamento de software no Slow Path!",
+        "Exato! Opções não rodam no Fast Path em hardware de alto desempenho.");
+
+      // Ex 4: SSR vs IP-in-IP
+      initMultipleChoice("ex4", "Túnel IP-in-IP não garante contiguidade estrita exigida pelo SSR");
+
+      // Ex 5: Limite de 9 destinos em Source Routing
+      initInputExercise("ex5", ["9"], "Limite de destinos em Source Routing: (40 - 3) / 4 = 9 destinos");
+
+      // Ex 6: Condição de disparo do ICMP Redirect
+      initMultipleChoice("ex6", "Disparo do ICMP Redirect quando interface de entrada é igual à de saída");
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0006: Protocolo RIP: RIPv1, RIPv2 e RIPng — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Módulo 2: Vetor de Distância • Lição 0006</div>
+      <h1>Protocolo RIP: RIPv1, RIPv2, RIPng e Operação Prática</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Evolução do Routing Information Protocol: da rigidez classful em broadcast à modernização com máscaras CIDR, multicast 224.0.0.9, campo Next Hop e RIPng para IPv6.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+    </div>
+
+    <!-- BLOCO 1: RIPV1 E A INEFICIÊNCIA DO BROADCAST -->
+    <section class="card-theory">
+      <h2>1. RIPv1 (RFC 1058): Rigidez Classful e Poluição por Broadcast</h2>
+      <p>
+        O <strong>RIP versão 1</strong> foi concebido no início dos anos 80 e reflete a arquitetura de rede da época:
+      </p>
+      <ul>
+        <li><strong>Roteamento Classful:</strong> O anúncio de rota <strong>NÃO</strong> envia a máscara de sub-rede. Roteadores são forçados a deduzir a máscara pela classe natural (A, B, C) ou pela máscara de sua interface local, tornando o uso de VLSM e CIDR impossível.</li>
+        <li><strong>Transporte via Broadcast:</strong> Pacotes UDP na porta 520 são enviados para <code>255.255.255.255</code>.</li>
+      </ul>
+      <p>
+        <strong>O Impacto em Desempenho:</strong> Em um switch Ethernet, o frame de broadcast é entregue a todas as portas. Todas as estações de trabalho e servidores são interrompidos, copiam o pacote para o kernel e processam a pilha IP até perceberem que a porta 520 não lhes interessa, desperdiçando ciclos de CPU em toda a LAN!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1: BROADCAST NO RIPV1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Impacto do Broadcast do RIPv1 na Rede Local</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Qual é a desvantagem arquitetural e computacional primária decorrente do uso de difusão em <em>Broadcast</em> (<code>255.255.255.255</code>) nas transmissões periódicas do protocolo RIPv1?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: Os switches de camada 2 encaminham broadcasts normalmente para todas as portas de uma mesma VLAN, sem descartá-los.">
+          Os switches Ethernet descartam silenciosamente quadros de difusão geral para impedir tempestades de dados no domínio.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Frames Ethernet de broadcast são processados pelas placas de rede de todas as máquinas da LAN. Cada computador acorda o sistema operacional para subir o pacote na pilha até descartá-lo, gerando desperdício inútil de CPU!">
+          Todas as estações de trabalho do segmento são forçadas a processar o pacote até a camada de transporte para descartá-lo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: O RIP não utiliza conexões orientadas a fluxo TCP; ele opera sobre datagramas UDP sem confirmação na porta 520.">
+          A pilha do protocolo de transporte perde a capacidade de sincronizar a janela deslizante nas conexões ativas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A contagem ao infinito é inerente ao algoritmo de Bellman-Ford e à falta de topologia global, não decorrendo do mecanismo de broadcast em si.">
+          A convergência das rotas fica limitada matematicamente a uma taxa de crescimento logarítmica nas tabelas de encaminhamento.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: RIPV2 E O MULTICAST 224.0.0.9 -->
+    <section class="card-theory">
+      <h2>2. RIPv2 (RFC 2453): Suporte a Sub-redes e Multicast</h2>
+      <p>
+        Para superar os gargalos do RIPv1, o <strong>RIP versão 2</strong> introduziu modernizações cruciais:
+      </p>
+      <ul>
+        <li><strong>Roteamento Classless:</strong> Cada entrada de rota inclui explicitamente a máscara de sub-rede de 32 bits, habilitando VLSM e agregação de prefixos CIDR.</li>
+        <li><strong>Multicast Dedicado:</strong> Os anúncios são direcionados exclusivamente ao endereço IP de classe D <code>224.0.0.9</code>.</li>
+      </ul>
+      <p>
+        <strong>Vantagem do Multicast:</strong> O chip da placa de rede (NIC) de computadores comuns descarta o pacote diretamente no hardware (nível físico/MAC), pois a máquina não está inscrita no grupo multicast. O processador principal da estação nem sequer é interrompido!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 2: ACTIVE RECALL / MULTICAST DO RIPV2 -->
+    <section class="card-exercise" id="ex2" data-hint="O endereço é do bloco 224.0.0.X reservado pela IANA para roteadores RIPv2. Digite 224.0.0.9.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Endereço Multicast Oficial do RIPv2</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        Qual é o endereço IPv4 de <strong>Multicast</strong> padronizado utilizado pelo protocolo RIPv2 para transmitir seus anúncios periódicos em meios de difusão multiacesso (como redes Ethernet)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 224.0.0.9" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar IP</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: O CAMPO NEXT HOP NO RIPV2 -->
+    <section class="card-theory">
+      <h2>3. Otimização de Encaminhamento: O Campo "Next Hop"</h2>
+      <p>
+        No RIPv1, o próximo salto era sempre, compulsoriamente, o roteador que enviou a mensagem.
+      </p>
+      <p>
+        O RIPv2 introduziu o campo explícito <strong>Next Hop</strong> de 32 bits em cada entrada de rota:
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Eliminação de Saltos Redundantes na LAN</div>
+        <p style="margin-bottom: 0;">
+          Considere que os roteadores $R_1, R_2$ e $R_3$ estão no mesmo cabo Ethernet. $R_1$ conhece uma rota para a rede externa $Z$, mas sabe que o roteador $R_2$ possui um enlace muito mais direto para $Z$. $R_1$ pode anunciar a rota para $R_3$ preenchendo o campo <em>Next Hop</em> com o IP de <strong>$R_2$</strong>! Quando $R_3$ precisar enviar tráfego para $Z$, ele despacha direto para $R_2$, evitando saltar por $R_1$ desnecessariamente.
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 3: IDENTIFICAÇÃO DE FALÁCIA -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: A Falácia do Próximo Salto Imutável</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Considere a seguinte afirmação sobre tabelas de encaminhamento:<br>
+        <em>"Nas mensagens do protocolo RIPv2, o próximo salto registrado na tabela para uma determinada sub-rede é sempre e obrigatoriamente o próprio endereço IP do roteador que transmitiu o pacote de anúncio, sendo impossível apontar para outro dispositivo."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa confusão! Isso era verdade no RIPv1. O RIPv2 introduziu explicitamente o campo 'Next Hop' em cada entrada de rota justamente para permitir indicar outro roteador vizinho na mesma rede local, eliminando saltos duplos desnecessários!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! O RIPv2 possui um campo explícito de Next Hop de 32 bits em cada entrada de rota. Se preenchido com um IP diferente de 0.0.0.0, o receptor deve usar esse IP informado como próximo salto, e não o remetente do pacote!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: MENSAGENS DE PEDIDO (REQUEST) E RESPOSTA (RESPONSE) -->
+    <section class="card-theory">
+      <h2>4. Mensagens de Pedido (Request) no RIP</h2>
+      <p>
+        O cabeçalho do RIP define dois tipos fundamentais de comando: <strong>Request (Comando 1)</strong> e <strong>Response (Comando 2)</strong>.
+      </p>
+      <p>
+        Embora a maioria do tráfego seja de respostas periódicas (Response a cada 30s), as mensagens de <strong>Request</strong> possuem duas utilidades primordiais:
+      </p>
+      <ol>
+        <li><strong>Inicialização Acelerada (Fast Bootstrapping):</strong> Quando um roteador acaba de ligar ou sua interface é ativada, ele não precisa esperar passivamente até 30 segundos; ele emite um Request solicitando a tabela de rotas imediata aos vizinhos.</li>
+        <li><strong>Diagnóstico e Auditoria:</strong> Administradores de rede utilizam ferramentas (como utilitários de monitoração e <code>ripquery</code>) para solicitar tabelas de rotas completas de nós específicos para detectar falhas de configuração.</li>
+      </ol>
+    </section>
+
+    <!-- EXERCÍCIO 4: DIAGNÓSTICO DO RIP REQUEST -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Finalidade das Mensagens de Pedido (Request)</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Em quais situações operacionais um roteador ou estação de gerenciamento emite mensagens do tipo <em>RIP Request</em>?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A eleição de mestre/escravo e sincronização de bases de dados pertence ao subprotocolo Exchange do OSPF, não existindo esse conceito no RIP.">
+          Para eleger o roteador mestre responsável por distribuir a base topológica para todos os nós subordinados da área.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! As mensagens de pedido RIP servem exatamente para preenchimento rápido das rotas quando um roteador reinicia e para consultas administrativas de diagnóstico!">
+          Para inicialização rápida das tabelas após reiniciar e para diagnóstico administrativo de auditoria de rotas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A autenticação no RIPv2 é negociada na própria mensagem periódica normal de Response, não exigindo mensagens de Request preliminares.">
+          Para solicitar a renovação das chaves de criptografia assimétrica utilizadas na autenticação de segurança das interfaces.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A sincronização temporal de relógios em redes utiliza o protocolo NTP (porta UDP 123), e não o protocolo de roteamento RIP.">
+          Para calibrar os relógios de hardware com servidores NTP antes de disparar a contagem de temporização periódica.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 5: RIPNG PARA IPV6 -->
+    <section class="card-theory">
+      <h2>5. RIPng: Adaptação para o IPv6 (RFC 2080)</h2>
+      <p>
+        Com a transição para o IPv6 (endereços de 128 bits), o protocolo RIP foi adaptado na especificação <strong>RIPng</strong> (Next Generation):
+      </p>
+      <ul>
+        <li><strong>Endereço de Transporte:</strong> Utiliza o protocolo UDP na <strong>porta 521</strong> (em contraste com a porta 520 do RIP IPv4).</li>
+        <li><strong>Multicast IPv6:</strong> Difunde mensagens no endereço link-local <code>FF02::9</code> (grupo de todos os roteadores RIPng no segmento local).</li>
+        <li><strong>Próximo Salto IPv6:</strong> Utiliza os endereços link-local (iniciados em <code>FE80::</code>) dos roteadores vizinhos.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 5: ACTIVE RECALL / PORTA UDP DO RIPNG -->
+    <section class="card-exercise" id="ex5" data-hint="A porta do RIP IPv4 é UDP 520. A do RIPng para IPv6 é a porta imediatamente seguinte. Digite 521.">
+      <div class="exercise-header">
+        <h3>Exercício 5: Porta de Transporte do RIPng</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        Enquanto o RIPv1 e o RIPv2 para IPv4 operam sobre UDP na porta 520, <strong>qual é o número da porta de transporte UDP reservada pela IANA para o funcionamento do RIPng em redes IPv6?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 521" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Porta</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nos seguintes conceitos. Revise-os antes de iniciar o estudo de Estado de Enlace e Dijkstra:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0005-split-horizon-poison-reverse-timers.html">← Lição Anterior: 0005 — Split Horizon e Timers</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
+      <a href="0007-estado-de-enlace-dijkstra.html">Próxima Lição: 0007 — Estado de Enlace e Dijkstra &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Ineficiência do broadcast no RIPv1
+      initMultipleChoice("ex1", "Ineficiência do Broadcast no RIPv1: desperdício de CPU de todos os hosts da LAN");
+
+      // Ex 2: Endereço Multicast do RIPv2 (224.0.0.9)
+      initInputExercise("ex2", ["224.0.0.9"], "Multicast do RIPv2: endereço 224.0.0.9");
+
+      // Ex 3: Falácia do Next Hop imutável
+      initTrueFalse("ex3", false, "Campo Next Hop do RIPv2 permite indicar outro roteador na mesma LAN",
+        "Atenção: O RIPv2 possui o campo Next Hop explícito para apontar para terceiros na mesma LAN!",
+        "Exato! O RIPv2 suporta indicação explícita de Next Hop.");
+
+      // Ex 4: Mensagens de Request no RIP
+      initMultipleChoice("ex4", "Mensagens RIP Request: preenchimento rápido na inicialização e diagnóstico");
+
+      // Ex 5: Porta UDP do RIPng (521)
+      initInputExercise("ex5", ["521"], "Porta de transporte UDP do RIPng: 521");
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0011: Simulado Geral: Exame Completo de Roteamento — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Prova Final Unificada • Lição 0011</div>
+      <h1>Simulado Geral: Exame Completo de Roteamento Unicast</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Exame unificado de alto nível integrando todo o currículo da UFRJ / COPPE: endereçamento CIDR, fragmentação e opções IPv4, Bellman-Ford e bouncing, Dijkstra SPF, DR/BDR, OSPF e ECMP.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Ficha 0001: IPv4</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha 0002: Algoritmos DV e LS</a>
+    </div>
+
+    <!-- SEÇÃO DA TOPOLOGIA MESTRE -->
+    <section class="card-theory">
+      <h2>Topologia Integrada do Exame</h2>
+      <p>
+        Considere a topologia abaixo conectando os roteadores $R_1, R_2, R_3, R_4, R_5, R_6$ com suas interfaces, sub-redes e custos métricos de enlace:
+      </p>
+
+      <div class="graph-diagram">
+        <svg width="100%" height="280" viewBox="0 0 660 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- Enlaces -->
+          <!-- R1 para R2 (custo 2) -->
+          <line x1="100" y1="140" x2="250" y2="70" stroke="#30363d" stroke-width="2.5"/>
+          <text x="165" y="95" font-family="monospace" font-size="12" fill="#79c0ff">c = 2</text>
+
+          <!-- R1 para R3 (custo 5) -->
+          <line x1="100" y1="140" x2="250" y2="210" stroke="#30363d" stroke-width="2.5"/>
+          <text x="165" y="190" font-family="monospace" font-size="12" fill="#79c0ff">c = 5</text>
+
+          <!-- R2 para R4 (custo 3) -->
+          <line x1="250" y1="70" x2="420" y2="70" stroke="#30363d" stroke-width="2.5"/>
+          <text x="330" y="60" font-family="monospace" font-size="12" fill="#79c0ff">c = 3</text>
+
+          <!-- R2 para R3 (custo 1) -->
+          <line x1="250" y1="70" x2="250" y2="210" stroke="#30363d" stroke-width="2.5"/>
+          <text x="260" y="145" font-family="monospace" font-size="12" fill="#79c0ff">c = 1</text>
+
+          <!-- R3 para R5 (custo 4) -->
+          <line x1="250" y1="210" x2="420" y2="210" stroke="#30363d" stroke-width="2.5"/>
+          <text x="330" y="230" font-family="monospace" font-size="12" fill="#79c0ff">c = 4</text>
+
+          <!-- R4 para R5 (custo 1) -->
+          <line x1="420" y1="70" x2="420" y2="210" stroke="#30363d" stroke-width="2.5"/>
+          <text x="430" y="145" font-family="monospace" font-size="12" fill="#79c0ff">c = 1</text>
+
+          <!-- R4 para R6 (custo 6) -->
+          <line x1="420" y1="70" x2="560" y2="140" stroke="#30363d" stroke-width="2.5"/>
+          <text x="495" y="95" font-family="monospace" font-size="12" fill="#79c0ff">c = 6</text>
+
+          <!-- R5 para R6 (custo 2) -->
+          <line x1="420" y1="210" x2="560" y2="140" stroke="#3fb950" stroke-width="3"/>
+          <text x="495" y="195" font-family="monospace" font-weight="bold" font-size="12" fill="#7ee787">c = 2</text>
+
+          <!-- Nós -->
+          <circle cx="100" cy="140" r="20" fill="#1f6feb" stroke="#58a6ff" stroke-width="2"/>
+          <text x="100" y="145" font-family="monospace" font-weight="bold" font-size="14" fill="#fff" text-anchor="middle">R1</text>
+
+          <circle cx="250" cy="70" r="18" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="250" y="75" font-family="monospace" font-weight="bold" font-size="13" fill="#f0f6fc" text-anchor="middle">R2</text>
+
+          <circle cx="250" cy="210" r="18" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="250" y="215" font-family="monospace" font-weight="bold" font-size="13" fill="#f0f6fc" text-anchor="middle">R3</text>
+
+          <circle cx="420" cy="70" r="18" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="420" y="75" font-family="monospace" font-weight="bold" font-size="13" fill="#f0f6fc" text-anchor="middle">R4</text>
+
+          <circle cx="420" cy="210" r="18" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+          <text x="420" y="215" font-family="monospace" font-weight="bold" font-size="13" fill="#f0f6fc" text-anchor="middle">R5</text>
+
+          <circle cx="560" cy="140" r="20" fill="#238636" stroke="#3fb950" stroke-width="2"/>
+          <text x="560" y="145" font-family="monospace" font-weight="bold" font-size="14" fill="#fff" text-anchor="middle">R6</text>
+        </svg>
+        <div class="graph-caption">
+          Figura Mestre: 6 roteadores interconectados com enlaces bidirecionais simétricos.
+        </div>
+      </div>
+    </section>
+
+    <!-- QUESTÃO 1: CÁLCULO DE SUB-REDES CIDR (CAPACIDADE ÚTIL) -->
+    <section class="card-exercise" id="q1" data-hint="A máscara 255.255.255.224 possui 27 bits fixos (h = 32 - 27 = 5 bits de host). Calcule 2^5 - 2.">
+      <div class="exercise-header">
+        <h3>Questão 1: Dimensionamento de Sub-rede Local</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        A interface LAN do roteador $R_1$ atende a uma sub-rede corporativa com a faixa <code>172.20.16.0/27</code> (máscara <code>255.255.255.224</code>).<br><br>
+        <strong>Quantas estações de trabalho (hospedeiros com IP válido) podem ser conectadas simultaneamente nesta rede?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 30" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Resposta</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 2: PARSING DE LOG IFCONFIG ETH3 -->
+    <section class="card-exercise" id="q2" data-hint="IP = 146.164.69.129 com máscara 255.255.255.192. A máscara 192 corresponde a /26 (passo 64). 129 está entre 128 e 191. Sub-rede no formato x.x.x.x/yy">
+      <div class="exercise-header">
+        <h3>Questão 2: Engenharia Reversa de Terminal</h3>
+        <span class="exercise-tag recall">Active Recall / Terminal</span>
+      </div>
+      <div class="question-text">
+        Analise a saída do comando <code>ifconfig</code> extraída da interface <code>eth3</code> do roteador $R_2$:<br>
+        <code>eth3: inet addr:146.164.69.129 Bcast:146.164.69.191 Mask:255.255.255.192</code><br><br>
+        <strong>Digite o identificador canônico da sub-rede IP conectada a esta interface</strong> no formato CIDR padrão (ex: <code>x.x.x.x/yy</code>):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 146.164.69.128/26" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Sub-rede</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 3: FRAGMENTAÇÃO IPV4 -->
+    <section class="card-exercise" id="q3" data-hint="Datagrama de 4000 bytes totais (20 bytes cabeçalho + 3980 bytes de dados). Enlace com MTU = 1500 bytes comporta 1500 - 20 = 1480 bytes de dados. O 1º fragmento leva bytes 0 a 1479. O 2º fragmento leva bytes 1480 a 2959. O 3º fragmento começa no byte de dado 2960. O Fragment Offset do 3º fragmento é 2960 / 8. Calcule 2960 / 8.">
+      <div class="exercise-header">
+        <h3>Questão 3: Fragmentação e Fragment Offset do 3º Fragmento</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        Um pacote IPv4 com tamanho total de <strong>4.000 bytes</strong> (20 bytes de cabeçalho + 3.980 bytes de dados) deve ser transmitido por um enlace Ethernet cuja MTU é de <strong>1.500 bytes</strong>.<br><br>
+        O roteador gera 3 fragmentos. Os dois primeiros transportam 1.480 bytes de dados cada.<br><br>
+        <strong>Qual é o valor exato registrado no campo <em>Fragment Offset</em> do TERCEIRO fragmento?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 370" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Offset</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 4: FAST PATH VS SLOW PATH E OPÇÕES IP -->
+    <section class="card-exercise" id="q4">
+      <div class="exercise-header">
+        <h3>Questão 4: Opções IPv4 e a Comutação em Hardware</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Por que os roteadores de borda de provedores de trânsito na Internet frequentemente configuram filtros para descartar datagramas IPv4 que contenham opções ativas no cabeçalho ($IHL > 5$)?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A fragmentação IPv4 pode ocorrer normalmente mesmo sem opções; a presença de opções não impede matematicamente a divisão em fragmentos.">
+          Porque datagramas com opções de cabeçalho não podem ser fragmentados fisicamente sob nenhuma circunstância de rede.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Cabeçalhos com opções são desviados para o processador central (Slow Path), gerando gargalos severos de desempenho e expondo o roteador a ataques de negação de serviço por esgotamento de CPU!">
+          Porque pacotes com opções são desviados para a CPU (Slow Path), degradando o repasse e criando risco de negação de serviço.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: As opções do IPv4 são especificadas na RFC 791 desde 1981, sendo plenamente padronizadas pelo IETF.">
+          Porque o padrão IETF revogou oficialmente o uso de cabeçalhos variáveis tornando-os proibidos no protocolo da camada três.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Opções no IP operam na camada 3 (Internet), não invalidando os números de porta da camada de transporte 4.">
+          Porque a presença de opções no IP sobrescreve os campos de porta de origem e destino dos segmentos de transporte TCP.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 5: ICMP REDIRECT -->
+    <section class="card-exercise" id="q5">
+      <div class="exercise-header">
+        <h3>Questão 5: Diagnóstico do Gatilho do ICMP Redirect</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        O roteador $R_1$ recebe um pacote vindo do host $H_1$ pela sua interface <code>eth0</code>. Após consultar sua tabela de rotas, $R_1$ conclui que deve enviar o pacote para o roteador $R_2$, que também está conectado à <code>eth0</code>. Qual ação é tomada por $R_1$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O pacote não é descartado! O roteador R1 repassa o pacote para R2 normalmente para não interromper a comunicação em andamento.">
+          Descarta o pacote sumariamente e transmite uma mensagem ICMP Destination Unreachable de volta para a estação de origem.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! O roteador R1 encaminha o pacote para R2 pela interface eth0 e gera um ICMP Redirect para H1, ensinando H1 a mandar os próximos pacotes diretamente para R2!">
+          Encaminha o pacote para R2 e envia um ICMP Redirect para H1 para que ele atualize sua rota direta localmente.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A contagem ao infinito é um fenômeno de convergência de vetores de distância, não um tratamento de plano de dados para ICMP Redirect.">
+          Incrementa a métrica da rota para dezesseis e inicia imediatamente a contagem até o infinito no protocolo de transporte.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Um roteador não responde com ARP Reply fingindo ter o IP do próximo salto nessa circunstância (isso seria ARP Proxy forçado).">
+          Emite um pacote ARP com endereço MAC modificado forçando a interface a operar em modo promíscuo durante a sessão.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 6: RASTREAMENTO BELLMAN-FORD NA TOPOLOGIA -->
+    <section class="card-exercise" id="q6" data-hint="Caminho R1 para R5 via R2 e R4: R1->R2 (2) + R2->R4 (3) + R4->R5 (1) = 6. Caminho R1 para R5 via R3: R1->R2 (2) + R2->R3 (1) + R3->R5 (4) = 7. Menor custo é 6.">
+      <div class="exercise-header">
+        <h3>Questão 6: Rastreamento Bellman-Ford até R5</h3>
+        <span class="exercise-tag recall">Active Recall / Prova UFRJ</span>
+      </div>
+      <div class="question-text">
+        Se todos os nós executarem o algoritmo de Bellman-Ford na Figura Mestre:<br><br>
+        <strong>Qual é o custo mínimo acumulado convergido que o roteador R1 registrará para alcançar o roteador R5?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 6" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Custo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 7: BOUNCING EFFECT E DEPENDÊNCIA CIRCULAR -->
+    <section class="card-exercise" id="q7">
+      <div class="exercise-header">
+        <h3>Questão 7: Formação do Bouncing Effect</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Considere a seguinte asserção de prova:<br>
+        <em>"Se o enlace R4-R5 falhar repentinamente e o roteador R4 receber uma atualização periódica de R2 anunciando rota para R5 antes de R4 conseguir avisar seus vizinhos, R4 pode adotar R2 como novo próximo salto, originando um loop de roteamento e o efeito ricochete (bouncing effect) entre R2 e R4."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Exato! Esse é exatamente o mecanismo clássico de indução do bouncing effect em Bellman-Ford: R4 não sabe que a rota anunciada por R2 dependia do próprio caminho que acabou de quebrar!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Cuidado! A afirmativa é plenamente VERDADEIRA! O nó R4 aceita o anúncio de R2 porque a informação de vetor é míope, criando uma dependência circular mútua entre R2 e R4!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 8: SPLIT HORIZON EM CICLOS DE 3 NÓS -->
+    <section class="card-exercise" id="q8">
+      <div class="exercise-header">
+        <h3>Exercício 8: Ineficácia do Split Horizon em Triângulos</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Observe o triângulo formado pelos roteadores $R_1, R_2, R_3$. Por que a ativação da técnica do <em>Split Horizon</em> (com ou sem Poison Reverse) <strong>não consegue evitar loops de roteamento</strong> se um ciclo circular se fechar entre $R_1 \to R_2 \to R_3 \to R_1$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O Split Horizon com Poison Reverse define a métrica como 16 para enlaces diretos, mas isso só funciona entre dois vizinhos recíprocos, não em ciclos de 3 nós.">
+          Porque o Poison Reverse somente atua quando a métrica atinge valores pares, falhando em contagens triangulares ímpares.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! O Split Horizon só impede anunciar uma rota de volta pela MESMA interface de onde ela foi recebida. No triângulo, R1 aprende por eth0 e anuncia para R2 por eth1. A regra não é acionada e o loop gira pelo ciclo!">
+          Porque a rota é aprendida por uma interface e propagada por outra interface física diferente, não ativando o filtro local.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A fragmentação IPv4 opera na camada de dados e não interfere nas regras de filtragem de anúncios do protocolo de roteamento.">
+          Porque a presença de opções de fragmentação nos pacotes de controle invalida a leitura do número de salto de retorno.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O temporizador de 30 segundos afeta a cadência de envio, mas a falha em ciclos triangulares é uma limitação estrutural da lógica de interfaces do Split Horizon.">
+          Porque o intervalo de temporização periódica de trinta segundos é desativado compulsoriamente em enlaces de malha.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 9: RASTREAMENTO DIJKSTRA SPF (CAMINHO MÍNIMO ATÉ R6) -->
+    <section class="card-exercise" id="q9" data-hint="Compare os caminhos de R1 até R6: via R4 (R1-R2-R4-R6: 2 + 3 + 6 = 11) contra o caminho via R5 (R1-R2-R4-R5-R6: 2 + 3 + 1 + 2 = 8). Qual é o custo acumulado de R1-R2-R4-R5-R6? Digite '8'.">
+      <div class="exercise-header">
+        <h3>Questão 9: Algoritmo de Dijkstra SPF até R6</h3>
+        <span class="exercise-tag recall">Active Recall / Prova UFRJ</span>
+      </div>
+      <div class="question-text">
+        Executando o algoritmo de Dijkstra na Figura Mestre tendo o roteador <strong>R1</strong> como nó raiz de cálculo:<br><br>
+        <strong>Qual é o custo mínimo acumulado definitivo registrado por R1 para alcançar o nó de destino R6?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 8" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Custo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 10: REDUÇÃO DE ADJACÊNCIAS DO DR EM MULTIACESSO -->
+    <section class="card-exercise" id="q10" data-hint="Com N = 6 roteadores interconectados por switch Ethernet, sem DR o número de adjacências na malha completa é N*(N-1)/2 = 6*5/2. Calcule 6*5/2. Digite '15'.">
+      <div class="exercise-header">
+        <h3>Questão 10: Cálculo da Explosão de Adjacências sem DR</h3>
+        <span class="exercise-tag recall">Active Recall / Prova UFRJ</span>
+      </div>
+      <div class="question-text">
+        Se todos os <strong>6 roteadores</strong> da topologia fossem interconectados simultaneamente no mesmo segmento de difusão Ethernet (VLAN única de trânsito):<br><br>
+        <strong>Quantas adjacências lógicas seriam necessárias gerenciar na malha completa se o mecanismo de Roteador Designado (DR) NÃO existisse?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 15" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Adjacências</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 11: PROTOCOLO EXCHANGE VS INUNDAÇÃO -->
+    <section class="card-exercise" id="q11">
+      <div class="exercise-header">
+        <h3>Questão 11: Eficiência do Protocolo Exchange</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Durante a sincronização entre dois roteadores OSPF através do protocolo <em>Exchange</em>, qual mecanismo garante que apenas os anúncios desatualizados ou faltantes sejam solicitados e transmitidos?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O endereço MAC de hardware é sobrescrito a cada enlace e não identifica se um registro topológico de camada 3 está novo ou velho.">
+          A conferência dos endereços físicos MAC das interfaces seriais através do protocolo de resolução de endereços ARP.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! Os pacotes DBD enviam apenas os cabeçalhos dos LSAs. Ao comparar os identificadores e números de sequência com sua base local, o nó emite LSR apenas para os registros ausentes ou com número de sequência maior!">
+          A comparação dos números de sequência nos cabeçalhos dos pacotes DBD, requisitando apenas os mais novos via LSR.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A métrica infinita 16 é exclusiva do protocolo RIP, não existindo no protocolo Exchange do OSPF.">
+          A marcação compulsória de todas as rotas antigas com a métrica de valor dezesseis até a confirmação pelo servidor NTP.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O OSPF não utiliza a janela de transporte do TCP (porta 179 pertence ao BGP); ele opera direto sobre IP (protocolo 89).">
+          A negociação do tamanho de janela deslizante na conexão TCP sobre a porta cento e setenta e nove de transporte.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 12: HASH DE 5-TUPLA NO ECMP -->
+    <section class="card-exercise" id="q12">
+      <div class="exercise-header">
+        <h3>Questão 12: Preservação de Ordem TCP em ECMP</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Considere a seguinte afirmação sobre balanceamento de carga ECMP:<br>
+        <em>"Ao utilizar o hash consistente de 5-tupla (IP Origem, IP Destino, Porta Origem, Porta Destino e Protocolo), um roteador garante que todos os pacotes de uma mesma sessão TCP percorram rigorosamente o mesmo enlace físico, eliminando o risco de entrega fora de ordem e evitando cortes na janela de congestionamento do TCP."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Exato! A invariância da 5-tupla durante toda a sessão garante que o resultado do hash seja idêntico para todos os pacotes do fluxo, forçando-os a seguir pelo mesmo caminho físico e preservando a ordenação estrita do TCP!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Cuidado! A afirmativa é plenamente VERDADEIRA! O hash de 5-tupla é a solução de engenharia universal para evitar o desordenamento de pacotes TCP em caminhos ECMP.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço no Exame Final</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nas seguintes questões diagnósticas. Revise os tópicos indicados nas fichas de referência antes da sua avaliação oficial:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0010-ecmp-e-comparativo-rip-ospf.html">← Lição Anterior: 0010 — ECMP e Comparativo</a>
+      <a href="../index.html">🏠 Retornar ao Painel Principal de Redes</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos DV e LS</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Q1: Capacidade de host em /27 (2^5 - 2 = 30)
+      initInputExercise("q1", ["30"], "Cálculo de hosts em sub-rede /27: 2^5 - 2 = 30");
+
+      // Q2: Parsing ifconfig eth3 (146.164.69.128/26)
+      initInputExercise("q2", ["146.164.69.128/26"], "Parsing de ifconfig: sub-rede 146.164.69.128/26", (raw, clean) => {
+        return clean.replace(/\s+/g, "") === "146.164.69.128/26";
+      });
+
+      // Q3: Fragment offset do 3º fragmento (2960 / 8 = 370)
+      initInputExercise("q3", ["370"], "Fragment Offset do 3º fragmento: 2960 / 8 = 370");
+
+      // Q4: Slow Path em opções IP
+      initMultipleChoice("q4", "Descarte de opções IP na borda: desvio para Slow Path (CPU) e risco DoS");
+
+      // Q5: Comportamento do ICMP Redirect
+      initMultipleChoice("q5", "Comportamento do ICMP Redirect: encaminha o pacote e avisa a origem");
+
+      // Q6: Bellman-Ford R1 até R5 (2 + 3 + 1 = 6)
+      initInputExercise("q6", ["6"], "Menor custo R1 até R5 no Bellman-Ford: 2 + 3 + 1 = 6");
+
+      // Q7: Falácia do Bouncing Effect
+      initTrueFalse("q7", true, "Indução de Bouncing Effect e dependência circular após falha de enlace",
+        "Exato! R4 adota R2 por desconhecer a topologia, gerando o bouncing effect.",
+        "Atenção: A afirmativa é verdadeira! Bouncing effect ocorre por falta de visão global.");
+
+      // Q8: Split Horizon em loops de 3 nós
+      initMultipleChoice("q8", "Ineficácia do Split Horizon em triângulos: interfaces de entrada e saída distintas");
+
+      // Q9: Dijkstra R1 até R6 (R1-R2-R4-R5-R6 = 2 + 3 + 1 + 2 = 8)
+      initInputExercise("q9", ["8"], "Dijkstra SPF de R1 até R6: caminho ótimo com custo 8");
+
+      // Q10: Adjacências sem DR para N=6 (6*5/2 = 15)
+      initInputExercise("q10", ["15"], "Adjacências na malha completa sem DR: N*(N-1)/2 = 15");
+
+      // Q11: Eficiência do protocolo Exchange com DBDs
+      initMultipleChoice("q11", "Protocolo Exchange: sincronização seletiva por comparação de números de sequência em DBDs");
+
+      // Q12: Hash de 5-tupla em ECMP
+      initTrueFalse("q12", true, "Hash de 5-tupla preserva ordem de segmentos TCP em caminhos ECMP",
+        "Exato! A invariância da 5-tupla garante o mesmo enlace físico para a sessão TCP.",
+        "Atenção: O hash de 5-tupla é a solução definitiva para entrega ordenada no TCP.");
+    });
+  </script>
+</body>
+</html>

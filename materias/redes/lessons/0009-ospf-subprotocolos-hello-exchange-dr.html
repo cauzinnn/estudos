@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0009: OSPF: Subprotocolos Hello, Exchange e Roteador Designado — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Módulo 3: Estado de Enlace • Lição 0009</div>
+      <h1>OSPF: Subprotocolos Hello, Exchange e Roteador Designado (DR)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Formação de adjacências via Hello, a contenção combinatória de $N(N-1)/2$ para $N$ pelo DR/BDR, multicast 224.0.0.5/6 e a ressincronização seletiva pelo protocolo Exchange.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+    </div>
+
+    <!-- BLOCO 1: O SUBPROTOCOLO HELLO E A FORMAÇÃO DE VIZINHANÇA -->
+    <section class="card-theory">
+      <h2>1. O Subprotocolo Hello: Descoberta e Acordo de Parâmetros</h2>
+      <p>
+        Roteadores OSPF descobrem vizinhos dinamicamente através do <strong>Protocolo Hello</strong>. Em redes locais, pacotes Hello são enviados a cada <code>HelloInterval = 10s</code> para o endereço multicast <code>224.0.0.5</code>.
+      </p>
+      <p>
+        Para que dois nós estabeleçam adjacência com sucesso, os seguintes campos do pacote Hello <strong>devem coincidir rigorosamente</strong>:
+      </p>
+      <ul>
+        <li><strong>Area ID:</strong> Devem pertencer à mesmíssima área lógica.</li>
+        <li><strong>HelloInterval e DeadInterval:</strong> Temporizadores devem ser idênticos (padrão: 10s e 40s).</li>
+        <li><strong>Tipo de Autenticação e Senha/Hash.</strong></li>
+        <li><strong>Máscara de Sub-rede</strong> da interface local no segmento multiacesso.</li>
+      </ul>
+      <p>
+        O estado de vizinhança avança para <strong>2-Way</strong> no instante em que o roteador receptor localiza seu próprio <em>Router ID</em> listado dentro do pacote Hello recebido do vizinho!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1: REQUISITOS DE ADJACÊNCIA NO HELLO -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Parâmetros Mandatórios de Acordo no OSPF Hello</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Dois roteadores OSPF conectados diretamente pelo mesmo switch Ethernet não conseguem estabelecer adjacência, permanecendo eternamente no estado <em>Init</em>. Qual divergência de configuração explica conclusivamente essa falha?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: Os valores de Router ID DEVEM ser distintos e exclusivos em toda a rede. Se fossem idênticos causaria conflito grave, mas ter Router IDs diferentes é o correto e esperado.">
+          Os roteadores foram configurados propositadamente com valores distintos e exclusivos de Router ID de 32 bits.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Os temporizadores HelloInterval e DeadInterval precisam coincidir de forma estrita. Se o roteador A estiver com Hello=10s e o roteador B com Hello=30s, o OSPF recusa a formação de adjacência!">
+          Os valores dos temporizadores HelloInterval e DeadInterval configurados nas interfaces são mutuamente discordantes.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A métrica (custo) de interface é local a cada roteador e não precisa ser igual; o Dijkstra soma os custos normalmente mesmo que sejam assimétricos.">
+          Os custos métricos das interfaces configurados em cada um dos roteadores vizinhos possuem valores matematicamente assimétricos.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A prioridade OSPF pode ser diferente (inclusive é usada para desempatar a eleição de DR/BDR entre 0 e 255).">
+          As prioridades das interfaces para eleição do roteador designado foram definidas com números inteiros desiguais.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: A REDUÇÃO COMBINATÓRIA DO DR E BDR -->
+    <section class="card-theory">
+      <h2>2. A Explosão Combinatória em Meios de Difusão e o DR/BDR</h2>
+      <p>
+        Considere uma rede Ethernet conectando $N$ roteadores:
+      </p>
+      <ul>
+        <li><strong>Sem Roteador Designado:</strong> Cada roteador precisaria estabelecer adjacência com todos os outros. O número de adjacências explodiria para:</li>
+      </ul>
+      <p style="text-align: center; font-size: 1.15rem; margin: 0.5rem 0;">
+        $$\text{Adjacências sem DR} = \frac{N(N - 1)}{2}$$
+      </p>
+      <p>
+        Para $N = 10$, teríamos $45$ adjacências e $90$ enlaces na LSDB!
+      </p>
+      <p>
+        <strong>A Solução:</strong> Elege-se um <strong>Roteador Designado (DR)</strong> e um <strong>Backup DR (BDR)</strong>. A rede passa a simular uma estrela virtual: todos os roteadores comuns (<em>DROther</em>) estabelecem adjacência estrita apenas com o DR e o BDR. O número de adjacências desaba para <strong>apenas $N$</strong> e a LSDB armazena apenas $2N$ enlaces!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 2: ACTIVE RECALL / CÁLCULO DE ADJACÊNCIAS -->
+    <section class="card-exercise" id="ex2" data-hint="Com N = 8 roteadores, a malha completa sem DR exigiria N*(N-1)/2 = 8*7/2 = 28 adjacências. Com o DR, a rede simula uma estrela, exigindo exatamente N = 8 adjacências. Digite '8'.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Redução Combinatória de Adjacências OSPF</h3>
+        <span class="exercise-tag recall">Active Recall / Prova UFRJ</span>
+      </div>
+      <div class="question-text">
+        Em um data center, <strong>8 roteadores OSPF</strong> ($N = 8$) estão interconectados no mesmo domínio de difusão Ethernet (VLAN de trânsito).<br><br>
+        Enquanto a ausência de DR exigiria uma malha completa de 28 adjacências ($8 \times 7 / 2$), <strong>quantas adjacências são gerenciadas no total quando a topologia em estrela virtual do Roteador Designado (DR) é empregada?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 8" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Adjacências</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: OS ENDEREÇOS MULTICAST 224.0.0.5 E 224.0.0.6 -->
+    <section class="card-theory">
+      <h2>3. Separação de Tráfego: Multicast 224.0.0.5 vs. 224.0.0.6</h2>
+      <p>
+        Para viabilizar a arquitetura em estrela do DR, a IANA reservou dois endereços multicast:
+      </p>
+      <ul>
+        <li><code>224.0.0.5</code> (<strong>AllSPFRouters</strong>): Escutado por <u>todos</u> os roteadores OSPF da rede local.</li>
+        <li><code>224.0.0.6</code> (<strong>AllDRouters</strong>): Escutado <u>exclusivamente</u> pelo DR e pelo BDR.</li>
+      </ul>
+      <p>
+        <strong>Mecânica de Inundação:</strong> Quando um roteador comum (DROther) detecta a queda de um enlace, ele envia o anúncio (LSU) para <code>224.0.0.6</code>. Apenas o DR e o BDR processam a mensagem. O DR então retransmite o anúncio para todos os outros nós no endereço <code>224.0.0.5</code>, garantindo sincronização sem tempestade de pacotes redundantes!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3: IDENTIFICAÇÃO DE FALÁCIA -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: A Falácia da Difusão Direta de DROthers</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Analise a seguinte afirmação sobre o fluxo de pacotes LSU em redes locais:<br>
+        <em>"Em uma rede Ethernet com DR eleito, sempre que um roteador comum (DROther) detecta a mudança de estado de um enlace, ele transmite seu pacote Link State Update diretamente para o endereço 224.0.0.5 para que todos os outros roteadores DROther recebam a informação instantaneamente sem passar pelo DR."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa confusão! Roteadores comuns DROther NUNCA transmitem para 224.0.0.5 em redes com DR. Eles transmitem para 224.0.0.6 (AllDRouters). O DR recebe, processa e ele próprio retransmite para 224.0.0.5 para os demais!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! Os roteadores DROther enviam suas atualizações para o endereço 224.0.0.6 (escutado apenas por DR e BDR). Cabe ao DR atuar como centro da estrela e redistribuir o anúncio para o grupo 224.0.0.5!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: O SUBPROTOCOLO DE TROCA (EXCHANGE) -->
+    <section class="card-theory">
+      <h2>4. O Protocolo de Troca (Exchange Protocol)</h2>
+      <p>
+        O que acontece quando um enlace que havia caído volta a funcionar após alguns minutos? Os dois roteadores vizinhos precisam ressincronizar suas bases de dados.
+      </p>
+      <p>
+        Reenviar a base de dados inteira (milhares de LSAs) por inundação seria um desperdício ingênuo e custoso de largura de banda e processamento. O <strong>Protocolo Exchange</strong> resolve isso cirurgicamente:
+      </p>
+      <ol>
+        <li>Os roteadores elegem uma relação <strong>Mestre/Escravo</strong> no estado <em>ExStart</em> (maior Router ID vence).</li>
+        <li>Trocam pacotes <strong>Database Description (DBD)</strong>, que contêm apenas os <u>cabeçalhos</u> e <u>números de sequência</u> dos LSAs conhecidos.</li>
+        <li>Cada roteador compara os DBDs recebidos com sua própria base:
+          <ul>
+            <li>Se o vizinho possui um LSA ausente ou com <strong>número de sequência maior</strong> (versão mais recente), o roteador emite um <strong>Link State Request (LSR)</strong> pedindo <em>apenas</em> aquele registro!</li>
+            <li>O vizinho responde com o <strong>Link State Update (LSU)</strong> contendo o registro completo.</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+
+    <!-- EXERCÍCIO 4: DIAGNÓSTICO DO PROTOCOLO EXCHANGE -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Eficiência da Sincronização por DBDs</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Qual é a vantagem operacional de utilizar o protocolo de troca (<em>Exchange</em>) com pacotes DBD em vez de simplesmente re-inundar toda a base topológica (LSDB) quando um enlace retorna de uma falha?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O OSPF não converte a métrica para a escala de 16 saltos do RIP; ele mantém seus custos independentes baseados em largura de banda.">
+          Elimina a necessidade de recalcular a árvore geradora permitindo a conversão instantânea das métricas para o padrão RIP.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! O envio de cabeçalhos nos DBDs permite identificar cirurgicamente quais LSAs estão desatualizados (comparando números de sequência), transmitindo pela rede apenas as peças faltantes via LSR/LSU!">
+          Economiza banda de rede ao comparar números de sequência dos cabeçalhos, solicitando apenas os LSAs ausentes ou mais novos.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A autenticação MD5 protege o cabeçalho dos pacotes OSPF normais, não sendo um recurso exclusivo introduzido pelo protocolo Exchange.">
+          Garante a criptografia simétrica de ponta a ponta sem a necessidade de chaves pré-compartilhadas nas interfaces seriais.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A eleição de DR ocorre previamente durante a troca de pacotes Hello, e não no momento do subprotocolo de troca de descrições DBD.">
+          Substitui a eleição de roteadores designados ao forçar que todos os vizinhos passem a operar no modo estritamente mestre.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 5: CONTROLE DA IDADE DOS REGISTROS (LSA AGE E MAXAGE) -->
+    <section class="card-theory">
+      <h2>5. Ciclo de Vida dos Anúncios: LSA Age e MaxAge</h2>
+      <p>
+        Para garantir que rotas obsoletas ou roteadores desativados não fiquem para sempre na memória dos nós, cada LSA possui um contador de 16 bits chamado <strong>LSA Age</strong>:
+      </p>
+      <ul>
+        <li>Iniciado em $0$ segundos pelo originador, é incrementado a cada segundo enquanto repousa na LSDB.</li>
+        <li><strong>LSRefreshTime (1800s / 30 min):</strong> O roteador originador re-inunda periodicamente o LSA com número de sequência incrementado e Age zerado para manter o registro ativo.</li>
+        <li><strong>MaxAge (3600s / 1 hora):</strong> Se um LSA atingir 3.600 segundos sem atualização do originador, ele é considerado permanentemente morto e expurgado da LSDB!</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 5: ACTIVE RECALL / TEMPO MAXAGE -->
+    <section class="card-exercise" id="ex5" data-hint="MaxAge corresponde exatamente a 1 hora convertida em segundos (60 x 60). Digite '3600'.">
+      <div class="exercise-header">
+        <h3>Exercício 5: O Parâmetro MaxAge do OSPF</h3>
+        <span class="exercise-tag recall">Active Recall / Parâmetros</span>
+      </div>
+      <div class="question-text">
+        No protocolo OSPF, quando um anúncio de estado de enlace na LSDB deixa de ser renovado pelo seu originador e seu campo <em>LSA Age</em> atinge o teto do parâmetro <strong>MaxAge</strong>, ele é purgado da base de dados.<br><br>
+        <strong>Qual é o valor padrão oficial (em segundos) do temporizador MaxAge especificado na RFC 2328?</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 3600" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar MaxAge</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nos seguintes conceitos. Revise-os antes de analisar ECMP e o comparativo RIP x OSPF:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0008-ospf-arquitetura-areas-lsas.html">← Lição Anterior: 0008 — OSPF e Áreas</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
+      <a href="0010-ecmp-e-comparativo-rip-ospf.html">Próxima Lição: 0010 — ECMP e Comparativo RIP x OSPF &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Requisitos de compatibilidade no Hello
+      initMultipleChoice("ex1", "Requisitos do OSPF Hello: HelloInterval e DeadInterval devem coincidir estritamente");
+
+      // Ex 2: Cálculo de adjacências com DR (N = 8)
+      initInputExercise("ex2", ["8"], "Redução de adjacências pelo DR: de N(N-1)/2 para N = 8 adjacências");
+
+      // Ex 3: Falácia da difusão direta DROther
+      initTrueFalse("ex3", false, "DROthers enviam para 224.0.0.6 (DR/BDR) e apenas o DR retransmite em 224.0.0.5",
+        "Atenção: DROthers enviam para 224.0.0.6 (DR/BDR), e NUNCA direto para 224.0.0.5!",
+        "Exato! DROthers enviam para 224.0.0.6.");
+
+      // Ex 4: Eficiência do protocolo Exchange
+      initMultipleChoice("ex4", "Eficiência do protocolo Exchange com DBD: sincronização seletiva por número de sequência");
+
+      // Ex 5: MaxAge do OSPF (3600)
+      initInputExercise("ex5", ["3600"], "Valor padrão de MaxAge no OSPF: 3600 segundos (1 hora)");
+    });
+  </script>
+</body>
+</html>

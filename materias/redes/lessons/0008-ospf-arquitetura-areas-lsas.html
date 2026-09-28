@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0008: OSPF: Arquitetura em Áreas e Tipos de LSAs — Redes de Computadores</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Módulo 3: Estado de Enlace • Lição 0008</div>
+      <h1>OSPF: Arquitetura em Áreas e Tipos de LSAs</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Escalabilidade em dois níveis, a Área 0 (Backbone), a taxonomia de roteadores (IR, ABR, ASBR) e os 5 tipos fundamentais de anúncios de estado de enlace.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+    </div>
+
+    <!-- BLOCO 1: POR QUE DIVIDIR EM ÁREAS? -->
+    <section class="card-theory">
+      <h2>1. O Desafio da Escala e a Divisão Hierárquica em Áreas</h2>
+      <p>
+        O protocolo OSPF (<em>Open Shortest Path First</em>, RFC 2328) é o padrão de facto para redes corporativas e provedores de grande porte.
+      </p>
+      <p>
+        Em uma rede de Estado de Enlace plana com milhares de roteadores, surgiriam dois problemas colossais:
+      </p>
+      <ol>
+        <li><strong>Consumo de Memória:</strong> A base topológica (LSDB) de cada roteador precisaria mapear cada enlace do planeta.</li>
+        <li><strong>Instabilidade de CPU:</strong> Se um cabo de fibra óptica sofresse <em>flapping</em> (quedas e retornos sucessivos) a 3.000 km de distância, <u>todos</u> os roteadores do mundo recalculariam o algoritmo de Dijkstra repetidamente!</li>
+      </ol>
+      <p>
+        Para conter a inundação e isolar o raio de recálculo do Dijkstra, o OSPF divide a rede em <strong>Áreas lógicas</strong>. A topologia detalhada só é conhecida dentro da própria área!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1: FINALIDADE DA DIVISÃO EM ÁREAS -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Razão de Engenharia da Hierarquia OSPF</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Qual é a principal justificativa técnica para segmentar um Sistema Autônomo executando OSPF em múltiplas Áreas em vez de manter uma única área plana?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A transição de IPv4 para IPv6 é tratada pelo OSPFv3 (RFC 5340), não dependendo da divisão de áreas da versão 2.">
+          Permitir a coexistência de endereçamento IPv4 e IPv6 no mesmo segmento físico sem necessidade de encapsulamento túnel.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A divisão em áreas confina os LSAs Tipo 1 e Tipo 2 dentro de cada área. Se um enlace oscilar na Área 1, apenas os roteadores da Área 1 executam o Dijkstra completo, poupando a CPU do resto da rede!">
+          Limitar o tamanho da base topológica LSDB e isolar os recálculos do algoritmo de Dijkstra à área onde a falha ocorreu.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: O OSPF não utiliza a contagem de saltos como métrica e não possui limite de 15 saltos como o RIP.">
+          Impedir que a métrica das rotas exceda o teto máximo de quinze saltos imposto pelo algoritmo de caminho mínimo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A eleição de DR ocorre em segmentos multiacesso locais (broadcast), independentemente de haver múltiplas áreas ou apenas uma.">
+          Eliminar a necessidade de eleição de roteadores designados em redes locais que utilizam switches Ethernet modernos.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: A ÁREA 0 E OS PAPÉIS DE ROTEADORES -->
+    <section class="card-theory">
+      <h2>2. A Área 0 (Backbone) e a Tipologia de Roteadores</h2>
+      <p>
+        O OSPF implementa uma hierarquia rígida de dois níveis com papéis bem delineados:
+      </p>
+      <ul>
+        <li><strong>Área 0 (ou <code>0.0.0.0</code> - Backbone):</strong> Núcleo central da rede. Todas as outras áreas normais devem obrigatoriamente conectar-se a ela. O tráfego entre áreas sempre atravessa a Área 0.</li>
+        <li><strong>Internal Router (IR):</strong> Roteador cujas interfaces pertencem todas a uma mesma área única.</li>
+        <li><strong>Area Border Router (ABR):</strong> Roteador de fronteira com interfaces na <strong>Área 0 e em pelo menos uma outra área</strong>. Mantém uma LSDB separada para cada área à qual está conectado e sintetiza rotas.</li>
+        <li><strong>AS Boundary Router (ASBR):</strong> Roteador que redistribui rotas vindas de fora do domínio OSPF (ex: rotas de BGP, rotas estáticas ou de outro IGP).</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 2: ACTIVE RECALL / IDENTIFICAÇÃO DE ABR -->
+    <section class="card-exercise" id="ex2" data-hint="Abreviação em 3 letras de Area Border Router. Digite 'ABR'.">
+      <div class="exercise-header">
+        <h3>Exercício 2: O Roteador de Borda de Área</h3>
+        <span class="exercise-tag recall">Active Recall / Prova</span>
+      </div>
+      <div class="question-text">
+        Qual é a sigla oficial (3 letras) utilizada para designar o roteador OSPF que possui interfaces ativas conectadas concomitantemente à Área de Backbone (Área 0) e a uma ou mais áreas não-backbone, sendo o responsável por injetar anúncios sumários entre elas?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: ABR" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Sigla</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: OS 5 TIPOS DE LSAs FUNDAMENTAIS -->
+    <section class="card-theory">
+      <h2>3. Os 5 Tipos Fundamentais de LSAs no OSPF</h2>
+      <p>
+        A informação topológica transita na rede por meio de diferentes tipos de <strong>Link State Advertisements (LSAs)</strong>:
+      </p>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Nome</th>
+              <th>Quem Gera?</th>
+              <th>O que Descreve?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tipo 1</strong></td>
+              <td>Router-LSA</td>
+              <td>Todo roteador da área</td>
+              <td>Lista seus enlaces diretos e vizinhos dentro da área. Não passa para fora da área!</td>
+            </tr>
+            <tr>
+              <td><strong>Tipo 2</strong></td>
+              <td>Network-LSA</td>
+              <td>Roteador Designado (DR)</td>
+              <td>Representa a sub-rede multiacesso e lista todos os roteadores conectados a ela.</td>
+            </tr>
+            <tr>
+              <td><strong>Tipo 3</strong></td>
+              <td>Summary-LSA (Rede)</td>
+              <td>Area Border Router (ABR)</td>
+              <td>Anuncia prefixos de sub-redes de uma área para o restante do AS.</td>
+            </tr>
+            <tr>
+              <td><strong>Tipo 4</strong></td>
+              <td>Summary-LSA (ASBR)</td>
+              <td>Area Border Router (ABR)</td>
+              <td>Informa aos roteadores internos o caminho e o custo até alcançar o ASBR.</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>Tipo 5</strong></td>
+              <td>AS-External-LSA</td>
+              <td>AS Boundary Router (ASBR)</td>
+              <td>Injeta rotas externas de fora do AS OSPF (inundado por todo o AS).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 3: DIAGNÓSTICO DO LSA TIPO 5 -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: Origem e Propagação de Rotas Externas</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Qual entidade do protocolo OSPF é a <strong>única</strong> responsável por originar os pacotes de anúncio <em>LSA Tipo 5 (AS-External-LSA)</em>?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O Roteador Designado (DR) gera exclusivamente o LSA Tipo 2 (Network-LSA) para representar redes de difusão multiacesso locais.">
+          O Roteador Designado eleito no segmento local de difusão Ethernet para representar os nós daquela sub-rede.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: O ABR gera os LSAs Tipo 3 e Tipo 4 para resumir topologias inter-área, mas não é a origem primária das rotas externas ao sistema autônomo.">
+          O Area Border Router que interconecta a área periférica com o backbone para resumir os prefixos de sub-redes.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! O ASBR (Autonomous System Boundary Router) é quem aprende rotas de outros protocolos ou sistemas autônomos e as injeta no OSPF através de LSAs Tipo 5!">
+          O Autonomous System Boundary Router que realiza a redistribuição de rotas externas para dentro do domínio OSPF.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Todo roteador comum gera LSAs Tipo 1 (Router-LSA), mas roteadores internos que não possuem conexões externas nunca geram LSA Tipo 5.">
+          Qualquer roteador interno que possua mais de três enlaces seriais ativos com tráfego bidirecional de dados.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: HIERARQUIA DE PREFERÊNCIA DE ROTAS NO OSPF -->
+    <section class="card-theory">
+      <h2>4. Hierarquia de Tipos de Rotas e Preferência Administrativa</h2>
+      <p>
+        Se um roteador OSPF aprender caminhos múltiplos para o mesmo prefixo IP através de diferentes classes de anúncios, ele <strong>NÃO compara métricas numéricas diretamente</strong>! Ele segue rigorosamente esta precedência estrutural:
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">🏆 Ordem de Precedência Inegociável do OSPF</div>
+        <p style="text-align: center; font-size: 1.1rem; margin: 0.5rem 0;">
+          <strong>Intra-área (O)</strong> &gt; <strong>Inter-área (O IA)</strong> &gt; <strong>Externa Tipo 1 (E1)</strong> &gt; <strong>Externa Tipo 2 (E2)</strong>
+        </p>
+        <p style="margin-bottom: 0;">
+          Uma rota <strong>Intra-área</strong> com custo 1.000 é <u>sempre preferida</u> em relação a uma rota Inter-área de custo 5! A segurança topológica da área prevalece sobre qualquer métrica numérica.
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 4: FALÁCIA DA MÉTRICA EXTERNA -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: A Falácia da Comparação Numérica de Custos</h3>
+        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
+      </div>
+      <div class="question-text">
+        Avalie a seguinte afirmação sobre o algoritmo de escolha de rotas do OSPF:<br>
+        <em>"Se um roteador OSPF aprender uma rota Externa (E1) para uma sub-rede com custo métrico igual a 10, e simultaneamente aprender uma rota Intra-área (O) para a mesmíssima sub-rede com custo igual a 80, ele instalará a rota Externa na FIB por apresentar menor custo de enlace."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa armadilha clássica de exame! A hierarquia de tipos de rota do OSPF é absoluta: rotas Intra-área (O) SEMPRE vencem rotas Inter-área (O IA), que por sua vez SEMPRE vencem rotas Externas (E1/E2), independentemente de qualquer valor numérico de métrica!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! O OSPF nunca compara valores numéricos de classes de rotas diferentes. Rotas intra-área (O) têm preferência administrativa absoluta sobre rotas externas (E1/E2), mesmo que o custo intra-área seja numericamente maior!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5: DIAGNÓSTICO DE LSA TIPO 3 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Escopo dos Sumários de Rede (Tipo 3)</h3>
+        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
+      </div>
+      <div class="question-text">
+        Qual informação exata é propagada através de um anúncio <em>LSA Tipo 3 (Summary-LSA)</em> quando um ABR comunica rotas da Área 1 para dentro da Área 0?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: Os detalhes de cada roteador interno e enlaces individuais da Área 1 ficam confinados na Área 1 pelos LSAs Tipo 1. O LSA Tipo 3 esconde essa complexidade interna.">
+          A matriz completa de adjacências e o grafo geométrico de todos os roteadores internos pertencentes à Área 1.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! O ABR oculta a topologia interna detalhada e anuncia apenas o prefixo da rede (ou bloco sumarizado) e o custo total calculado pelo ABR para atingi-la a partir da fronteira!">
+          O prefixo IP da sub-rede de destino e o custo métrico acumulado para alcançá-la a partir daquele roteador ABR.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A tabela de endereços MAC de camada de enlace é gerenciada pelos switches Ethernet locais e não é transportada pelo protocolo OSPF na camada 3.">
+          A lista consolidada de endereços físicos MAC correspondentes a todas as interfaces ativas na área de origem.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O OSPF não utiliza vetores de distância com contagem de saltos; ele propaga custos acumulados baseados em largura de banda.">
+          O número exato de saltos medidos em inteiros entre zero e quinze para garantir a compatibilidade com o RIP.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- PONTOS DE TROPEÇO -->
+    <section class="review-summary" id="review-summary-card" style="display: none;">
+      <h3>⚠️ Seus Pontos de Tropeço Nesta Sessão</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        O sistema registrou hesitações nos seguintes conceitos. Revise-os antes de mergulhar nos subprotocolos Hello e Exchange:
+      </p>
+      <ul id="review-summary-list"></ul>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0007-estado-de-enlace-dijkstra.html">← Lição Anterior: 0007 — Dijkstra SPF</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
+      <a href="0009-ospf-subprotocolos-hello-exchange-dr.html">Próxima Lição: 0009 — Subprotocolos Hello e Exchange &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Justificativa da divisão em áreas
+      initMultipleChoice("ex1", "Finalidade de áreas no OSPF: conter LSDB e isolar recálculo do Dijkstra");
+
+      // Ex 2: Sigla do ABR
+      initInputExercise("ex2", ["ABR", "abr"], "Sigla do Area Border Router: ABR");
+
+      // Ex 3: Originador do LSA Tipo 5 (ASBR)
+      initMultipleChoice("ex3", "Originador do LSA Tipo 5: Autonomous System Boundary Router (ASBR)");
+
+      // Ex 4: Falácia da preferência métrica (Intra > Inter > Externa)
+      initTrueFalse("ex4", false, "Precedência de rotas no OSPF: Intra-área sempre vence Externa",
+        "Atenção: A classe de rota (Intra-área) SEMPRE vence rotas Externas, independentemente do custo numérico!",
+        "Exato! Rotas Intra-área prevalecem sobre rotas Externas.");
+
+      // Ex 5: Informação do LSA Tipo 3
+      initMultipleChoice("ex5", "Conteúdo do LSA Tipo 3: Prefixo IP e custo acumulado até o ABR");
+    });
+  </script>
+</body>
+</html>
