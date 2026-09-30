@@ -1,6 +1,146 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@200;300;400;500;600&family=Lexend:wght@200;300;400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@300;400;500;600&family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@200;300;400;500;600&family=Lexend:wght@200;300;400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300&display=swap');
 
-:root, [data-theme="slate"] {
+/* ==========================================================================
+   PALETAS DE CORES & TEMAS (5 CLAROS + 10 ESCUROS)
+   ========================================================================== */
+
+/* 1. TUFTE PAPER (Padrão — Fundo marfim suave, estética editorial e leitura límpida) */
+:root, [data-theme="tufte"] {
+  --bg-main: #fbfbf8;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f4f3ec;
+  --border-subtle: #e2dfd4;
+  --border-focus: #9b2c2c;
+  --text-main: #252422;
+  --text-heading: #141312;
+  --text-muted: #6b675e;
+  --accent: #9b2c2c;
+  --accent-muted: rgba(155, 44, 44, 0.08);
+  --success: #2e7d32;
+  --success-bg: rgba(46, 125, 50, 0.1);
+  --error: #c62828;
+  --error-bg: rgba(198, 40, 40, 0.1);
+  --warning: #b45309;
+  --warning-bg: rgba(180, 83, 9, 0.1);
+  --purple: #6b21a8;
+  --purple-bg: rgba(107, 33, 168, 0.1);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(0, 0, 0, 0.05);
+  --code-color: #822020;
+  --btn-text: #ffffff;
+}
+
+/* 2. GITHUB LIGHT (Design limpo, neutro e moderno) */
+[data-theme="github-light"] {
+  --bg-main: #f6f8fa;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f3f4f6;
+  --border-subtle: #d0d7de;
+  --border-focus: #0969da;
+  --text-main: #1f2328;
+  --text-heading: #1f2328;
+  --text-muted: #656d76;
+  --accent: #0969da;
+  --accent-muted: rgba(9, 105, 218, 0.1);
+  --success: #1a7f37;
+  --success-bg: rgba(26, 127, 55, 0.1);
+  --error: #cf222e;
+  --error-bg: rgba(207, 34, 46, 0.1);
+  --warning: #9a6700;
+  --warning-bg: rgba(154, 103, 0, 0.1);
+  --purple: #8250df;
+  --purple-bg: rgba(130, 80, 223, 0.1);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(175, 184, 193, 0.2);
+  --code-color: #0969da;
+  --btn-text: #ffffff;
+}
+
+/* 3. CATPPUCCIN LATTE (Pastel suave relaxante sobre base clara macia) */
+[data-theme="catppuccin-latte"] {
+  --bg-main: #eff1f5;
+  --bg-card: #ffffff;
+  --bg-card-hover: #e6e9ef;
+  --border-subtle: #ccd0da;
+  --border-focus: #8839ef;
+  --text-main: #4c4f69;
+  --text-heading: #202027;
+  --text-muted: #7c7f93;
+  --accent: #8839ef;
+  --accent-muted: rgba(136, 57, 239, 0.12);
+  --success: #40a02b;
+  --success-bg: rgba(64, 160, 43, 0.12);
+  --error: #d20f39;
+  --error-bg: rgba(210, 15, 57, 0.12);
+  --warning: #df8e1d;
+  --warning-bg: rgba(223, 142, 29, 0.12);
+  --purple: #ea76cb;
+  --purple-bg: rgba(234, 118, 203, 0.12);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(136, 57, 239, 0.08);
+  --code-color: #8839ef;
+  --btn-text: #ffffff;
+}
+
+/* 4. SOLARIZED LIGHT (Amarelado acadêmico clássico para foco prolongado) */
+[data-theme="solarized-light"] {
+  --bg-main: #fdf6e3;
+  --bg-card: #f5eed8;
+  --bg-card-hover: #eee8d5;
+  --border-subtle: #ded8c3;
+  --border-focus: #268bd2;
+  --text-main: #586e75;
+  --text-heading: #073642;
+  --text-muted: #839496;
+  --accent: #2aa198;
+  --accent-muted: rgba(42, 161, 152, 0.12);
+  --success: #859900;
+  --success-bg: rgba(133, 153, 0, 0.12);
+  --error: #dc322f;
+  --error-bg: rgba(220, 50, 47, 0.12);
+  --warning: #b58900;
+  --warning-bg: rgba(181, 137, 0, 0.12);
+  --purple: #6c71c4;
+  --purple-bg: rgba(108, 113, 196, 0.12);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(42, 161, 152, 0.1);
+  --code-color: #2aa198;
+  --btn-text: #ffffff;
+}
+
+/* 5. NORD SNOW (Ártico claro e sereno, paleta Snow Storm) */
+[data-theme="nord-snow"] {
+  --bg-main: #eceff4;
+  --bg-card: #ffffff;
+  --bg-card-hover: #e5e9f0;
+  --border-subtle: #d8dee9;
+  --border-focus: #5e81ac;
+  --text-main: #2e3440;
+  --text-heading: #2e3440;
+  --text-muted: #4c566a;
+  --accent: #5e81ac;
+  --accent-muted: rgba(94, 129, 172, 0.12);
+  --success: #a3be8c;
+  --success-bg: rgba(163, 190, 140, 0.15);
+  --error: #bf616a;
+  --error-bg: rgba(191, 97, 106, 0.15);
+  --warning: #ebcb8b;
+  --warning-bg: rgba(235, 203, 139, 0.15);
+  --purple: #b48ead;
+  --purple-bg: rgba(180, 142, 173, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(94, 129, 172, 0.1);
+  --code-color: #5e81ac;
+  --btn-text: #ffffff;
+}
+
+/* 6. SLATE SOFT (Azul-petróleo profundo) */
+[data-theme="slate"] {
   --bg-main: #12151c;
   --bg-card: #181d26;
   --bg-card-hover: #1f2532;
@@ -21,9 +161,12 @@
   --purple-bg: rgba(188, 140, 255, 0.12);
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(110, 118, 129, 0.2);
+  --code-color: #79c0ff;
+  --btn-text: #0d1117;
 }
 
-/* 2. NORD FROST (Tons polares suaves, azul ártico) */
+/* 7. NORD FROST (Tons polares escuros, azul ártico) */
 [data-theme="nord"] {
   --bg-main: #242933;
   --bg-card: #2e3440;
@@ -43,9 +186,14 @@
   --warning-bg: rgba(235, 203, 139, 0.15);
   --purple: #b48ead;
   --purple-bg: rgba(180, 142, 173, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(136, 192, 208, 0.12);
+  --code-color: #88c0d0;
+  --btn-text: #242933;
 }
 
-/* 3. CATPPUCCIN MOCHA (Aveludado, lavanda e tons pastel relaxantes) */
+/* 8. CATPPUCCIN MOCHA (Aveludado escuro, lavanda e tons pastel relaxantes) */
 [data-theme="catppuccin"] {
   --bg-main: #181825;
   --bg-card: #1e1e2e;
@@ -65,9 +213,14 @@
   --warning-bg: rgba(249, 226, 175, 0.15);
   --purple: #f5c2e7;
   --purple-bg: rgba(245, 194, 231, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(203, 166, 247, 0.12);
+  --code-color: #cba6f7;
+  --btn-text: #181825;
 }
 
-/* 4. DRACULA SOFT (Fundo grafite escuro, ciano suave e rosa) */
+/* 9. DRACULA SOFT (Fundo grafite escuro, ciano suave e rosa) */
 [data-theme="dracula"] {
   --bg-main: #1d1e26;
   --bg-card: #242633;
@@ -87,9 +240,14 @@
   --warning-bg: rgba(241, 250, 140, 0.15);
   --purple: #bd93f9;
   --purple-bg: rgba(189, 147, 249, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(139, 233, 253, 0.12);
+  --code-color: #8be9fd;
+  --btn-text: #1d1e26;
 }
 
-/* 5. TOKYO NIGHT (Azul noite moderno com acentos ciano e azul céu) */
+/* 10. TOKYO NIGHT (Azul noite moderno com acentos ciano e azul céu) */
 [data-theme="tokyo-night"] {
   --bg-main: #161622;
   --bg-card: #1f2030;
@@ -109,9 +267,14 @@
   --warning-bg: rgba(224, 175, 104, 0.15);
   --purple: #bb9af7;
   --purple-bg: rgba(187, 154, 247, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(122, 162, 247, 0.12);
+  --code-color: #7aa2f7;
+  --btn-text: #161622;
 }
 
-/* 6. SOLARIZED DARK (Clássico acadêmico, verde-azulado profundo) */
+/* 11. SOLARIZED DARK (Clássico acadêmico, verde-azulado profundo) */
 [data-theme="solarized"] {
   --bg-main: #00232b;
   --bg-card: #002b36;
@@ -131,9 +294,14 @@
   --warning-bg: rgba(181, 137, 0, 0.15);
   --purple: #6c71c4;
   --purple-bg: rgba(108, 113, 196, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(42, 161, 152, 0.15);
+  --code-color: #2aa198;
+  --btn-text: #00232b;
 }
 
-/* 7. WARM SEPIA (Papel escuro aquecido, aconchegante para longas leituras) */
+/* 12. WARM SEPIA (Papel escuro aquecido, aconchegante para longas leituras) */
 [data-theme="sepia"] {
   --bg-main: #1b1916;
   --bg-card: #23201c;
@@ -153,9 +321,14 @@
   --warning-bg: rgba(223, 171, 88, 0.15);
   --purple: #bfa075;
   --purple-bg: rgba(191, 160, 117, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(212, 155, 89, 0.15);
+  --code-color: #d49b59;
+  --btn-text: #1b1916;
 }
 
-/* 8. GRUVBOX MATERIAL (Estética retrô aconchegante, contraste ultra amigável aos olhos) */
+/* 13. GRUVBOX MATERIAL (Estética retrô aconchegante, contraste ultra amigável aos olhos) */
 [data-theme="gruvbox"] {
   --bg-main: #282828;
   --bg-card: #32302f;
@@ -175,9 +348,14 @@
   --warning-bg: rgba(231, 138, 78, 0.15);
   --purple: #d3869b;
   --purple-bg: rgba(211, 134, 155, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(215, 153, 33, 0.15);
+  --code-color: #d79921;
+  --btn-text: #282828;
 }
 
-/* 9. MONOKAI PRO WARM (Carvão aquecido com acentos em âmbar e menta) */
+/* 14. MONOKAI PRO WARM (Carvão aquecido com acentos em âmbar e menta) */
 [data-theme="monokai"] {
   --bg-main: #221f22;
   --bg-card: #2d2a2e;
@@ -197,9 +375,14 @@
   --warning-bg: rgba(252, 152, 103, 0.15);
   --purple: #ab9df2;
   --purple-bg: rgba(171, 157, 242, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(255, 216, 102, 0.15);
+  --code-color: #ffd866;
+  --btn-text: #221f22;
 }
 
-/* 10. E-INK MINIMALIST B&W (Foco acadêmico máximo, escala de cinza pura sem saturação) */
+/* 15. E-INK MINIMALIST B&W (Foco acadêmico máximo, escala de cinza pura) */
 [data-theme="e-ink"] {
   --bg-main: #141414;
   --bg-card: #1c1c1c;
@@ -219,34 +402,53 @@
   --warning-bg: rgba(176, 176, 176, 0.15);
   --purple: #d5d5d5;
   --purple-bg: rgba(213, 213, 213, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(224, 224, 224, 0.12);
+  --code-color: #e0e0e0;
+  --btn-text: #141414;
 }
 
-/* Tipografia Alternável */
-:root {
-  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-weight-body: 350;
-  --font-weight-bold: 550;
-  --font-weight-heading: 550;
-  --base-font-size: 15.5px;
-}
+/* ==========================================================================
+   TIPOGRAFIA, PESOS, TAMANHOS E ESPAÇAMENTOS DINÂMICOS
+   ========================================================================== */
+
 [data-font="clean"] {
-  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
-[data-font="mono"] {
-  --font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+[data-font="jakarta"] {
+  --font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-[data-font="serif"] {
-  --font-family: 'Merriweather', Charter, Georgia, Cambria, serif;
+[data-font="atkinson"] {
+  --font-family: "Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 [data-font="lexend"] {
-  --font-family: 'Lexend', system-ui, -apple-system, sans-serif;
+  --font-family: "Lexend", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-font="serif"] {
+  --font-family: "Merriweather", Georgia, Cambria, serif;
+}
+[data-font="spectral"] {
+  --font-family: "Spectral", Georgia, Cambria, serif;
+}
+[data-font="lora"] {
+  --font-family: "Lora", Georgia, Cambria, serif;
+}
+[data-font="mono"] {
+  --font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+[data-font="fira"] {
+  --font-family: "Fira Code", ui-monospace, monospace;
+}
+[data-font="space"] {
+  --font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Pesos de Fonte (Weight Variants: Extra-Light, Light, Regular, Medium) */
+/* Pesos de Fonte Granulares */
 [data-weight="extra-light"] {
   --font-weight-body: 200;
   --font-weight-bold: 400;
-  --font-weight-heading: 300;
+  --font-weight-heading: 350;
 }
 [data-weight="light"] {
   --font-weight-body: 300;
@@ -292,7 +494,10 @@
   gap: 1.25rem;
 }
 
-/* Barra Flutuante de Personalização / Theme Switcher */
+/* ==========================================================================
+   BARRA FLUTUANTE DE PERSONALIZAÇÃO VISUAL
+   ========================================================================== */
+
 .theme-panel-bar {
   display: flex;
   align-items: center;
@@ -308,7 +513,7 @@
   color: var(--text-main);
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  padding: 0.3rem 0.75rem;
+  padding: 0.35rem 0.75rem;
   font-size: 0.8rem;
   font-family: inherit;
   cursor: pointer;
@@ -320,42 +525,10 @@
   border-color: var(--border-focus);
 }
 
-/* Barra de Progresso da Sessão */
-.session-progress-wrapper {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 0.55rem 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 0.25rem;
-}
+/* ==========================================================================
+   DIAGRAMA / GRAFO FIXO FLUTUANTE (PINNED GRAPH)
+   ========================================================================== */
 
-.session-progress-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.session-progress-track {
-  width: 100%;
-  height: 6px;
-  background-color: var(--bg-card-hover);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.session-progress-fill {
-  height: 100%;
-  width: 0%;
-  background-color: var(--success);
-  transition: width 0.3s ease;
-}
-
-/* Grafo Pinado Flutuante */
 .pinned-graph-btn {
   position: fixed;
   bottom: 1.5rem;
@@ -368,7 +541,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -405,15 +578,15 @@
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
-  max-width: 680px;
-  width: 100%;
-  max-height: 90vh;
+  max-width: 1180px;
+  width: 95vw;
+  max-height: 92vh;
   overflow-y: auto;
-  padding: 1.25rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  gap: 1rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
 .pinned-graph-header {
@@ -421,21 +594,22 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-subtle);
-  padding-bottom: 0.4rem;
+  padding-bottom: 0.6rem;
 }
 
 .pinned-graph-close {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   cursor: pointer;
   padding: 0 0.5rem;
   line-height: 1;
+  transition: color 0.15s ease;
 }
 
 .pinned-graph-close:hover {
-  color: var(--text-main);
+  color: var(--text-heading);
 }
 
 .pinned-graph-body {
@@ -443,12 +617,21 @@
   justify-content: center;
   align-items: center;
   overflow-x: auto;
+  padding: 1rem 0;
+  width: 100%;
 }
 
 .pinned-graph-body svg {
-  max-width: 100%;
+  width: 100%;
+  max-width: 1080px;
   height: auto;
+  min-height: 320px;
+  display: block;
 }
+
+/* ==========================================================================
+   ESTILOS GERAIS DA PÁGINA
+   ========================================================================== */
 
 * {
   box-sizing: border-box;
@@ -482,7 +665,7 @@ strong, b {
   gap: 1.75rem;
 }
 
-/* Header & Nav */
+/* Cabeçalho e Metadados */
 header {
   border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 1.25rem;
@@ -513,13 +696,13 @@ header {
   gap: 0.35rem;
   padding: 0.35rem 0.65rem;
   border-radius: 6px;
-  background-color: rgba(88, 166, 255, 0.08);
+  background-color: var(--accent-muted);
   border: 1px solid var(--border-subtle);
   transition: all 0.15s ease;
 }
 
 .nav-links a:hover {
-  background-color: rgba(88, 166, 255, 0.2);
+  background-color: var(--bg-card-hover);
   border-color: var(--border-focus);
 }
 
@@ -561,14 +744,14 @@ li {
 
 code {
   font-family: var(--font-mono);
-  background-color: rgba(110, 118, 129, 0.2);
+  background-color: var(--code-bg, rgba(110, 118, 129, 0.15));
   padding: 0.2em 0.4em;
   border-radius: 4px;
   font-size: 0.9em;
-  color: #79c0ff;
+  color: var(--code-color, var(--accent));
 }
 
-/* Callouts */
+/* Callouts / Avisos Pedagógicos */
 .callout {
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -590,7 +773,7 @@ code {
 
 .callout.exam-tip {
   border-left-color: var(--warning);
-  background-color: rgba(210, 153, 34, 0.08);
+  background-color: var(--warning-bg);
 }
 
 .callout.exam-tip .callout-title {
@@ -599,7 +782,7 @@ code {
 
 .callout.definition {
   border-left-color: var(--purple);
-  background-color: rgba(188, 140, 255, 0.08);
+  background-color: var(--purple-bg);
 }
 
 .callout.definition .callout-title {
@@ -608,23 +791,23 @@ code {
 
 .callout.pitfall {
   border-left-color: var(--error);
-  background-color: rgba(248, 81, 73, 0.08);
+  background-color: var(--error-bg);
 }
 
 .callout.pitfall .callout-title {
-  color: #ff7b72;
+  color: var(--error);
 }
 
-/* Diagrams and Preformatted Text */
+/* Diagramas e Blocos de Código */
 .graph-diagram, .code-block {
-  background-color: #030712;
+  background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 1.15rem;
   font-family: var(--font-mono);
   font-size: 0.88rem;
   line-height: 1.45;
-  color: #e6edf3;
+  color: var(--text-main);
   overflow-x: auto;
   margin: 1rem 0;
   text-align: center;
@@ -638,7 +821,123 @@ code {
   text-align: center;
 }
 
-/* Tables */
+/* ==========================================================================
+   ESTILIZAÇÃO SEMÂNTICA DE GRAFOS SVG (ADAPTAÇÃO AUTOMÁTICA A TEMAS)
+   ========================================================================== */
+
+.graph-diagram svg,
+.pinned-graph-body svg {
+  color-scheme: normal;
+}
+
+/* 1. Nós Iniciais (Start Node - S, A, R1) */
+.graph-diagram svg circle[fill="#1f6feb"],
+.pinned-graph-body svg circle[fill="#1f6feb"] {
+  fill: var(--accent) !important;
+  stroke: var(--accent) !important;
+}
+
+/* 2. Nós Objetivos / Metas (Goal Node - G, F, R6) */
+.graph-diagram svg circle[fill="#238636"],
+.pinned-graph-body svg circle[fill="#238636"] {
+  fill: var(--success) !important;
+  stroke: var(--success) !important;
+}
+
+.graph-diagram svg circle[stroke="#3fb950"],
+.pinned-graph-body svg circle[stroke="#3fb950"] {
+  stroke: var(--success) !important;
+}
+
+/* 3. Nós Intermediários Padrão (adaptados para a paleta ativa) */
+.graph-diagram svg circle[fill="#161b22"],
+.graph-diagram svg circle[fill="#21262d"],
+.graph-diagram svg circle[fill="#191f2a"],
+.graph-diagram svg circle[fill="#241a20"],
+.graph-diagram svg circle[fill="#1a2e22"],
+.graph-diagram svg circle[fill="#1b2a4a"],
+.pinned-graph-body svg circle[fill="#161b22"],
+.pinned-graph-body svg circle[fill="#21262d"],
+.pinned-graph-body svg circle[fill="#191f2a"],
+.pinned-graph-body svg circle[fill="#241a20"],
+.pinned-graph-body svg circle[fill="#1a2e22"],
+.pinned-graph-body svg circle[fill="#1b2a4a"] {
+  fill: var(--bg-card-hover) !important;
+  stroke: var(--accent) !important;
+}
+
+/* 4. Tipografia dos Nós Intermediários (alto contraste em temas claros e escuros) */
+.graph-diagram svg text[fill="#f0f6fc"],
+.graph-diagram svg text[fill="#c9d1d9"],
+.pinned-graph-body svg text[fill="#f0f6fc"],
+.pinned-graph-body svg text[fill="#c9d1d9"] {
+  fill: var(--text-heading) !important;
+}
+
+/* 5. Tipografia dos Nós Iniciais e Finais (branco puro sobre preenchimento forte) */
+.graph-diagram svg text[fill="#fff"],
+.pinned-graph-body svg text[fill="#fff"] {
+  fill: #ffffff !important;
+  font-weight: bold;
+}
+
+/* 6. Arestas / Linhas de Conexão */
+.graph-diagram svg line[stroke="#30363d"],
+.graph-diagram svg line[stroke="#484f58"],
+.graph-diagram svg line[stroke="#2d3340"],
+.graph-diagram svg path[stroke="#30363d"],
+.graph-diagram svg path[stroke="#484f58"],
+.pinned-graph-body svg line[stroke="#30363d"],
+.pinned-graph-body svg line[stroke="#484f58"],
+.pinned-graph-body svg line[stroke="#2d3340"],
+.pinned-graph-body svg path[stroke="#30363d"],
+.pinned-graph-body svg path[stroke="#484f58"] {
+  stroke: var(--text-muted) !important;
+}
+
+/* 7. Marcadores de Ponta de Flecha */
+.graph-diagram svg marker path,
+.pinned-graph-body svg marker path {
+  fill: var(--text-muted) !important;
+}
+
+/* 8. Rótulos / Badges de Pesos de Arestas e Heurísticas */
+.graph-diagram svg rect[fill="#161b22"],
+.graph-diagram svg rect[fill="#21262d"],
+.pinned-graph-body svg rect[fill="#161b22"],
+.pinned-graph-body svg rect[fill="#21262d"] {
+  fill: var(--bg-card) !important;
+  stroke: var(--border-subtle) !important;
+}
+
+.graph-diagram svg text[fill="#79c0ff"],
+.pinned-graph-body svg text[fill="#79c0ff"] {
+  fill: var(--accent) !important;
+  font-weight: 600;
+}
+
+/* 9. Rótulos e Metadados Secundários */
+.graph-diagram svg text[fill="#8b949e"],
+.graph-diagram svg text[fill="#6e7681"],
+.pinned-graph-body svg text[fill="#8b949e"],
+.pinned-graph-body svg text[fill="#6e7681"] {
+  fill: var(--text-muted) !important;
+}
+
+/* 10. Destaques de Erro e Enlaces Cortados */
+.graph-diagram svg line[stroke="#f85149"],
+.pinned-graph-body svg line[stroke="#f85149"],
+.graph-diagram svg rect[stroke="#f85149"],
+.pinned-graph-body svg rect[stroke="#f85149"] {
+  stroke: var(--error) !important;
+}
+
+.graph-diagram svg text[fill="#ff7b72"],
+.pinned-graph-body svg text[fill="#ff7b72"] {
+  fill: var(--error) !important;
+}
+
+/* Tabelas de Rastreamento */
 .trace-table-container {
   overflow-x: auto;
   margin: 1.25rem 0;
@@ -655,8 +954,8 @@ code {
 }
 
 .trace-table th {
-  background-color: #1f242c;
-  color: #79c0ff;
+  background-color: var(--bg-card-hover);
+  color: var(--accent);
   font-weight: 600;
   padding: 0.75rem 0.85rem;
   border-bottom: 1px solid var(--border-subtle);
@@ -675,18 +974,18 @@ code {
 }
 
 .trace-table tbody tr:nth-child(even) td {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(128, 128, 128, 0.04);
 }
 
 .trace-table tr:hover td {
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: rgba(128, 128, 128, 0.08);
 }
 
 .trace-table tr.highlight-step td {
-  background-color: rgba(63, 185, 80, 0.15) !important;
+  background-color: var(--success-bg) !important;
 }
 
-/* Cards & Theory */
+/* Cards Teóricos */
 .card-theory {
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -694,7 +993,10 @@ code {
   padding: 1.35rem 1.5rem;
 }
 
-/* Exercises */
+/* ==========================================================================
+   CARDS DE EXERCÍCIOS E ELEMENTOS INTERATIVOS
+   ========================================================================== */
+
 .card-exercise {
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -713,6 +1015,10 @@ code {
   padding-bottom: 0.5rem;
 }
 
+.exercise-header .exercise-tag {
+  display: none !important;
+}
+
 .exercise-tag {
   font-size: 0.72rem;
   font-weight: 600;
@@ -725,13 +1031,13 @@ code {
 }
 
 .exercise-tag.diagnostic {
-  background-color: rgba(210, 153, 34, 0.15);
-  color: #e3b341;
+  background-color: var(--warning-bg);
+  color: var(--warning);
 }
 
 .exercise-tag.recall {
-  background-color: rgba(188, 140, 255, 0.15);
-  color: #d2a8ff;
+  background-color: var(--purple-bg);
+  color: var(--purple);
 }
 
 .question-text {
@@ -765,7 +1071,7 @@ code {
 
 .option-btn:hover:not(:disabled) {
   border-color: var(--border-focus);
-  background-color: #282e37;
+  background-color: var(--bg-card-hover);
 }
 
 .option-btn:active:not(:disabled) {
@@ -775,13 +1081,13 @@ code {
 .option-btn.selected-error {
   border-color: var(--error) !important;
   background-color: var(--error-bg) !important;
-  color: #ff7b72 !important;
+  color: var(--error) !important;
 }
 
 .option-btn.selected-success {
   border-color: var(--success) !important;
   background-color: var(--success-bg) !important;
-  color: #7ee787 !important;
+  color: var(--success) !important;
   font-weight: 600;
 }
 
@@ -807,12 +1113,12 @@ code {
 .text-input:focus {
   outline: none;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+  box-shadow: 0 0 0 3px var(--accent-muted);
 }
 
 .action-btn {
   background-color: var(--accent);
-  color: #0d1117;
+  color: var(--btn-text, #ffffff);
   border: none;
   border-radius: 6px;
   padding: 0.75rem 1.25rem;
@@ -843,48 +1149,22 @@ code {
 .feedback-box.error {
   background-color: var(--error-bg);
   border: 1px solid var(--error);
-  color: #ffa198;
+  color: var(--error);
 }
 
 .feedback-box.success {
   background-color: var(--success-bg);
   border: 1px solid var(--success);
-  color: #7ee787;
+  color: var(--success);
 }
 
 .feedback-box.hint {
   background-color: var(--warning-bg);
   border: 1px solid var(--warning);
-  color: #f0c674;
-}
-
-/* Stumbles / Review Card */
-.review-summary {
-  background-color: var(--bg-card);
-  border: 1px solid var(--warning);
-  border-radius: 8px;
-  padding: 1.4rem;
-}
-
-.review-summary h3 {
   color: var(--warning);
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
-.review-summary ul {
-  padding-left: 1.3rem;
-  color: var(--text-main);
-}
-
-.review-summary li {
-  margin-bottom: 0.5rem;
-  line-height: 1.45;
-}
-
-/* Navigation footer */
+/* Rodapé de Navegação */
 .lesson-nav {
   display: flex;
   justify-content: space-between;
@@ -921,7 +1201,7 @@ code {
   border-color: var(--border-focus);
 }
 
-/* KaTeX Overflows on Mobile */
+/* KaTeX responsivo */
 .katex-display {
   overflow-x: auto;
   overflow-y: hidden;

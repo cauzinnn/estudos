@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0012: Laboratório Arcade de Redes — Simuladores & Mini-Jogos Interativos</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+
+  <style>
+    /* Estilos Customizados para os Mini-Jogos Interativos */
+    .game-box {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin: 1.25rem 0;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.75rem;
+    }
+
+    .game-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .game-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      background-color: var(--accent-muted);
+      color: var(--accent);
+    }
+
+    .game-canvas-area {
+      background-color: var(--bg-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .game-btn {
+      background-color: var(--accent);
+      color: var(--btn-text, #ffffff);
+      border: none;
+      border-radius: 6px;
+      padding: 0.6rem 1.15rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+      min-height: 40px;
+    }
+
+    .game-btn:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .game-btn.secondary {
+      background-color: var(--bg-card-hover);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .game-btn.danger {
+      background-color: var(--error);
+      color: #ffffff;
+    }
+
+    .game-btn.success {
+      background-color: var(--success);
+      color: #ffffff;
+    }
+
+    .game-status-bar {
+      border-radius: 6px;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background-color: var(--bg-card-hover);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      width: 100%;
+    }
+
+    .game-status-bar.success {
+      background-color: var(--success-bg);
+      border-color: var(--success);
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .game-status-bar.error {
+      background-color: var(--error-bg);
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    /* Grids e blocos interativos */
+    .header-grid {
+      display: grid;
+      grid-template-columns: repeat(32, 1fr);
+      gap: 2px;
+      width: 100%;
+      max-width: 780px;
+      margin: 1rem 0;
+    }
+
+    .header-field {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 0.5rem 0.25rem;
+      text-align: center;
+      font-size: 0.72rem;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .header-field:hover {
+      border-color: var(--border-focus);
+      background-color: var(--bg-card-hover);
+      transform: scale(1.02);
+    }
+
+    .header-field.corrupt {
+      border-color: var(--error);
+      background-color: var(--error-bg);
+      color: var(--error);
+      animation: pulseError 1.5s infinite;
+    }
+
+    .header-field.fixed-field {
+      border-color: var(--success);
+      background-color: var(--success-bg);
+      color: var(--success);
+    }
+
+    @keyframes pulseError {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+
+    /* Fatiador de pacotes */
+    .slice-bar-container {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .packet-strip {
+      height: 48px;
+      background-color: var(--bg-card);
+      border: 2px dashed var(--border-subtle);
+      border-radius: 8px;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .packet-chunk {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      border-right: 2px solid var(--border-focus);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .packet-chunk:last-child {
+      border-right: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Redes de Computadores • Laboratório Prático de Fixação</div>
+      <h1>Laboratório Arcade: Simuladores & Mini-Jogos de Redes</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Desafios interativos e dinâmicos abrangendo todos os módulos: fatiamento de MTU, auditoria de cabeçalho, simulador de fofoca Bellman-Ford, construtor de Dijkstra SPF, eleição OSPF e balanceamento de tráfego ECMP.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0011-simulado-geral-exame-completo.html">Lição Anterior: 0011 — Simulado Geral</a>
+    </div>
+
+    <!-- ====================================================================
+         JOGO 1: SUBNET & MTU PACKET SLICER (MÓDULO 1)
+         ==================================================================== -->
+    <div class="game-box" id="game-slicer">
+      <div class="game-header">
+        <div class="game-title">✂️ Desafio 1: O Cirurgião de Fragmentação MTU</div>
+        <span class="game-badge">Módulo 1: IPv4 & Fragmentação</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        Um datagrama IPv4 com <strong>3.980 bytes de carga útil</strong> (Payload) + <strong>20 bytes de cabeçalho</strong> (Total: 4.000B) precisa atravessar um enlace Ethernet cujo limite rígido é <strong>MTU = 1.500 bytes</strong>.
+        Como cirurgião da rede, você deve fatiar o pacote. Lembre-se: todo fragmento intermediário exige que o tamanho da carga seja múltiplo estrito de 8 octetos para permitir o cálculo do <code>Fragment Offset</code>!
+      </p>
+
+      <div class="slice-bar-container">
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+          <span>Datagrama Original: 4.000 Bytes (3.980B Payload + 20B Header)</span>
+          <span id="slicer-mtu-label">MTU do Enlace: <strong>1.500 Bytes</strong></span>
+        </div>
+
+        <div class="packet-strip" id="slicer-strip">
+          <div class="packet-chunk" id="chunk-1" style="width: 37.2%; background: rgba(88, 166, 255, 0.2);">Frag 1: ? B</div>
+          <div class="packet-chunk" id="chunk-2" style="width: 37.2%; background: rgba(63, 185, 80, 0.2);">Frag 2: ? B</div>
+          <div class="packet-chunk" id="chunk-3" style="width: 25.6%; background: rgba(210, 153, 34, 0.2);">Frag 3: ? B</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.5rem;" id="slicer-cards">
+          <!-- Cards calculados dinamicamente via JS -->
+        </div>
+      </div>
+
+      <div class="game-controls">
+        <label style="font-size: 0.9rem; font-weight: 600;">Carga Útil por Fragmento Intermediário:</label>
+        <button class="game-btn secondary" onclick="SlicerGame.setChunkPayload(1470)">1.470 Bytes (Não divisível por 8)</button>
+        <button class="game-btn secondary" onclick="SlicerGame.setChunkPayload(1490)">1.490 Bytes (Excede MTU)</button>
+        <button class="game-btn secondary" onclick="SlicerGame.setChunkPayload(1480)">1.480 Bytes (185 × 8 = Perfeito)</button>
+        <button class="game-btn success" onclick="SlicerGame.testTransmission()">🚀 Transmitir Fragmentos</button>
+      </div>
+
+      <div class="game-status-bar" id="slicer-status">
+        <span>Selecione a fatia de carga útil para verificar os campos Total Length, Flag MF e Fragment Offset.</span>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         JOGO 2: IPV4 32-BIT HEADER INSPECTOR (MÓDULO 1)
+         ==================================================================== -->
+    <div class="game-box" id="game-header">
+      <div class="game-header">
+        <div class="game-title">🔍 Desafio 2: Auditor do Cabeçalho IPv4 (32 Bits)</div>
+        <span class="game-badge">Módulo 1: Anatomia do Pacote</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        O firewall de borda bloqueou um pacote corrompido que contém <strong>3 violações graves de RFC</strong> nos seus campos de 32 bits.
+        Clique sobre os campos suspeitos destacados na grade para auditá-los e aplicar a correção de conformidade:
+      </p>
+
+      <div class="header-grid" id="header-grid-box">
+        <!-- Linha 1: 0 a 31 bits -->
+        <div class="header-field" style="grid-column: span 4;" title="Versão IP">Versão<br><strong>4</strong></div>
+        <div class="header-field" style="grid-column: span 4;" title="Internet Header Length (blocos de 32b)">IHL<br><strong>5</strong></div>
+        <div class="header-field" style="grid-column: span 8;" title="Type of Service / DSCP">TOS<br><strong>0</strong></div>
+        <div class="header-field corrupt" id="field-totlen" style="grid-column: span 16;" onclick="HeaderGame.fixField('totlen')">
+          Total Length ⚠️<br><strong>14 Bytes</strong>
+        </div>
+
+        <!-- Linha 2 -->
+        <div class="header-field" style="grid-column: span 16;" title="Identificador do Datagrama">Identification<br><strong>0x4E21</strong></div>
+        <div class="header-field corrupt" id="field-flags" style="grid-column: span 3;" onclick="HeaderGame.fixField('flags')">
+          Flags ⚠️<br><strong>DF=1, MF=1</strong>
+        </div>
+        <div class="header-field" style="grid-column: span 13;" title="Fragment Offset em blocos de 8 octetos">Fragment Offset<br><strong>0</strong></div>
+
+        <!-- Linha 3 -->
+        <div class="header-field corrupt" id="field-ttl" style="grid-column: span 8;" onclick="HeaderGame.fixField('ttl')">
+          TTL ⚠️<br><strong>0 Saltos</strong>
+        </div>
+        <div class="header-field" style="grid-column: span 8;" title="Protocolo da Camada Superior (6 = TCP, 17 = UDP)">Protocolo<br><strong>6 (TCP)</strong></div>
+        <div class="header-field" style="grid-column: span 16;" title="Soma de Verificação do Cabeçalho">Header Checksum<br><strong>0x9A42</strong></div>
+
+        <!-- Linha 4 e 5 -->
+        <div class="header-field" style="grid-column: span 32;" title="Endereço de Origem de 32 bits">Source IP Address: <strong>192.168.1.15</strong></div>
+        <div class="header-field" style="grid-column: span 32;" title="Endereço de Destino de 32 bits">Destination IP Address: <strong>200.20.15.2</strong></div>
+      </div>
+
+      <div class="game-status-bar" id="header-status">
+        <span>Existem 3 violações no cabeçalho acima (em vermelho). Clique em cada uma para auditar e corrigir o datagrama.</span>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         JOGO 3: BELLMAN-FORD GOSSIP & POISON REVERSE (MÓDULO 2)
+         ==================================================================== -->
+    <div class="game-box" id="game-bellman">
+      <div class="game-header">
+        <div class="game-title">📻 Desafio 3: O Ricochete do Bouncing Effect & Poison Reverse</div>
+        <span class="game-badge">Módulo 2: Vetor de Distância</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        Na topologia <strong>A ↔ B ↔ C</strong>, o roteador A alcança a rede <code>NetC</code> através de B com custo 2.
+        Corte o enlace <code>B ↔ C</code> para simular a falha. Teste o modo <em>Sem Proteção</em> (contagem ao infinito) e em seguida ative <em>Poison Reverse</em> para ver a convergência instantânea sem ricochete!
+      </p>
+
+      <div class="game-canvas-area" style="min-height: 240px;">
+        <svg width="100%" height="160" viewBox="0 0 540 160" xmlns="http://www.w3.org/2000/svg" id="bellman-svg">
+          <!-- Aresta A-B -->
+          <line x1="120" y1="80" x2="270" y2="80" stroke="var(--text-muted)" stroke-width="3" id="link-ab"/>
+          <text x="195" y="70" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle">Custo: 1</text>
+
+          <!-- Aresta B-C -->
+          <line x1="270" y1="80" x2="420" y2="80" stroke="var(--text-muted)" stroke-width="3" id="link-bc"/>
+          <text x="345" y="70" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle" id="link-bc-label">Custo: 1</text>
+
+          <!-- Nó A -->
+          <circle cx="120" cy="80" r="22" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="2"/>
+          <text x="120" y="85" font-family="monospace" font-weight="bold" font-size="15" fill="var(--text-heading)" text-anchor="middle">A</text>
+          <text x="120" y="125" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle" id="cost-a">Dist: 2 (via B)</text>
+
+          <!-- Nó B -->
+          <circle cx="270" cy="80" r="22" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="2"/>
+          <text x="270" y="85" font-family="monospace" font-weight="bold" font-size="15" fill="var(--text-heading)" text-anchor="middle">B</text>
+          <text x="270" y="125" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle" id="cost-b">Dist: 1 (via C)</text>
+
+          <!-- Nó C (Destino) -->
+          <circle cx="420" cy="80" r="22" fill="var(--success)" stroke="var(--success)" stroke-width="2" id="node-c"/>
+          <text x="420" y="85" font-family="monospace" font-weight="bold" font-size="15" fill="#fff" text-anchor="middle">C</text>
+          <text x="420" y="125" font-family="monospace" font-size="12" fill="var(--success)" text-anchor="middle">Net C</text>
+        </svg>
+      </div>
+
+      <div class="game-controls">
+        <button class="game-btn danger" id="btn-cut-bc" onclick="BellmanGame.toggleLink()">⚡ Cortar Enlace B-C</button>
+        <button class="game-btn secondary" id="btn-step-gossip" onclick="BellmanGame.stepGossip()" disabled>Próxima Rodada de Gossip ⏩</button>
+        <button class="game-btn secondary" onclick="BellmanGame.togglePoison()" id="btn-poison-toggle">Poison Reverse: <strong>DESATIVADO</strong></button>
+        <button class="game-btn secondary" onclick="BellmanGame.reset()">🔄 Reiniciar Topologia</button>
+      </div>
+
+      <div class="game-status-bar" id="bellman-status">
+        <span>Estado Estável: A alcança C com custo 2 (via B). Corte o enlace B-C para disparar o evento.</span>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         JOGO 4: DIJKSTRA SPF PATHBUILDER (MÓDULO 3)
+         ==================================================================== -->
+    <div class="game-box" id="game-dijkstra">
+      <div class="game-header">
+        <div class="game-title">🌲 Desafio 4: Construtor de Árvore SPF de Dijkstra</div>
+        <span class="game-badge">Módulo 3: Estado de Enlace</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        Você é o algoritmo de Dijkstra da prova da COPPE/UFRJ. Origem: <strong>Roteador A</strong>.
+        A cada rodada, clique na fronteira <strong>no nó com o menor custo acumulado provisório $g(n)$</strong> para fixá-lo na árvore permanente e relaxar as arestas dos seus vizinhos:
+      </p>
+
+      <div class="game-canvas-area" style="min-height: 250px;">
+        <svg width="100%" height="220" viewBox="0 0 560 220" xmlns="http://www.w3.org/2000/svg" id="dijkstra-svg">
+          <!-- Arestas com pesos -->
+          <line x1="80" y1="110" x2="220" y2="45" stroke="var(--text-muted)" stroke-width="2.5" id="edge-ab"/>
+          <text x="145" y="70" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle">E1(2)</text>
+
+          <line x1="80" y1="110" x2="220" y2="175" stroke="var(--text-muted)" stroke-width="2.5" id="edge-ac"/>
+          <text x="145" y="155" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle">E2(5)</text>
+
+          <line x1="220" y1="45" x2="360" y2="45" stroke="var(--text-muted)" stroke-width="2.5" id="edge-bd"/>
+          <text x="290" y="35" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle">E3(4)</text>
+
+          <line x1="220" y1="45" x2="220" y2="175" stroke="var(--text-muted)" stroke-width="2.5" id="edge-bc"/>
+          <text x="235" y="115" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle">E4(1)</text>
+
+          <line x1="220" y1="175" x2="360" y2="175" stroke="var(--text-muted)" stroke-width="2.5" id="edge-ce"/>
+          <text x="290" y="195" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle">E5(2)</text>
+
+          <line x1="360" y1="45" x2="480" y2="110" stroke="var(--text-muted)" stroke-width="2.5" id="edge-df"/>
+          <text x="430" y="70" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle">E6(7)</text>
+
+          <line x1="360" y1="175" x2="480" y2="110" stroke="var(--text-muted)" stroke-width="2.5" id="edge-ef"/>
+          <text x="430" y="155" font-family="monospace" font-size="12" fill="var(--accent)" text-anchor="middle">E7(3)</text>
+
+          <!-- Nós clicáveis -->
+          <!-- A (Origem) -->
+          <g onclick="DijkstraGame.clickNode('A')" style="cursor: pointer;">
+            <circle cx="80" cy="110" r="20" fill="var(--success)" stroke="var(--success)" stroke-width="2" id="node-A"/>
+            <text x="80" y="115" font-family="monospace" font-weight="bold" font-size="14" fill="#fff" text-anchor="middle">A</text>
+            <text x="80" y="145" font-family="monospace" font-size="11" fill="var(--text-muted)" id="badge-A">dist: 0</text>
+          </g>
+
+          <!-- B -->
+          <g onclick="DijkstraGame.clickNode('B')" style="cursor: pointer;">
+            <circle cx="220" cy="45" r="20" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="2" id="node-B"/>
+            <text x="220" y="50" font-family="monospace" font-weight="bold" font-size="14" fill="var(--text-heading)" text-anchor="middle">B</text>
+            <text x="220" y="20" font-family="monospace" font-size="11" fill="var(--text-muted)" id="badge-B">dist: ∞</text>
+          </g>
+
+          <!-- C -->
+          <g onclick="DijkstraGame.clickNode('C')" style="cursor: pointer;">
+            <circle cx="220" cy="175" r="20" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="2" id="node-C"/>
+            <text x="220" y="180" font-family="monospace" font-weight="bold" font-size="14" fill="var(--text-heading)" text-anchor="middle">C</text>
+            <text x="220" y="210" font-family="monospace" font-size="11" fill="var(--text-muted)" id="badge-C">dist: ∞</text>
+          </g>
+
+          <!-- D -->
+          <g onclick="DijkstraGame.clickNode('D')" style="cursor: pointer;">
+            <circle cx="360" cy="45" r="20" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="2" id="node-D"/>
+            <text x="360" y="50" font-family="monospace" font-weight="bold" font-size="14" fill="var(--text-heading)" text-anchor="middle">D</text>
+            <text x="360" y="20" font-family="monospace" font-size="11" fill="var(--text-muted)" id="badge-D">dist: ∞</text>
+          </g>
+
+          <!-- E -->
+          <g onclick="DijkstraGame.clickNode('E')" style="cursor: pointer;">
+            <circle cx="360" cy="175" r="20" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="2" id="node-E"/>
+            <text x="360" y="180" font-family="monospace" font-weight="bold" font-size="14" fill="var(--text-heading)" text-anchor="middle">E</text>
+            <text x="360" y="210" font-family="monospace" font-size="11" fill="var(--text-muted)" id="badge-E">dist: ∞</text>
+          </g>
+
+          <!-- F (Destino) -->
+          <g onclick="DijkstraGame.clickNode('F')" style="cursor: pointer;">
+            <circle cx="480" cy="110" r="20" fill="var(--bg-card)" stroke="var(--border-subtle)" stroke-width="2" id="node-F"/>
+            <text x="480" y="115" font-family="monospace" font-weight="bold" font-size="14" fill="var(--text-heading)" text-anchor="middle">F</text>
+            <text x="480" y="145" font-family="monospace" font-size="11" fill="var(--text-muted)" id="badge-F">dist: ∞</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="game-controls">
+        <button class="game-btn secondary" onclick="DijkstraGame.reset()">🔄 Reiniciar Dijkstra</button>
+      </div>
+
+      <div class="game-status-bar" id="dijkstra-status">
+        <span>Nó inicial A relaxado. Qual dos nós não visitados possui a menor distância acumulada para ser expandido agora?</span>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         JOGO 5: OSPF BROADCAST DR/BDR ELECTION ARENA (MÓDULO 3)
+         ==================================================================== -->
+    <div class="game-box" id="game-ospf">
+      <div class="game-header">
+        <div class="game-title">👑 Desafio 5: A Arena de Eleição OSPF DR / BDR</div>
+        <span class="game-badge">Módulo 3: Subprotocolos OSPF</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        Em um segmento Ethernet multiacesso com 5 roteadores, o OSPF elege um <strong>DR (Designated Router)</strong> e um <strong>BDR</strong> para evitar uma explosão de $N(N-1)/2$ adjacências.
+        Ajuste as prioridades de interface dos roteadores e dispare a eleição para observar quem conquista a coroa e como as adjacências colapsam para apenas $2N - 3$:
+      </p>
+
+      <div class="game-canvas-area" style="min-height: 200px;">
+        <div style="display: flex; justify-content: space-around; width: 100%; flex-wrap: wrap; gap: 1rem;" id="ospf-routers-container">
+          <!-- Roteadores com sliders de prioridade -->
+        </div>
+      </div>
+
+      <div class="game-controls">
+        <button class="game-btn success" onclick="OspfGame.runElection()">🗳️ Disparar Eleição OSPF</button>
+        <button class="game-btn secondary" onclick="OspfGame.toggleAdjacencyView()" id="btn-adj-view">Visualizar: <strong>Adjacências com DR (Otimizado)</strong></button>
+      </div>
+
+      <div class="game-status-bar" id="ospf-status">
+        <span>Defina as prioridades desejadas (0 a 255) e clique em 'Disparar Eleição OSPF'. Prioridade 0 torna o roteador inelegível (DROther).</span>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         JOGO 6: ECMP & 5-TUPLE HASH PACKET BALANCER (MÓDULO 4)
+         ==================================================================== -->
+    <div class="game-box" id="game-ecmp">
+      <div class="game-header">
+        <div class="game-title">⚖️ Desafio 6: O Dilema de Reordenação no ECMP</div>
+        <span class="game-badge">Módulo 4: ECMP & Comparações</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        O roteador possui dois caminhos de igual custo ($c = 10$) para o servidor destino.
+        Pacotes de fluxos TCP de vídeo e dados chegam continuamente. Compare o que acontece ao rotear <strong>Por Pacote (Round-Robin)</strong> vs <strong>Por Fluxo (Hash de 5 Tuplas)</strong>:
+      </p>
+
+      <div class="game-canvas-area" style="min-height: 180px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 680px;">
+          <div style="text-align: center;">
+            <div style="padding: 0.6rem 1rem; background: var(--bg-card); border: 2px solid var(--accent); border-radius: 8px; font-weight: bold;">
+              Roteador Ingress (R1)
+            </div>
+            <small style="color: var(--text-muted); display: block; margin-top: 0.3rem;" id="ecmp-mode-label">Modo: Round-Robin</small>
+          </div>
+
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 1.25rem; margin: 0 1.5rem; position: relative;">
+            <div style="height: 36px; border: 2px dashed var(--border-focus); border-radius: 6px; display: flex; align-items: center; justify-content: space-around; background: rgba(88, 166, 255, 0.05);" id="path-top">
+              <span style="font-size: 0.75rem; color: var(--accent); font-weight: 600;">Enlace 1 (Latência 10ms)</span>
+            </div>
+            <div style="height: 36px; border: 2px dashed var(--border-focus); border-radius: 6px; display: flex; align-items: center; justify-content: space-around; background: rgba(88, 166, 255, 0.05);" id="path-bottom">
+              <span style="font-size: 0.75rem; color: var(--accent); font-weight: 600;">Enlace 2 (Latência 15ms)</span>
+            </div>
+          </div>
+
+          <div style="text-align: center;">
+            <div style="padding: 0.6rem 1rem; background: var(--bg-card); border: 2px solid var(--success); border-radius: 8px; font-weight: bold;">
+              Servidor TCP Destino
+            </div>
+            <small style="color: var(--text-muted); display: block; margin-top: 0.3rem;" id="ecmp-tcp-status">Reordenação: 0%</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-controls">
+        <button class="game-btn secondary" onclick="EcmpGame.setMode('roundrobin')">Modo 1: Por Pacote (Round-Robin)</button>
+        <button class="game-btn secondary" onclick="EcmpGame.setMode('hash')">Modo 2: Por Fluxo (Hash de 5 Tuplas)</button>
+        <button class="game-btn success" onclick="EcmpGame.sendStream()">⚡ Injetar Rajada de Fluxos TCP</button>
+      </div>
+
+      <div class="game-status-bar" id="ecmp-status">
+        <span>Selecione um modo e dispare a rajada de tráfego para inspecionar se ocorrerá reordenação de pacotes TCP!</span>
+      </div>
+    </div>
+
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Voltar ao Painel de Redes</a>
+      <a href="0011-simulado-geral-exame-completo.html">Lição 0011: Simulado Geral</a>
+    </div>
+
+  </div>
+
+  <!-- CONTROLADORES DOS JOGOS INTERATIVOS EM JAVASCRIPT -->
+  <script>
+    /* ==========================================================================
+       JOGO 1: SUBNET & PACKET SLICER
+       ========================================================================== */
+    const SlicerGame = {
+      payloadTotal: 3980,
+      mtu: 1500,
+      headerSize: 20,
+      selectedPayloadChunk: 1480,
+
+      init() {
+        this.render();
+      },
+
+      setChunkPayload(val) {
+        this.selectedPayloadChunk = val;
+        this.render();
+      },
+
+      render() {
+        const cardsContainer = document.getElementById("slicer-cards");
+        const statusBox = document.getElementById("slicer-status");
+        if (!cardsContainer) return;
+
+        let rem = this.payloadTotal;
+        let offsetBytes = 0;
+        let fragIndex = 1;
+        let htmlCards = "";
+
+        while (rem > 0) {
+          const chunkPayload = Math.min(rem, this.selectedPayloadChunk);
+          const totalLength = chunkPayload + this.headerSize;
+          const isLast = (rem - chunkPayload) <= 0;
+          const mf = isLast ? 0 : 1;
+          const offsetDiv8 = offsetBytes / 8;
+          const isAligned = Number.isInteger(offsetDiv8);
+          const exceedsMtu = totalLength > this.mtu;
+
+          htmlCards += `
+            <div style="background: var(--bg-card); border: 1px solid ${exceedsMtu || (!isAligned && !isLast) ? 'var(--error)' : 'var(--border-subtle)'}; border-radius: 6px; padding: 0.75rem; font-size: 0.82rem;">
+              <strong style="color: var(--accent); display: block; margin-bottom: 0.25rem;">Fragmento #${fragIndex}</strong>
+              <div>Total Length: <strong>${totalLength} B</strong> ${exceedsMtu ? '<span style="color:var(--error);">(Excede MTU!)</span>' : ''}</div>
+              <div>Carga Útil: ${chunkPayload} B</div>
+              <div>Flag MF: <strong>${mf}</strong></div>
+              <div>Fragment Offset: <strong>${offsetDiv8}</strong> ${!isAligned ? '<span style="color:var(--error);">(Inválido!)</span>' : ''}</div>
+            </div>
+          `;
+
+          offsetBytes += chunkPayload;
+          rem -= chunkPayload;
+          fragIndex++;
+        }
+
+        cardsContainer.innerHTML = htmlCards;
+
+        if (this.selectedPayloadChunk === 1480) {
+          statusBox.className = "game-status-bar success";
+          statusBox.innerHTML = "✅ <strong>Fatiamento Perfeito:</strong> 1.480B é o maior múltiplo de 8 que cabe no MTU (1.480 + 20 = 1.500B). Offsets exatos: 0, 185 e 370!";
+        } else if (this.selectedPayloadChunk === 1490) {
+          statusBox.className = "game-status-bar error";
+          statusBox.innerHTML = "❌ <strong>Violação de MTU:</strong> 1.490B de carga + 20B cabeçalho = 1.510B, estourando o limite físico do enlace (1.500B)!";
+        } else {
+          statusBox.className = "game-status-bar error";
+          statusBox.innerHTML = "❌ <strong>Violação de Alinhamento:</strong> 1.470B não é divisível por 8! O Fragment Offset do próximo pacote seria fracionário (183.75), o que é impossível no cabeçalho IPv4!";
+        }
+      },
+
+      testTransmission() {
+        const statusBox = document.getElementById("slicer-status");
+        if (this.selectedPayloadChunk === 1480) {
+          statusBox.innerHTML = "🎉 <strong>Transmissão Efetuada com Sucesso!</strong> Todos os 3 fragmentos chegaram ao destino e foram remontados sem perdas.";
+        } else {
+          this.render();
+        }
+      }
+    };
+
+    /* ==========================================================================
+       JOGO 2: IPV4 HEADER AUDITOR
+       ========================================================================== */
+    const HeaderGame = {
+      fixed: { totlen: false, flags: false, ttl: false },
+
+      fixField(field) {
+        if (field === "totlen") {
+          this.fixed.totlen = true;
+          const el = document.getElementById("field-totlen");
+          el.className = "header-field fixed-field";
+          el.innerHTML = "Total Length ✅<br><strong>1.500 Bytes</strong>";
+        } else if (field === "flags") {
+          this.fixed.flags = true;
+          const el = document.getElementById("field-flags");
+          el.className = "header-field fixed-field";
+          el.innerHTML = "Flags ✅<br><strong>DF=0, MF=1</strong>";
+        } else if (field === "ttl") {
+          this.fixed.ttl = true;
+          const el = document.getElementById("field-ttl");
+          el.className = "header-field fixed-field";
+          el.innerHTML = "TTL ✅<br><strong>64 Saltos</strong>";
+        }
+
+        this.checkAll();
+      },
+
+      checkAll() {
+        const statusBox = document.getElementById("header-status");
+        const remaining = 3 - Object.values(this.fixed).filter(Boolean).length;
+
+        if (remaining === 0) {
+          statusBox.className = "game-status-bar success";
+          statusBox.innerHTML = "🎉 <strong>Cabeçalho 100% Conforme!</strong> O datagrama obedece à RFC 791: Total Length >= 20, DF/MF sem contradição e TTL > 0 para trânsito seguro.";
+        } else {
+          statusBox.className = "game-status-bar";
+          statusBox.innerHTML = `Auditoria em andamento: você corrigiu ${3 - remaining} campos. Faltam ${remaining} campo(s) corrompido(s)!`;
+        }
+      }
+    };
+
+    /* ==========================================================================
+       JOGO 3: BELLMAN-FORD GOSSIP & POISON REVERSE
+       ========================================================================== */
+    const BellmanGame = {
+      linkCut: false,
+      poisonReverse: false,
+      step: 0,
+      costA: 2,
+      costB: 1,
+
+      togglePoison() {
+        this.poisonReverse = !this.poisonReverse;
+        const btn = document.getElementById("btn-poison-toggle");
+        btn.innerHTML = `Poison Reverse: <strong>${this.poisonReverse ? 'ATIVADO ✅' : 'DESATIVADO ❌'}</strong>`;
+        this.reset();
+      },
+
+      toggleLink() {
+        this.linkCut = true;
+        const link = document.getElementById("link-bc");
+        const label = document.getElementById("link-bc-label");
+        const btnCut = document.getElementById("btn-cut-bc");
+        const btnStep = document.getElementById("btn-step-gossip");
+        const statusBox = document.getElementById("bellman-status");
+
+        link.setAttribute("stroke", "var(--error)");
+        link.setAttribute("stroke-dasharray", "5,5");
+        label.textContent = "ROMPIDO (X)";
+        label.setAttribute("fill", "var(--error)");
+        btnCut.disabled = true;
+        btnStep.disabled = false;
+
+        if (this.poisonReverse) {
+          // Com Poison Reverse, B já avisava A com 16 ou anuncia imediatamente que C caiu
+          this.costB = 16;
+          this.costA = 16;
+          document.getElementById("cost-b").textContent = "Dist: 16 (Infinito)";
+          document.getElementById("cost-a").textContent = "Dist: 16 (Infinito)";
+          statusBox.className = "game-status-bar success";
+          statusBox.innerHTML = "🛡️ <strong>Poison Reverse Ativado:</strong> Ao cair o enlace, B anuncia imediatamente métrica 16 para A. O loop é abortado no ato e a convergência para o infinito ocorre em 1 única rodada!";
+          btnStep.disabled = true;
+        } else {
+          // B perdeu C, mas acredita que A tem rota com custo 2! Então B calcula 2 + 1 = 3!
+          this.costB = 3;
+          document.getElementById("cost-b").textContent = "Dist: 3 (via A!)";
+          statusBox.className = "game-status-bar error";
+          statusBox.innerHTML = "⚠️ <strong>Falha Detectada!</strong> B perdeu o enlace direto, mas como A anunciava que chegava a C em 2 saltos, B calcula: 1 (enlace A-B) + 2 = 3 e passa a rotear para A! O loop começou. Avance a rodada:";
+        }
+      },
+
+      stepGossip() {
+        if (!this.linkCut || this.poisonReverse) return;
+        this.step++;
+        const statusBox = document.getElementById("bellman-status");
+
+        if (this.step % 2 === 1) {
+          // A atualiza a partir de B
+          this.costA = this.costB + 1;
+          document.getElementById("cost-a").textContent = `Dist: ${this.costA} (via B!)`;
+        } else {
+          // B atualiza a partir de A
+          this.costB = this.costA + 1;
+          document.getElementById("cost-b").textContent = `Dist: ${this.costB} (via A!)`;
+        }
+
+        if (this.costA >= 16 || this.costB >= 16) {
+          this.costA = 16;
+          this.costB = 16;
+          document.getElementById("cost-a").textContent = "Dist: 16 (Infinito)";
+          document.getElementById("cost-b").textContent = "Dist: 16 (Infinito)";
+          statusBox.className = "game-status-bar error";
+          statusBox.innerHTML = "💥 <strong>Contagem ao Infinito Atingida (16 saltos)!</strong> Somente agora o RIP percebeu que a rede está inacessível. Isso custou várias rodadas de tráfego ricocheteado!";
+          document.getElementById("btn-step-gossip").disabled = true;
+        } else {
+          statusBox.className = "game-status-bar error";
+          statusBox.innerHTML = `🌀 <strong>Ricochete em Andamento (Rodada ${this.step}):</strong> Custo subindo! A=${this.costA}, B=${this.costB}. Ambos jogam o pacote um para o outro em loop!`;
+        }
+      },
+
+      reset() {
+        this.linkCut = false;
+        this.step = 0;
+        this.costA = 2;
+        this.costB = 1;
+
+        const link = document.getElementById("link-bc");
+        const label = document.getElementById("link-bc-label");
+        const btnCut = document.getElementById("btn-cut-bc");
+        const btnStep = document.getElementById("btn-step-gossip");
+        const statusBox = document.getElementById("bellman-status");
+
+        link.setAttribute("stroke", "var(--text-muted)");
+        link.removeAttribute("stroke-dasharray");
+        label.textContent = "Custo: 1";
+        label.setAttribute("fill", "var(--accent)");
+        btnCut.disabled = false;
+        btnStep.disabled = true;
+
+        document.getElementById("cost-a").textContent = "Dist: 2 (via B)";
+        document.getElementById("cost-b").textContent = "Dist: 1 (via C)";
+
+        statusBox.className = "game-status-bar";
+        statusBox.innerHTML = "Estado Estável: A alcança C com custo 2 (via B). Corte o enlace B-C para disparar o evento.";
+      }
+    };
+
+    /* ==========================================================================
+       JOGO 4: DIJKSTRA SPF PATHBUILDER
+       ========================================================================== */
+    const DijkstraGame = {
+      // Grafo: A(0), B(2), C(3 via B), D(6 via B), E(5 via C), F(8 via E)
+      order: ["B", "C", "E", "D", "F"],
+      stepIndex: 0,
+      visited: new Set(["A"]),
+
+      init() {
+        this.reset();
+      },
+
+      clickNode(nodeId) {
+        if (this.visited.has(nodeId)) return;
+
+        const expected = this.order[this.stepIndex];
+        const statusBox = document.getElementById("dijkstra-status");
+
+        if (nodeId !== expected) {
+          statusBox.className = "game-status-bar error";
+          statusBox.innerHTML = `❌ <strong>Violação da Fila de Prioridades:</strong> Você clicou em [${nodeId}], mas o nó não visitado com MENOR distância acumulada atual na fronteira é [${expected}]!`;
+          return;
+        }
+
+        // Sucesso no passo
+        this.visited.add(nodeId);
+        this.stepIndex++;
+
+        const nodeCircle = document.getElementById(`node-${nodeId}`);
+        nodeCircle.setAttribute("fill", "var(--success)");
+        nodeCircle.setAttribute("stroke", "var(--success)");
+
+        if (nodeId === "B") {
+          document.getElementById("badge-B").textContent = "dist: 2 (fixo)";
+          document.getElementById("badge-C").textContent = "dist: 3 (via B)";
+          document.getElementById("badge-D").textContent = "dist: 6 (via B)";
+          document.getElementById("edge-ab").setAttribute("stroke", "var(--success)");
+          document.getElementById("edge-ab").setAttribute("stroke-width", "4");
+          statusBox.className = "game-status-bar success";
+          statusBox.innerHTML = "✅ <strong>B Expandido (Custo 2):</strong> Vizinhos C e D relaxados! O custo de C via B caiu para 2 + 1 = 3 (melhor que 5 direto de A). Quem é o próximo menor nó?";
+        } else if (nodeId === "C") {
+          document.getElementById("badge-C").textContent = "dist: 3 (fixo)";
+          document.getElementById("badge-E").textContent = "dist: 5 (via C)";
+          document.getElementById("edge-bc").setAttribute("stroke", "var(--success)");
+          document.getElementById("edge-bc").setAttribute("stroke-width", "4");
+          statusBox.className = "game-status-bar success";
+          statusBox.innerHTML = "✅ <strong>C Expandido (Custo 3):</strong> Vizinho E relaxado com custo 3 + 2 = 5! Quem é o próximo menor na fronteira?";
+        } else if (nodeId === "E") {
+          document.getElementById("badge-E").textContent = "dist: 5 (fixo)";
+          document.getElementById("badge-F").textContent = "dist: 8 (via E)";
+          document.getElementById("edge-ce").setAttribute("stroke", "var(--success)");
+          document.getElementById("edge-ce").setAttribute("stroke-width", "4");
+          statusBox.className = "game-status-bar success";
+          statusBox.innerHTML = "✅ <strong>E Expandido (Custo 5):</strong> Destino F relaxado com custo provisório 5 + 3 = 8! Restam D e F na fila. Qual o menor?";
+        } else if (nodeId === "D") {
+          document.getElementById("badge-D").textContent = "dist: 6 (fixo)";
+          document.getElementById("edge-bd").setAttribute("stroke", "var(--success)");
+          document.getElementById("edge-bd").setAttribute("stroke-width", "4");
+          statusBox.className = "game-status-bar success";
+          statusBox.innerHTML = "✅ <strong>D Expandido (Custo 6):</strong> D para F daria 6 + 7 = 13 (pior que 8 via E, descartado). Resta apenas F!";
+        } else if (nodeId === "F") {
+          document.getElementById("badge-F").textContent = "dist: 8 (ÓTIMO)";
+          document.getElementById("edge-ef").setAttribute("stroke", "var(--success)");
+          document.getElementById("edge-ef").setAttribute("stroke-width", "4");
+          statusBox.className = "game-status-bar success";
+          statusBox.innerHTML = "🏆 <strong>Árvore SPF Concluída com Sucesso!</strong> O caminho ótimo de A até F é <strong>A → B → C → E → F</strong> com custo total exato de <strong>8</strong>!";
+        }
+      },
+
+      reset() {
+        this.stepIndex = 0;
+        this.visited = new Set(["A"]);
+
+        ["B", "C", "D", "E", "F"].forEach(id => {
+          const c = document.getElementById(`node-${id}`);
+          if (c) {
+            c.setAttribute("fill", "var(--bg-card)");
+            c.setAttribute("stroke", "var(--accent)");
+          }
+          const b = document.getElementById(`badge-${id}`);
+          if (b) b.textContent = "dist: ∞";
+        });
+
+        ["ab", "ac", "bd", "bc", "ce", "df", "ef"].forEach(e => {
+          const l = document.getElementById(`edge-${e}`);
+          if (l) {
+            l.setAttribute("stroke", "var(--text-muted)");
+            l.setAttribute("stroke-width", "2.5");
+          }
+        });
+
+        document.getElementById("badge-B").textContent = "dist: 2";
+        document.getElementById("badge-C").textContent = "dist: 5";
+        document.getElementById("dijkstra-status").className = "game-status-bar";
+        document.getElementById("dijkstra-status").innerHTML = "Origem A fixada. Analise as estimativas de B (2) e C (5): qual nó deve ser extraído da fila de prioridade agora?";
+      }
+    };
+
+    /* ==========================================================================
+       JOGO 5: OSPF DR/BDR ELECTION
+       ========================================================================== */
+    const OspfGame = {
+      routers: [
+        { id: "R1", prio: 1, routerId: "10.0.0.1", role: "DROther" },
+        { id: "R2", prio: 100, routerId: "10.0.0.2", role: "DROther" },
+        { id: "R3", prio: 50, routerId: "10.0.0.3", role: "DROther" },
+        { id: "R4", prio: 100, routerId: "10.0.0.4", role: "DROther" },
+        { id: "R5", prio: 0, routerId: "10.0.0.5", role: "DROther" }
+      ],
+
+      init() {
+        this.renderRouters();
+      },
+
+      renderRouters() {
+        const c = document.getElementById("ospf-routers-container");
+        if (!c) return;
+
+        c.innerHTML = this.routers.map((r, i) => `
+          <div style="background: var(--bg-card); border: 2px solid ${r.role === 'DR' ? 'var(--warning)' : (r.role === 'BDR' ? 'var(--accent)' : 'var(--border-subtle)')}; border-radius: 8px; padding: 0.85rem; width: 140px; text-align: center;">
+            <div style="font-size: 1.1rem; font-weight: bold;">${r.role === 'DR' ? '👑 ' : (r.role === 'BDR' ? '🥈 ' : '')}${r.id}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.4rem;">ID: ${r.routerId}</div>
+            <label style="font-size: 0.75rem; display: block;">Prioridade:</label>
+            <input type="number" min="0" max="255" value="${r.prio}" style="width: 60px; padding: 0.2rem; text-align: center; border-radius: 4px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-main);" onchange="OspfGame.setPrio(${i}, this.value)">
+            <div style="margin-top: 0.5rem; font-size: 0.8rem; font-weight: 600; color: ${r.role === 'DR' ? 'var(--warning)' : (r.role === 'BDR' ? 'var(--accent)' : 'var(--text-muted)')};">
+              ${r.role}
+            </div>
+          </div>
+        `).join("");
+      },
+
+      setPrio(idx, val) {
+        this.routers[idx].prio = parseInt(val) || 0;
+      },
+
+      runElection() {
+        // Regra OSPF: Prio 0 é inelegível.
+        // Entre elegíveis: maior Prioridade ganha. Desempate: maior Router ID.
+        const eligible = this.routers
+          .filter(r => r.prio > 0)
+          .sort((a, b) => {
+            if (b.prio !== a.prio) return b.prio - a.prio;
+            return b.routerId.localeCompare(a.routerId);
+          });
+
+        this.routers.forEach(r => r.role = (r.prio === 0 ? "DROther (Inelegível)" : "DROther"));
+
+        if (eligible.length > 0) eligible[0].role = "DR";
+        if (eligible.length > 1) eligible[1].role = "BDR";
+
+        this.renderRouters();
+
+        const dr = eligible[0];
+        const bdr = eligible[1];
+        const statusBox = document.getElementById("ospf-status");
+        statusBox.className = "game-status-bar success";
+        statusBox.innerHTML = `👑 <strong>Eleição Concluída!</strong> DR: <strong>${dr ? dr.id : 'Nenhum'}</strong> | BDR: <strong>${bdr ? bdr.id : 'Nenhum'}</strong>. Se houver empate de prioridade (como R2 e R4 com 100), o critério de desempate foi o maior Router ID (${dr ? dr.routerId : ''})!`;
+      },
+
+      toggleAdjacencyView() {
+        const btn = document.getElementById("btn-adj-view");
+        const statusBox = document.getElementById("ospf-status");
+        statusBox.className = "game-status-bar";
+        statusBox.innerHTML = "💡 <strong>Fórmula de Adjacências:</strong> Sem DR, N=5 exigiria N(N-1)/2 = 10 adjacências e sincronizações flooding na LAN! Com DR e BDR, apenas 2N - 3 = 7 adjacências são formadas, poupando CPU e largura de banda.";
+      }
+    };
+
+    /* ==========================================================================
+       JOGO 6: ECMP TRAFFIC BALANCER
+       ========================================================================== */
+    const EcmpGame = {
+      mode: "roundrobin",
+
+      setMode(m) {
+        this.mode = m;
+        document.getElementById("ecmp-mode-label").textContent = `Modo: ${m === 'roundrobin' ? 'Por Pacote (Round-Robin)' : 'Por Fluxo (Hash 5 Tuplas)'}`;
+        const statusBox = document.getElementById("ecmp-status");
+        statusBox.className = "game-status-bar";
+        statusBox.innerHTML = m === 'roundrobin' 
+          ? "Modo Round-Robin selecionado: pacotes individuais alternam os links sem importar a qual fluxo pertencem."
+          : "Modo Hash selecionado: R1 calcula Hash(SrcIP, DstIP, SrcPort, DstPort, Proto) % 2 para fixar cada fluxo ao seu enlace!";
+      },
+
+      sendStream() {
+        const topEl = document.getElementById("path-top");
+        const botEl = document.getElementById("path-bottom");
+        const tcpStatus = document.getElementById("ecmp-tcp-status");
+        const statusBox = document.getElementById("ecmp-status");
+
+        if (this.mode === "roundrobin") {
+          tcpStatus.innerHTML = "<span style='color:var(--error); font-weight:bold;'>Reordenação: 42% (JITTER ALTO!)</span>";
+          statusBox.className = "game-status-bar error";
+          statusBox.innerHTML = "⚠️ <strong>Desastre de Desempenho TCP:</strong> Como o Enlace 2 tem 15ms e o Enlace 1 tem 10ms, os pacotes ímpares e pares chegaram fora de ordem! O TCP receptor gerou Duplicate ACKs imediatos e reduziu a janela de congestionamento (CWND)!";
+        } else {
+          tcpStatus.innerHTML = "<span style='color:var(--success); font-weight:bold;'>Reordenação: 0% (PERFEITO)</span>";
+          statusBox.className = "game-status-bar success";
+          statusBox.innerHTML = "✅ <strong>Entrega Estável e Sem Jitter:</strong> Todos os pacotes do Fluxo de Vídeo foram mapeados para o Enlace 1, e todos os pacotes de Dados para o Enlace 2. Zero reordenação, vazão máxima atingida!";
+        }
+      }
+    };
+
+    // Inicialização ao carregar a página
+    document.addEventListener("DOMContentLoaded", () => {
+      SlicerGame.init();
+      DijkstraGame.init();
+      OspfGame.init();
+    });
+  </script>
+</body>
+</html>
