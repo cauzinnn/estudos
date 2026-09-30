@@ -3,45 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal de Estudos — Seleção de Disciplinas</title>
+  <title>Estudos</title>
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/app.js" defer></script>
 </head>
 <body>
-  <div class="container" style="max-width: 640px; margin-top: 2rem;">
-    <header style="text-align: center; border-bottom: none; padding-bottom: 0.5rem;">
-      <div class="lesson-meta">Ambiente de Aprendizagem Ativa</div>
-      <h1 style="font-size: 2.1rem; margin-bottom: 0.5rem;">Portal de Estudos</h1>
-      <p class="meta">Selecione uma matéria para acessar seu ambiente autônomo:</p>
+  <div class="container" style="max-width: 640px; margin: 2rem auto 0 auto;">
+    <header style="border-bottom: none; padding-bottom: 0.5rem;">
+      <h1 style="font-size: 2rem; margin-bottom: 0;">Estudos</h1>
     </header>
 
     <div class="options-list" style="gap: 1rem; margin-top: 1rem;">
       <!-- CARD: INTELIGÊNCIA COMPUTACIONAL -->
-      <a href="materias/intelcomp/index.html" class="option-btn" style="padding: 1.25rem 1.4rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; text-decoration: none; border-color: rgba(88, 166, 255, 0.4);">
-        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-          <strong style="font-size: 1.15rem; color: #58a6ff;">🧠 Inteligência Computacional</strong>
-          <span class="exercise-tag" style="background-color: rgba(63, 185, 80, 0.15); color: #7ee787;">Trilha Ativa • Em Progresso</span>
-        </div>
+      <a href="materias/intelcomp/index.html" class="option-btn" style="padding: 1.25rem 1.4rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; text-decoration: none;">
+        <strong style="font-size: 1.1rem; color: #58a6ff;">Inteligência Computacional</strong>
         <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.45;">
-          Trilha progressiva de Algoritmos de Busca (Cegos e Heurísticos) com foco em teoria enxuta (&lt; 5 min), diagnóstico de erros, rastreamento de mesa e fixação duradoura.
+          Algoritmos de busca cegos e heurísticos.
         </p>
       </a>
 
       <!-- CARD: REDES DE COMPUTADORES -->
       <a href="materias/redes/index.html" class="option-btn" style="padding: 1.25rem 1.4rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; text-decoration: none;">
-        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-          <strong style="font-size: 1.15rem; color: #58a6ff;">🌐 Redes de Computadores</strong>
-          <span class="exercise-tag" style="background-color: rgba(63, 185, 80, 0.15); color: #7ee787;">12 Lições • 2 Fichas • Trilha Completa</span>
-        </div>
+        <strong style="font-size: 1.1rem; color: #58a6ff;">Redes de Computadores</strong>
         <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.45;">
-          Trilha interativa baseada no currículo da UFRJ/COPPE: IPv4, CIDR, Fragmentação, Vetor de Distância (Bellman-Ford/RIP), Estado de Enlace (Dijkstra/OSPF), DR/BDR, ECMP e Simulado Final.
+          Camada de rede e protocolos de roteamento unicast.
         </p>
       </a>
     </div>
-
-    <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 1.5rem; line-height: 1.5;">
-      💡 <em>Cada matéria é 100% autônoma. Você pode salvar o link direto da sua disciplina nos favoritos e navegar exclusivamente dentro dela.</em>
-    </p>
   </div>
 </body>
 </html>

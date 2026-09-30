@@ -15,17 +15,17 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Redes de Computadores • Prova Final Unificada • Lição 0011</div>
-      <h1>Simulado Geral: Exame Completo de Roteamento Unicast</h1>
+      <div class="lesson-meta">Simulado • Lição 0011</div>
+      <h1>Simulado Geral: Roteamento Unicast</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Exame unificado de alto nível integrando todo o currículo da UFRJ / COPPE: endereçamento CIDR, fragmentação e opções IPv4, Bellman-Ford e bouncing, Dijkstra SPF, DR/BDR, OSPF e ECMP.
+        12 questões integrando sub-redes, fragmentação IPv4, Bellman-Ford, Dijkstra SPF e OSPF.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Ficha 0001: IPv4</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha 0002: Algoritmos DV e LS</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">Ficha: IPv4</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Roteamento</a>
     </div>
 
     <!-- SEÇÃO DA TOPOLOGIA MESTRE -->
@@ -99,7 +99,6 @@
     <section class="card-exercise" id="q1" data-hint="A máscara 255.255.255.224 possui 27 bits fixos (h = 32 - 27 = 5 bits de host). Calcule 2^5 - 2.">
       <div class="exercise-header">
         <h3>Questão 1: Dimensionamento de Sub-rede Local</h3>
-        <span class="exercise-tag recall">Active Recall / Prova</span>
       </div>
       <div class="question-text">
         A interface LAN do roteador $R_1$ atende a uma sub-rede corporativa com a faixa <code>172.20.16.0/27</code> (máscara <code>255.255.255.224</code>).<br><br>
@@ -116,11 +115,10 @@
     <section class="card-exercise" id="q2" data-hint="IP = 146.164.69.129 com máscara 255.255.255.192. A máscara 192 corresponde a /26 (passo 64). 129 está entre 128 e 191. Sub-rede no formato x.x.x.x/yy">
       <div class="exercise-header">
         <h3>Questão 2: Engenharia Reversa de Terminal</h3>
-        <span class="exercise-tag recall">Active Recall / Terminal</span>
       </div>
       <div class="question-text">
         Analise a saída do comando <code>ifconfig</code> extraída da interface <code>eth3</code> do roteador $R_2$:<br>
-        <code>eth3: inet addr:146.164.69.129 Bcast:146.164.69.191 Mask:255.255.255.192</code><br><br>
+        <pre><code>eth3: inet addr:146.164.69.129 Bcast:146.164.69.191 Mask:255.255.255.192</code></pre>
         <strong>Digite o identificador canônico da sub-rede IP conectada a esta interface</strong> no formato CIDR padrão (ex: <code>x.x.x.x/yy</code>):
       </div>
       <div class="input-row">
@@ -134,7 +132,6 @@
     <section class="card-exercise" id="q3" data-hint="Datagrama de 4000 bytes totais (20 bytes cabeçalho + 3980 bytes de dados). Enlace com MTU = 1500 bytes comporta 1500 - 20 = 1480 bytes de dados. O 1º fragmento leva bytes 0 a 1479. O 2º fragmento leva bytes 1480 a 2959. O 3º fragmento começa no byte de dado 2960. O Fragment Offset do 3º fragmento é 2960 / 8. Calcule 2960 / 8.">
       <div class="exercise-header">
         <h3>Questão 3: Fragmentação e Fragment Offset do 3º Fragmento</h3>
-        <span class="exercise-tag recall">Active Recall / Prova</span>
       </div>
       <div class="question-text">
         Um pacote IPv4 com tamanho total de <strong>4.000 bytes</strong> (20 bytes de cabeçalho + 3.980 bytes de dados) deve ser transmitido por um enlace Ethernet cuja MTU é de <strong>1.500 bytes</strong>.<br><br>
@@ -152,7 +149,6 @@
     <section class="card-exercise" id="q4">
       <div class="exercise-header">
         <h3>Questão 4: Opções IPv4 e a Comutação em Hardware</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Por que os roteadores de borda de provedores de trânsito na Internet frequentemente configuram filtros para descartar datagramas IPv4 que contenham opções ativas no cabeçalho ($IHL > 5$)?
@@ -178,7 +174,6 @@
     <section class="card-exercise" id="q5">
       <div class="exercise-header">
         <h3>Questão 5: Diagnóstico do Gatilho do ICMP Redirect</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         O roteador $R_1$ recebe um pacote vindo do host $H_1$ pela sua interface <code>eth0</code>. Após consultar sua tabela de rotas, $R_1$ conclui que deve enviar o pacote para o roteador $R_2$, que também está conectado à <code>eth0</code>. Qual ação é tomada por $R_1$?
@@ -204,7 +199,6 @@
     <section class="card-exercise" id="q6" data-hint="Caminho R1 para R5 via R2 e R4: R1->R2 (2) + R2->R4 (3) + R4->R5 (1) = 6. Caminho R1 para R5 via R3: R1->R2 (2) + R2->R3 (1) + R3->R5 (4) = 7. Menor custo é 6.">
       <div class="exercise-header">
         <h3>Questão 6: Rastreamento Bellman-Ford até R5</h3>
-        <span class="exercise-tag recall">Active Recall / Prova UFRJ</span>
       </div>
       <div class="question-text">
         Se todos os nós executarem o algoritmo de Bellman-Ford na Figura Mestre:<br><br>
@@ -221,7 +215,6 @@
     <section class="card-exercise" id="q7">
       <div class="exercise-header">
         <h3>Questão 7: Formação do Bouncing Effect</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Considere a seguinte asserção de prova:<br>
@@ -243,7 +236,6 @@
     <section class="card-exercise" id="q8">
       <div class="exercise-header">
         <h3>Exercício 8: Ineficácia do Split Horizon em Triângulos</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Observe o triângulo formado pelos roteadores $R_1, R_2, R_3$. Por que a ativação da técnica do <em>Split Horizon</em> (com ou sem Poison Reverse) <strong>não consegue evitar loops de roteamento</strong> se um ciclo circular se fechar entre $R_1 \to R_2 \to R_3 \to R_1$?
@@ -269,7 +261,6 @@
     <section class="card-exercise" id="q9" data-hint="Compare os caminhos de R1 até R6: via R4 (R1-R2-R4-R6: 2 + 3 + 6 = 11) contra o caminho via R5 (R1-R2-R4-R5-R6: 2 + 3 + 1 + 2 = 8). Qual é o custo acumulado de R1-R2-R4-R5-R6? Digite '8'.">
       <div class="exercise-header">
         <h3>Questão 9: Algoritmo de Dijkstra SPF até R6</h3>
-        <span class="exercise-tag recall">Active Recall / Prova UFRJ</span>
       </div>
       <div class="question-text">
         Executando o algoritmo de Dijkstra na Figura Mestre tendo o roteador <strong>R1</strong> como nó raiz de cálculo:<br><br>
@@ -286,7 +277,6 @@
     <section class="card-exercise" id="q10" data-hint="Com N = 6 roteadores interconectados por switch Ethernet, sem DR o número de adjacências na malha completa é N*(N-1)/2 = 6*5/2. Calcule 6*5/2. Digite '15'.">
       <div class="exercise-header">
         <h3>Questão 10: Cálculo da Explosão de Adjacências sem DR</h3>
-        <span class="exercise-tag recall">Active Recall / Prova UFRJ</span>
       </div>
       <div class="question-text">
         Se todos os <strong>6 roteadores</strong> da topologia fossem interconectados simultaneamente no mesmo segmento de difusão Ethernet (VLAN única de trânsito):<br><br>
@@ -303,7 +293,6 @@
     <section class="card-exercise" id="q11">
       <div class="exercise-header">
         <h3>Questão 11: Eficiência do Protocolo Exchange</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Durante a sincronização entre dois roteadores OSPF através do protocolo <em>Exchange</em>, qual mecanismo garante que apenas os anúncios desatualizados ou faltantes sejam solicitados e transmitidos?
@@ -329,7 +318,6 @@
     <section class="card-exercise" id="q12">
       <div class="exercise-header">
         <h3>Questão 12: Preservação de Ordem TCP em ECMP</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Considere a seguinte afirmação sobre balanceamento de carga ECMP:<br>
@@ -350,9 +338,9 @@
 
     <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="0010-ecmp-e-comparativo-rip-ospf.html">← Lição Anterior: 0010 — ECMP e Comparativo</a>
-      <a href="../index.html">🏠 Retornar ao Painel Principal de Redes</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos DV e LS</a>
+      <a href="0010-ecmp-e-comparativo-rip-ospf.html">← 0010: ECMP</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Roteamento</a>
     </div>
 
   </div>

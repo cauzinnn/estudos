@@ -11,22 +11,22 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">intelcomp • Buscas Não Informadas (Cegas) • Lição 0006</div>
-      <h1>Busca de Custo Uniforme (UCS / Dijkstra)</h1>
+      <div class="lesson-meta">Módulo 1 • Lição 0006</div>
+      <h1>Busca de Custo Uniforme (UCS)</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Fila de prioridades por custo acumulado g(n), garantia de otimalidade com pesos arbitrários e a regra inegociável do teste de meta na retirada.
+        Fila de prioridades por custo acumulado $g(n)$, garantia de otimalidade com pesos arbitrários e teste de meta na retirada.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../lessons/0005-aprofundamento-iterativo-4-iteracoes-ids.html">← Lição 0005: IDS</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../lessons/0005-aprofundamento-iterativo-4-iteracoes-ids.html">← 0005: IDS</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
     </div>
 
-    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <!-- TEORIA -->
     <section class="card-theory">
-      <h2>1. Teoria Enxuta: O Modelo Mental da UCS</h2>
+      <h2>1. Teoria: O Modelo Mental da UCS</h2>
       <p>
         A <strong>Busca de Custo Uniforme</strong> (<em>Uniform-Cost Search — UCS</em>), equivalente ao Algoritmo de Dijkstra para IA, generaliza a BFS para grafos com <strong>custos de transição arbitrários e desiguais</strong>:
       </p>
@@ -160,7 +160,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: Momento Sagrado do Teste de Meta</h3>
-        <span class="exercise-tag diagnostic">Mecânica de Algoritmos</span>
       </div>
       <div class="question-text">
         O que aconteceria no grafo da Figura 1 se aplicássemos o teste de meta no momento em que um nó é <strong>gerado</strong> em vez de quando é <strong>retirado</strong> da fila de prioridade?
@@ -186,7 +185,6 @@
     <section class="card-exercise" id="ex2">
       <div class="exercise-header">
         <h3>Exercício 2: Identificação de Falácia — BFS vs UCS</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Analise a afirmação:<br>
@@ -208,7 +206,6 @@
     <section class="card-exercise" id="ex3" data-hint="Lembre-se do rastreamento: S gera A (g=1) e G (g=10). B é gerado por A com g=3.">
       <div class="exercise-header">
         <h3>Exercício 3: Rastreamento do Menor Custo Acumulado</h3>
-        <span class="exercise-tag recall">Active Recall Numérico</span>
       </div>
       <div class="question-text">
         No grafo da Figura 1, <strong>qual é o custo acumulado g(n) da rota ótima</strong> retornada pela UCS ao finalizar a busca? (Digite apenas o número):
@@ -224,7 +221,6 @@
     <section class="card-exercise" id="ex4">
       <div class="exercise-header">
         <h3>Exercício 4: A Exigência de Custos Estritamente Positivos</h3>
-        <span class="exercise-tag diagnostic">Completude</span>
       </div>
       <div class="question-text">
         Por que a teoria formal exige que cada aresta tenha um custo mínimo <code>c &ge; &epsilon; &gt; 0</code> para garantir que a UCS seja completa?
@@ -250,7 +246,6 @@
     <section class="card-exercise" id="ex5" data-hint="No Passo 2, retiramos A (g=1). A gera B com custo g = 1 + 2 = 3. Quem fica na frente da fila? [B: 3, G: 10]!">
       <div class="exercise-header">
         <h3>Exercício 5: Rastreamento da Fila de Prioridades</h3>
-        <span class="exercise-tag recall">Active Recall / Mesa</span>
       </div>
       <div class="question-text">
         No <strong>Passo 2</strong> da tabela, após expandir A, a fila contém os nós B (g=3) e G (g=10).<br><br>
@@ -267,7 +262,6 @@
     <section class="card-exercise" id="ex6">
       <div class="exercise-header">
         <h3>Exercício 6: Custos Negativos na UCS</h3>
-        <span class="exercise-tag diagnostic">Casos Limítrofes</span>
       </div>
       <div class="question-text">
         Se um grafo contiver arestas com <strong>custos negativos</strong>, a UCS padrão continuará garantindo a solução ótima?
@@ -287,7 +281,6 @@
     <section class="card-exercise" id="ex7" data-hint="Digite a sequência completa de nós da rota ótima: raiz S, depois A, depois B, depois meta G.">
       <div class="exercise-header">
         <h3>Exercício 7: Sequência da Solução Ótima</h3>
-        <span class="exercise-tag recall">Síntese de Rota</span>
       </div>
       <div class="question-text">
         Digite a sequência de nós que compõe a solução ótima encontrada pela UCS na Figura 1 (separados por vírgula, traço ou espaço):
@@ -300,12 +293,12 @@
     </section>
 
 
-    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="../lessons/0005-aprofundamento-iterativo-4-iteracoes-ids.html">← Lição Anterior: 0005 — IDS</a>
-      <a href="../index.html">Voltar ao Painel da Matéria</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
-      <a href="0007-busca-irrevogavel-hill-climbing.html">Próxima Lição: 0007 — Hill Climbing &rarr;</a>
+      <a href="../lessons/0005-aprofundamento-iterativo-4-iteracoes-ids.html">← 0005: IDS</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
+      <a href="0007-busca-irrevogavel-hill-climbing.html">Próxima: 0007 — Hill Climbing &rarr;</a>
     </div>
 
   </div>

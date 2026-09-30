@@ -11,22 +11,22 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">intelcomp • Buscas Informadas (Heurísticas) • Lição 0007</div>
-      <h1>Busca Irrevogável (Hill Climbing / Subida de Encosta)</h1>
+      <div class="lesson-meta">Módulo 2 • Lição 0007</div>
+      <h1>Busca Irrevogável (Hill Climbing)</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Busca local míope em espaço de estados, memória constante O(1), ausência de retrocesso e os três vilões clássicos: máximos locais, platôs e cumes.
+        Busca local sem alternativas passadas, memória $O(1)$ e comportamento em máximos locais, platôs e cumes.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../lessons/0006-busca-custo-uniforme-ucs.html">← Lição 0006: UCS</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../lessons/0006-busca-custo-uniforme-ucs.html">← 0006: UCS</a>
+      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">Ficha: Heurísticas</a>
     </div>
 
-    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <!-- TEORIA -->
     <section class="card-theory">
-      <h2>1. Teoria Enxuta: O Modelo Mental do Hill Climbing</h2>
+      <h2>1. Teoria: O Modelo Mental do Hill Climbing</h2>
       <p>
         A <strong>Busca Irrevogável</strong> (popularmente conhecida como <em>Hill Climbing</em> ou <em>Subida de Encosta</em>) opera como alguém tentando escalar uma montanha em meio a uma neblina densa:
       </p>
@@ -112,7 +112,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: O Significado de 'Irrevogável'</h3>
-        <span class="exercise-tag diagnostic">Mecânica de Busca</span>
       </div>
       <div class="question-text">
         Por que o algoritmo Hill Climbing clássico é classificado na literatura como um método de <strong>Busca Irrevogável</strong>?
@@ -138,7 +137,6 @@
     <section class="card-exercise" id="ex2">
       <div class="exercise-header">
         <h3>Exercício 2: Identificação de Falácia — Otimalidade Global</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Considere a afirmação:<br>
@@ -160,7 +158,6 @@
     <section class="card-exercise" id="ex3" data-hint="Lembre-se: o Hill Climbing não guarda árvore, pilha ou fronteira. Ele armazena estritamente o estado corrente!">
       <div class="exercise-header">
         <h3>Exercício 3: Consumo de Memória RAM</h3>
-        <span class="exercise-tag recall">Active Recall / Complexidade</span>
       </div>
       <div class="question-text">
         Qual é a complexidade assintótica de espaço (memória) da Busca Hill Climbing simples?<br>
@@ -177,7 +174,6 @@
     <section class="card-exercise" id="ex4">
       <div class="exercise-header">
         <h3>Exercício 4: O Problema do Platô</h3>
-        <span class="exercise-tag diagnostic">Topologia de Espaço</span>
       </div>
       <div class="question-text">
         O que caracteriza um <strong>Platô (ou Planalto)</strong> no espaço de estados e por que ele paralisa o Hill Climbing clássico?
@@ -203,7 +199,6 @@
     <section class="card-exercise" id="ex5" data-hint="Na Figura 1, o algoritmo sobe de S (h=3) para A (h=6) e depois para B (h=8). Em B, seus vizinhos são menores. Ele para em...">
       <div class="exercise-header">
         <h3>Exercício 5: Rastreamento do Ponto de Parada</h3>
-        <span class="exercise-tag recall">Active Recall de Rastreamento</span>
       </div>
       <div class="question-text">
         No relevo da <strong>Figura 1</strong>, partindo do estado inicial <strong>S</strong>, em qual nó o Hill Climbing encerrará sua execução?<br>
@@ -220,7 +215,6 @@
     <section class="card-exercise" id="ex6">
       <div class="exercise-header">
         <h3>Exercício 6: Mitigação por Reinício Aleatório</h3>
-        <span class="exercise-tag diagnostic">Estratégias Avançadas</span>
       </div>
       <div class="question-text">
         Como a técnica de <strong>Random-Restart Hill Climbing</strong> (Subida de Encosta com Reinício Aleatório) consegue contornar a armadilha dos máximos locais?
@@ -246,7 +240,6 @@
     <section class="card-exercise" id="ex7" data-hint="O nó B é um pico local: melhor que seus vizinhos, mas inferior ao pico supremo G. Esse obstáculo chama-se...">
       <div class="exercise-header">
         <h3>Exercício 7: Identificação do Obstáculo Topográfico</h3>
-        <span class="exercise-tag recall">Classificação de Falha</span>
       </div>
       <div class="question-text">
         Na Figura 1, como se chama formalmente o tipo de obstáculo topográfico representado pelo nó <strong>B</strong> que impediu o algoritmo de atingir a meta G?<br>
@@ -260,12 +253,12 @@
     </section>
 
 
-    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="../lessons/0006-busca-custo-uniforme-ucs.html">← Lição Anterior: 0006 — UCS</a>
-      <a href="../index.html">Voltar ao Painel da Matéria</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
-      <a href="0008-busca-gulosa-greedy.html">Próxima Lição: 0008 — Busca Gulosa &rarr;</a>
+      <a href="../lessons/0006-busca-custo-uniforme-ucs.html">← 0006: UCS</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">Ficha: Heurísticas</a>
+      <a href="0008-busca-gulosa-greedy.html">Próxima: 0008 — Busca Gulosa &rarr;</a>
     </div>
 
   </div>

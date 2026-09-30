@@ -11,22 +11,22 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">intelcomp • Prova Final Unificada • Simulado Completo</div>
-      <h1>Simulado Geral: Exame Completo de Algoritmos de Busca</h1>
+      <div class="lesson-meta">Simulado • Lição 0011</div>
+      <h1>Simulado Geral: Algoritmos de Busca</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Desafio capstone integrando todos os 10 algoritmos em um único grafo complexo ponderado e heurístico. Sem dicas, sem formatos entregues: apenas domínio conceitual rigoroso.
+        12 questões sobre os 10 algoritmos de busca em um grafo com custos e heurísticas.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha: Buscas Cegas</a>
-      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">📄 Ficha: Buscas Heurísticas</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
+      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">Ficha: Heurísticas</a>
     </div>
 
-    <!-- SEÇÃO DO GRAFO MESTRE -->
+    <!-- GRAFO MESTRE -->
     <section class="card-theory">
-      <h2>O Grafo Mestre do Exame (Topologia, Pesos e Heurísticas)</h2>
+      <h2>Grafo de Busca do Simulado</h2>
       <p>
         Todas as 12 questões deste exame referem-se estritamente ao grafo direcionado abaixo.<br>
         • Nó inicial: <strong>S</strong> (raiz).<br>
@@ -124,7 +124,6 @@
     <section class="card-exercise" id="q1">
       <div class="exercise-header">
         <h3>Questão 1: Busca em Largura (BFS) — Solução Retornada</h3>
-        <span class="exercise-tag diagnostic">Módulo 1</span>
       </div>
       <div class="question-text">
         Se executarmos a <strong>Busca em Largura (BFS)</strong> a partir do nó S, qual meta será encontrada primeiro e através de qual caminho?
@@ -140,7 +139,6 @@
     <section class="card-exercise" id="q2">
       <div class="exercise-header">
         <h3>Questão 2: Busca em Profundidade (DFS) — Desempate de Prova</h3>
-        <span class="exercise-tag diagnostic">Módulo 1</span>
       </div>
       <div class="question-text">
         Considerando a convenção de prova clássica de desempate alfabético na visitação da Pilha LIFO, <strong>qual caminho a Busca em Profundidade (DFS) encontrará</strong> no Grafo Mestre?
@@ -156,7 +154,6 @@
     <section class="card-exercise" id="q3">
       <div class="exercise-header">
         <h3>Questão 3: Backtracking no Beco sem Saída</h3>
-        <span class="exercise-tag recall">Módulo 1</span>
       </div>
       <div class="question-text">
         Se o algoritmo de Backtracking explorar o ramo de B e descer até a folha E (que não é meta e não tem sucessores), <strong>qual será o caminho ativo na memória imediatamente após a realização do retrocesso (backtrack)</strong>?
@@ -172,7 +169,6 @@
     <section class="card-exercise" id="q4">
       <div class="exercise-header">
         <h3>Questão 4: DLS com Limite L = 1</h3>
-        <span class="exercise-tag diagnostic">Módulo 1</span>
       </div>
       <div class="question-text">
         Se executarmos o DLS no Grafo Mestre com limite <code>L = 1</code>, qual será a saída exata retornada pela função?
@@ -198,7 +194,6 @@
     <section class="card-exercise" id="q5">
       <div class="exercise-header">
         <h3>Questão 5: Aprofundamento Iterativo (IDS) — Iteração da Solução</h3>
-        <span class="exercise-tag recall">Módulo 1</span>
       </div>
       <div class="question-text">
         O IDS inicia em <code>L = 0</code> (1ª iteração). Em qual número de iteração (1ª, 2ª, 3ª, etc.) o IDS encontrará pela primeira vez uma solução no Grafo Mestre?
@@ -214,7 +209,6 @@
     <section class="card-exercise" id="q6">
       <div class="exercise-header">
         <h3>Questão 6: Busca de Custo Uniforme (UCS) — Custo Ótimo</h3>
-        <span class="exercise-tag recall">Módulo 1</span>
       </div>
       <div class="question-text">
         A Busca de Custo Uniforme (UCS) garante encontrar a rota de menor custo acumulado. <strong>Qual é o valor numérico exato do custo acumulado g da rota ótima encontrada pela UCS</strong> no Grafo Mestre?
@@ -230,7 +224,6 @@
     <section class="card-exercise" id="q7">
       <div class="exercise-header">
         <h3>Questão 7: Trajetória Ótima da UCS</h3>
-        <span class="exercise-tag recall">Módulo 1</span>
       </div>
       <div class="question-text">
         Digite a sequência completa de nós da rota ótima selecionada e retornada pela UCS ao desempilhar a meta da fila de prioridade:
@@ -246,7 +239,6 @@
     <section class="card-exercise" id="q8">
       <div class="exercise-header">
         <h3>Questão 8: A Armadilha da Busca Gulosa (Greedy)</h3>
-        <span class="exercise-tag diagnostic">Módulo 2</span>
       </div>
       <div class="question-text">
         A Busca Gulosa avalia unicamente <code>f(n) = h(n)</code>. Qual caminho ela escolherá a partir de S e <strong>qual será o custo real total</strong> pago por essa decisão?
@@ -272,7 +264,6 @@
     <section class="card-exercise" id="q9">
       <div class="exercise-header">
         <h3>Questão 9: Teste Formal de Admissibilidade Heurística</h3>
-        <span class="exercise-tag diagnostic">Módulo 2</span>
       </div>
       <div class="question-text">
         Analise com rigor matemático a heurística atribuída ao nó <strong>D</strong> (<code>h(D) = 6</code>).<br>
@@ -293,7 +284,6 @@
     <section class="card-exercise" id="q10">
       <div class="exercise-header">
         <h3>Questão 10: Rastreamento da Fila de Prioridades do A*</h3>
-        <span class="exercise-tag recall">Módulo 2</span>
       </div>
       <div class="question-text">
         No Passo 1 do A*, o nó raiz S (com <code>g=0, h=7 &rarr; f=7</code>) é expandido, gerando os nós <strong>A</strong> e <strong>B</strong>.<br><br>
@@ -311,7 +301,6 @@
     <section class="card-exercise" id="q11">
       <div class="exercise-header">
         <h3>Questão 11: Busca Irrevogável (Hill Climbing) — Ponto de Parada</h3>
-        <span class="exercise-tag diagnostic">Módulo 2</span>
       </div>
       <div class="question-text">
         Se o Hill Climbing for formulado para minimizar a heurística <code>h(n)</code> (buscando chegar a <code>h=0</code>) partindo de S:<br>
@@ -340,7 +329,6 @@
     <section class="card-exercise" id="q12">
       <div class="exercise-header">
         <h3>Questão 12: IDA* — Atualização Dinâmica do Limite</h3>
-        <span class="exercise-tag recall">Módulo 2</span>
       </div>
       <div class="question-text">
         No IDA*, a 1ª iteração utiliza como limite de corte <code>limite_0 = f(S) = 0 + 7 = 7</code>.<br>
@@ -359,11 +347,11 @@
     </section>
 
 
-    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="../index.html">← Voltar ao Painel da Matéria</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha: Buscas Cegas</a>
-      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">📄 Ficha: Buscas Heurísticas</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
+      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">Ficha: Heurísticas</a>
     </div>
 
   </div>

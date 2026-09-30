@@ -15,22 +15,22 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">intelcomp • Buscas Não Informadas (Cegas) • Lição 0002</div>
-      <h1>Algoritmo de Busca em Profundidade (DFS)</h1>
+      <div class="lesson-meta">Módulo 1 • Lição 0002</div>
+      <h1>Busca em Profundidade (DFS)</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Mergulho vertical na árvore, fronteira em Pilha LIFO, a enorme economia de memória $O(b \cdot m)$ e a clássica armadilha do desempate alfabético invertido.
+        Mergulho vertical na árvore, fronteira em pilha LIFO, consumo de memória linear $O(b \cdot m)$ e desempate no empilhamento.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../lessons/0001-busca-em-largura-bfs.html">← Lição 0001: BFS</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../lessons/0001-busca-em-largura-bfs.html">← 0001: BFS</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
     </div>
 
-    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <!-- TEORIA -->
     <section class="card-theory">
-      <h2>1. Teoria Enxuta: O Modelo Mental da DFS</h2>
+      <h2>1. Teoria: O Modelo Mental da DFS</h2>
       <p>
         A <strong>Busca em Profundidade</strong> (<em>Depth-First Search — DFS</em>) segue a intuição do <strong>mergulho vertical</strong>: ela avança o mais fundo possível ao longo de cada ramo antes de retroceder (<em>backtracking</em>).
       </p>
@@ -185,11 +185,10 @@
 
     <!-- EXERCÍCIOS PRÁTICOS ORIENTADOS PELO ERRO -->
 
-    <!-- EXERCÍCIO 1: MECÂNICA DA PILHA LIFO -->
+    <!-- EXERCÍCIO 1 -->
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: Invariante da Fronteira na DFS</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Qual característica fundamental da estrutura de <strong>Pilha (LIFO)</strong> força a DFS a mergulhar profundamente em um ramo em vez de explorar os nós do mesmo nível?
@@ -211,11 +210,10 @@
       <div class="feedback-box"></div>
     </section>
 
-    <!-- EXERCÍCIO 2: IDENTIFICAÇÃO DE FALÁCIA (A PEGADINHA DO DESEMPATE) -->
+    <!-- EXERCÍCIO 2 -->
     <section class="card-exercise" id="ex2">
       <div class="exercise-header">
         <h3>Exercício 2: Pegadinha de Prova — Desempate Alfabético no Rastreamento</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Analise o caso a seguir de um exame de IA:<br>
@@ -233,11 +231,10 @@
       <div class="feedback-box"></div>
     </section>
 
-    <!-- EXERCÍCIO 3: ACTIVE RECALL / RASTREAMENTO DE MESA -->
+    <!-- EXERCÍCIO 3 -->
     <section class="card-exercise" id="ex3" data-hint="Lembre-se: B já estava na base da pilha. O nó A é desempilhado e seus filhos C e D são empilhados. Para visitar C antes de D (ordem alfabética), D deve ser empilhado antes de C.">
       <div class="exercise-header">
         <h3>Exercício 3: Rastreamento Ativo da Pilha (LIFO)</h3>
-        <span class="exercise-tag recall">Active Recall / Mesa</span>
       </div>
       <div class="question-text">
         Considere o grafo da <strong>Figura 1</strong>:<br>
@@ -252,11 +249,10 @@
       <div class="feedback-box"></div>
     </section>
 
-    <!-- EXERCÍCIO 4: MEMÓRIA LINEAR VS EXPONENCIAL -->
+    <!-- EXERCÍCIO 4 -->
     <section class="card-exercise" id="ex4">
       <div class="exercise-header">
         <h3>Exercício 4: A Superpotência da Memória da DFS</h3>
-        <span class="exercise-tag diagnostic">Complexidade Assintótica</span>
       </div>
       <div class="question-text">
         Imagine um espaço de busca em árvore com fator de ramificação $b = 10$ e profundidade máxima $m = 10$.<br>
@@ -279,11 +275,10 @@
       <div class="feedback-box"></div>
     </section>
 
-    <!-- EXERCÍCIO 5: COMPLETUDE E CICLOS -->
+    <!-- EXERCÍCIO 5 -->
     <section class="card-exercise" id="ex5">
       <div class="exercise-header">
         <h3>Exercício 5: Condição de Falha e Ciclos</h3>
-        <span class="exercise-tag diagnostic">Completude de Algoritmos</span>
       </div>
       <div class="question-text">
         Considere um grafo com apenas três estados: $S$, $A$ e $G$. Existe uma aresta de $S$ para $A$, uma de $A$ para $S$ (ciclo infinito bidirecional) e uma aresta de $S$ para $G$ (meta).<br><br>
@@ -307,12 +302,12 @@
     </section>
 
 
-    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="../lessons/0001-busca-em-largura-bfs.html">← Lição Anterior: 0001 — BFS</a>
-      <a href="../index.html">Voltar ao Painel da Matéria</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
-      <a href="0003-busca-com-retrocesso-backtracking.html">Próxima Lição: 0003 — Backtracking &rarr;</a>
+      <a href="../lessons/0001-busca-em-largura-bfs.html">← 0001: BFS</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
+      <a href="0003-busca-com-retrocesso-backtracking.html">Próxima: 0003 — Backtracking &rarr;</a>
     </div>
 
   </div>

@@ -11,22 +11,22 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">intelcomp • Buscas Informadas (Heurísticas) • Lição 0009</div>
-      <h1>Algoritmo de Busca A* (A-Star Search)</h1>
+      <div class="lesson-meta">Módulo 2 • Lição 0009</div>
+      <h1>Busca A* (A-Star)</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        A união magistral f(n) = g(n) + h(n), teoremas de admissibilidade e consistência, eficiência ótima e o calcanhar de Aquiles da memória RAM.
+        Avaliação $f(n) = g(n) + h(n)$, teoremas de admissibilidade e consistência, eficiência e consumo de memória.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../lessons/0008-busca-gulosa-greedy.html">← Lição 0008: Busca Gulosa</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../lessons/0008-busca-gulosa-greedy.html">← 0008: Busca Gulosa</a>
+      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">Ficha: Heurísticas</a>
     </div>
 
-    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <!-- TEORIA -->
     <section class="card-theory">
-      <h2>1. Teoria Enxuta: O Modelo Mental do A*</h2>
+      <h2>1. Teoria: O Modelo Mental do A*</h2>
       <p>
         O <strong>Algoritmo A*</strong> é a busca informada mais amplamente utilizada na ciência da computação. Ele equilibra perfeitamente o custo já pago com o custo futuro estimado:
       </p>
@@ -175,7 +175,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: A Composição da Função f(n)</h3>
-        <span class="exercise-tag diagnostic">Conceito Central</span>
       </div>
       <div class="question-text">
         Qual é a interpretação semântica exata da função <code>f(n) = g(n) + h(n)</code> no algoritmo A*?
@@ -201,7 +200,6 @@
     <section class="card-exercise" id="ex2">
       <div class="exercise-header">
         <h3>Exercício 2: Pegadinha de Exame — Admissibilidade vs Consistência</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Analise a proposição:<br>
@@ -223,7 +221,6 @@
     <section class="card-exercise" id="ex3" data-hint="No Passo 1, temos A com g=1, h=4 -> f=5. E B com g=4, h=1 -> f=5. Qual é o valor de f de ambos?">
       <div class="exercise-header">
         <h3>Exercício 3: Cálculo do Valor f(n)</h3>
-        <span class="exercise-tag recall">Active Recall Numérico</span>
       </div>
       <div class="question-text">
         No grafo da Figura 1, considere o nó <strong>B</strong>, que possui custo de aresta a partir de S de <code>c = 4</code> e estimativa heurística <code>h(B) = 1</code>.<br><br>
@@ -240,7 +237,6 @@
     <section class="card-exercise" id="ex4">
       <div class="exercise-header">
         <h3>Exercício 4: O Momento do Teste de Meta no A*</h3>
-        <span class="exercise-tag diagnostic">Mecânica de Algoritmos</span>
       </div>
       <div class="question-text">
         Assim como na UCS, quando é que o A* pode aplicar com segurança o teste de meta para declarar sucesso e retornar o caminho?
@@ -266,7 +262,6 @@
     <section class="card-exercise" id="ex5">
       <div class="exercise-header">
         <h3>Exercício 5: O Gargalo Prático do A*</h3>
-        <span class="exercise-tag diagnostic">Complexidade Assintótica</span>
       </div>
       <div class="question-text">
         Em problemas reais de larga escala (como planejamento robótico complexo), por que o A* clássico frequentemente não consegue ser executado até o fim?
@@ -292,7 +287,6 @@
     <section class="card-exercise" id="ex6" data-hint="A desigualdade triangular estabelece que a estimativa direta h(n) não pode ser maior que o custo do passo até n' mais a estimativa h(n').">
       <div class="exercise-header">
         <h3>Exercício 6: Propriedade da Consistência / Desigualdade Triangular</h3>
-        <span class="exercise-tag recall">Fórmula Formal</span>
       </div>
       <div class="question-text">
         Para uma heurística ser dita <strong>Consistente (Monotônica)</strong>, qual relação matemática deve ser satisfeita para todo nó <code>n</code> e todo sucessor <code>n'</code> gerado por uma ação de custo <code>c(n, a, n')</code>?<br><br>
@@ -310,7 +304,6 @@
     <section class="card-exercise" id="ex7" data-hint="No Passo 4 da tabela, a solução ótima escolhida pelo A* foi S -> B -> G com custo 5.">
       <div class="exercise-header">
         <h3>Exercício 7: Rastreamento da Rota Ótima Encontrada</h3>
-        <span class="exercise-tag recall">Síntese de Rota</span>
       </div>
       <div class="question-text">
         Digite a sequência de nós da rota ótima selecionada e retornada pelo A* no grafo da Figura 1 (separados por vírgula, traço ou espaço):
@@ -323,12 +316,12 @@
     </section>
 
 
-    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="../lessons/0008-busca-gulosa-greedy.html">← Lição Anterior: 0008 — Busca Gulosa</a>
-      <a href="../index.html">Voltar ao Painel da Matéria</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
-      <a href="0010-a-estrela-aprofundamento-iterativo-ida.html">Próxima Lição: 0010 — IDA* &rarr;</a>
+      <a href="../lessons/0008-busca-gulosa-greedy.html">← 0008: Busca Gulosa</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-formulas-e-heuristicas-guia-rapido.html">Ficha: Heurísticas</a>
+      <a href="0010-a-estrela-aprofundamento-iterativo-ida.html">Próxima: 0010 — IDA* &rarr;</a>
     </div>
 
   </div>

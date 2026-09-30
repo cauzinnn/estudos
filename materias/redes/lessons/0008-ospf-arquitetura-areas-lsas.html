@@ -15,16 +15,17 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Redes de Computadores • Módulo 3: Estado de Enlace • Lição 0008</div>
+      <div class="lesson-meta">Módulo 3 • Lição 0008</div>
       <h1>OSPF: Arquitetura em Áreas e Tipos de LSAs</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Escalabilidade em dois níveis, a Área 0 (Backbone), a taxonomia de roteadores (IR, ABR, ASBR) e os 5 tipos fundamentais de anúncios de estado de enlace.
+        Divisão hierárquica em dois níveis, Área 0 (Backbone), papéis de roteadores e tipos de LSAs.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="0007-estado-de-enlace-dijkstra.html">← 0007: Dijkstra</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
     </div>
 
     <!-- BLOCO 1: POR QUE DIVIDIR EM ÁREAS? -->
@@ -49,7 +50,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: Razão de Engenharia da Hierarquia OSPF</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Qual é a principal justificativa técnica para segmentar um Sistema Autônomo executando OSPF em múltiplas Áreas em vez de manter uma única área plana?
@@ -89,7 +89,6 @@
     <section class="card-exercise" id="ex2" data-hint="Abreviação em 3 letras de Area Border Router. Digite 'ABR'.">
       <div class="exercise-header">
         <h3>Exercício 2: O Roteador de Borda de Área</h3>
-        <span class="exercise-tag recall">Active Recall / Prova</span>
       </div>
       <div class="question-text">
         Qual é a sigla oficial (3 letras) utilizada para designar o roteador OSPF que possui interfaces ativas conectadas concomitantemente à Área de Backbone (Área 0) e a uma ou mais áreas não-backbone, sendo o responsável por injetar anúncios sumários entre elas?
@@ -157,7 +156,6 @@
     <section class="card-exercise" id="ex3">
       <div class="exercise-header">
         <h3>Exercício 3: Origem e Propagação de Rotas Externas</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Qual entidade do protocolo OSPF é a <strong>única</strong> responsável por originar os pacotes de anúncio <em>LSA Tipo 5 (AS-External-LSA)</em>?
@@ -200,7 +198,6 @@
     <section class="card-exercise" id="ex4">
       <div class="exercise-header">
         <h3>Exercício 4: A Falácia da Comparação Numérica de Custos</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Avalie a seguinte afirmação sobre o algoritmo de escolha de rotas do OSPF:<br>
@@ -222,7 +219,6 @@
     <section class="card-exercise" id="ex5">
       <div class="exercise-header">
         <h3>Exercício 5: Escopo dos Sumários de Rede (Tipo 3)</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Qual informação exata é propagada através de um anúncio <em>LSA Tipo 3 (Summary-LSA)</em> quando um ABR comunica rotas da Área 1 para dentro da Área 0?
@@ -247,9 +243,10 @@
 
     <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="0007-estado-de-enlace-dijkstra.html">← Lição Anterior: 0007 — Dijkstra SPF</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
-      <a href="0009-ospf-subprotocolos-hello-exchange-dr.html">Próxima Lição: 0009 — Subprotocolos Hello e Exchange &rarr;</a>
+      <a href="0007-estado-de-enlace-dijkstra.html">← 0007: Dijkstra</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
+      <a href="0009-ospf-subprotocolos-hello-exchange-dr.html">Próxima: 0009 — Subprotocolos OSPF &rarr;</a>
     </div>
 
   </div>

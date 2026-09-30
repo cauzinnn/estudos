@@ -15,16 +15,17 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Redes de Computadores • Módulo 2: Vetor de Distância • Lição 0004</div>
-      <h1>Instabilidades em DV: Loops, Bouncing Effect e Contagem ao Infinito</h1>
+      <div class="lesson-meta">Módulo 2 • Lição 0004</div>
+      <h1>Instabilidades em DV: Loops e Contagem ao Infinito</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Por que "más notícias viajam devagar", a formação de dependências circulares fantasmas, o ricochete de pacotes e o trade-off da métrica infinita igual a 16.
+        Formação de dependências circulares, ricochete de pacotes e definição de infinito igual a 16.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="0003-vetor-de-distancia-bellman-ford.html">← 0003: Bellman-Ford</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
     </div>
 
     <!-- BLOCO 1: O NASCIMENTO DE UM LOOP DE DOIS NÓS -->
@@ -54,7 +55,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: Diagnóstico da Dependência Circular</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Qual é a falha conceitual de projeto que permite que o roteador $B$ adote $A$ como próximo salto para alcançar $C$ logo após a queda do enlace direto $B-C$?
@@ -97,7 +97,6 @@
     <section class="card-exercise" id="ex2" data-hint="B anunciou D_B(C) = 3 para A. O enlace entre A e B tem custo 1. Pela regra de Bellman-Ford, A atualiza para custo(A,B) + D_B(C) = 1 + 3. Digite o valor.">
       <div class="exercise-header">
         <h3>Exercício 2: Rastreamento do Passo do Ricochete</h3>
-        <span class="exercise-tag recall">Active Recall / Mesa</span>
       </div>
       <div class="question-text">
         Logo após o roteador $B$ ter atualizado erroneamente seu custo para o destino $C$ como sendo $3$ via $A$, ele transmite essa atualização para $A$ pelo enlace $E_1$ (custo $1$).<br><br>
@@ -128,7 +127,6 @@
     <section class="card-exercise" id="ex3">
       <div class="exercise-header">
         <h3>Exercício 3: A Falácia da Convergência Espontânea</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Avalie a seguinte afirmação sobre a recuperação de falhas em redes particionadas:<br>
@@ -167,7 +165,6 @@
     <section class="card-exercise" id="ex4" data-hint="Infinito é 16. O maior número de saltos que um pacote pode atravessar antes de atingir a métrica infinita é 16 - 1 = 15. Digite o número 15.">
       <div class="exercise-header">
         <h3>Exercício 4: O Diâmetro Máximo de uma Rede RIP</h3>
-        <span class="exercise-tag recall">Active Recall / Prova</span>
       </div>
       <div class="question-text">
         Em decorrência direta da escolha de fixar o infinito em 16 para limitar o tempo de convergência na contagem ao infinito:<br><br>
@@ -199,7 +196,6 @@
     <section class="card-exercise" id="ex5">
       <div class="exercise-header">
         <h3>Exercício 5: Decisão de Arquitetura no Formato do RIP</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Por que o protocolo RIP reserva uma palavra inteira de 32 bits para armazenar a métrica em suas mensagens de anúncio, se os valores úteis de saltos variam unicamente entre 0 e 16?
@@ -224,9 +220,10 @@
 
     <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="0003-vetor-de-distancia-bellman-ford.html">← Lição Anterior: 0003 — Vetor de Distância</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
-      <a href="0005-split-horizon-poison-reverse-timers.html">Próxima Lição: 0005 — Split Horizon e Poison Reverse &rarr;</a>
+      <a href="0003-vetor-de-distancia-bellman-ford.html">← 0003: Bellman-Ford</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
+      <a href="0005-split-horizon-poison-reverse-timers.html">Próxima: 0005 — Split Horizon &rarr;</a>
     </div>
 
   </div>

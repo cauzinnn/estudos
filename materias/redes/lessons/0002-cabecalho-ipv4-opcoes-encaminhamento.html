@@ -15,16 +15,17 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Redes de Computadores • Módulo 1: Camada de Rede • Lição 0002</div>
-      <h1>Cabeçalho IPv4, Fragmentação, Roteamento pela Fonte e ICMP</h1>
+      <div class="lesson-meta">Módulo 1 • Lição 0002</div>
+      <h1>Cabeçalho IPv4, Fragmentação, Opções e ICMP</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Estrutura de 20 a 60 bytes, aritmética de Fragment Offset em blocos de 8 octetos, a armadilha do Slow Path em opções, túneis IP-em-IP e ICMP Redirect.
+        Estrutura de 20 a 60 bytes, aritmética de Fragment Offset em blocos de 8 octetos, opções e ICMP Redirect.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Ficha de Referência: IPv4 e Cabeçalho</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="0001-enderecamento-ipv4-classes-cidr.html">← 0001: IPv4</a>
+      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">Ficha: IPv4 e Cabeçalho</a>
     </div>
 
     <!-- BLOCO 1: O CABEÇALHO IPV4 E O CAMPO IHL -->
@@ -44,7 +45,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: Interpretação de Campos do Cabeçalho IPv4</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Ao capturar um datagrama IPv4 bruto em uma interface, o analisador de protocolos revelou que o primeiro byte do pacote tinha o valor hexadecimal <code>0x45</code>. Qual é a interpretação técnica precisa desse byte inicial?
@@ -86,7 +86,6 @@
     <section class="card-exercise" id="ex2" data-hint="Datagrama total = 3000 bytes (20 bytes cabeçalho + 2980 bytes dados). Enlace com MTU = 1500 bytes pode transportar no máximo 1500 - 20 = 1480 bytes de dados por fragmento. 1480 é múltiplo de 8. O offset do 2º fragmento é 1480 / 8. Digite o número inteiro resultante.">
       <div class="exercise-header">
         <h3>Exercício 2: Cálculo Numérico de Fragment Offset</h3>
-        <span class="exercise-tag recall">Active Recall / Prova</span>
       </div>
       <div class="question-text">
         Um datagrama IPv4 de <strong>3.000 bytes</strong> (20 bytes de cabeçalho + 2.980 bytes de dados) chega a um roteador que precisa encaminhá-lo por um enlace Ethernet cuja <strong>MTU é de 1.500 bytes</strong>.<br><br>
@@ -118,7 +117,6 @@
     <section class="card-exercise" id="ex3">
       <div class="exercise-header">
         <h3>Exercício 3: Arquitetura de Roteadores — A Falácia do Desempenho</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Avalie a seguinte afirmação sobre a engenharia de tráfego na Internet:<br>
@@ -160,7 +158,6 @@
     <section class="card-exercise" id="ex4">
       <div class="exercise-header">
         <h3>Exercício 4: Limitações Estruturais do IP-em-IP</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Por que a técnica de encapsulamento IP dentro de IP (túnel IP) <strong>NÃO</strong> é capaz de implementar a semântica da opção <em>Strict Source Routing</em> (SSR)?
@@ -186,7 +183,6 @@
     <section class="card-exercise" id="ex5" data-hint="Espaço máximo de opções = 40 bytes. 3 bytes são consumidos pelo cabeçalho da opção (Option Type, Length, Pointer). Restam 37 bytes livres. Cada endereço IPv4 consome 4 bytes. Calcule a divisão inteira 37 / 4.">
       <div class="exercise-header">
         <h3>Exercício 5: Limite Físico de Saltos no Loose/Strict Source Routing</h3>
-        <span class="exercise-tag recall">Active Recall / Prova</span>
       </div>
       <div class="question-text">
         O cabeçalho IPv4 pode ter no máximo 60 bytes, dos quais 20 bytes compõem o cabeçalho base obrigatório, restando no máximo 40 bytes para o campo de opções.<br><br>
@@ -222,7 +218,6 @@
     <section class="card-exercise" id="ex6">
       <div class="exercise-header">
         <h3>Exercício 6: Mecânica de Disparo do ICMP Redirect</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Qual evento topológico e de comutação no plano de dados força um roteador $R_A$ a emitir uma mensagem ICMP Redirect para um computador na rede local?
@@ -247,9 +242,10 @@
 
     <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="0001-enderecamento-ipv4-classes-cidr.html">← Lição Anterior: 0001 — IPv4 e CIDR</a>
-      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Consultar Ficha de Referência</a>
-      <a href="0003-vetor-de-distancia-bellman-ford.html">Próxima Lição: 0003 — Vetor de Distância &rarr;</a>
+      <a href="0001-enderecamento-ipv4-classes-cidr.html">← 0001: IPv4</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">Ficha: IPv4 e Cabeçalho</a>
+      <a href="0003-vetor-de-distancia-bellman-ford.html">Próxima: 0003 — Vetor de Distância &rarr;</a>
     </div>
 
   </div>

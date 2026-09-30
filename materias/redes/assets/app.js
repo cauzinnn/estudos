@@ -73,11 +73,12 @@ function initMultipleChoice(containerId, conceptName) {
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
       const isCorrect = btn.dataset.correct === "true";
-      const feedback = btn.dataset.feedback || (isCorrect ? "Correto! Raciocínio perfeito." : "Incorreto. Tente novamente.");
+      const rawFeedback = btn.dataset.feedback || (isCorrect ? "Resposta correta." : "Resposta incorreta.");
+      const cleanFeedback = rawFeedback.replace(/^(Brilhante!|Exato!|Correto!|Atenção:|Cuidado:|Incorreto:)\s*/i, "");
 
       if (feedbackBox) {
         feedbackBox.className = "feedback-box show " + (isCorrect ? "success" : "error");
-        feedbackBox.innerHTML = (isCorrect ? "<strong>Correto! </strong>" : "<strong>Diagnóstico do Erro: </strong>") + feedback;
+        feedbackBox.innerHTML = (isCorrect ? "<strong>Correto: </strong>" : "<strong>Incorreto: </strong>") + cleanFeedback;
 
         if (window.renderMathInElement) {
           window.renderMathInElement(feedbackBox, {
@@ -222,12 +223,12 @@ function initInputExercise(containerId, validAnswers, conceptName, customValidat
       feedbackBox.className = "feedback-box show " + (isCorrect ? "success" : "error");
 
       if (isCorrect) {
-        feedbackBox.innerHTML = "<strong>Exato!</strong> Resposta verificada e correta.";
+        feedbackBox.innerHTML = "<strong>Correto:</strong> Resposta confirmada.";
         if (button) button.disabled = true;
         if (input) input.disabled = true;
       } else {
-        const hint = container.dataset.hint || "Revise o passo a passo da regra e tente novamente.";
-        feedbackBox.innerHTML = `<strong>Ainda não:</strong> A resposta (<code>${rawVal || "vazio"}</code>) não condiz com o rastreamento esperado. <em>Dica: ${hint}</em>`;
+        const hint = container.dataset.hint;
+        feedbackBox.innerHTML = `<strong>Incorreto:</strong> A resposta (<code>${rawVal || "vazio"}</code>) está incorreta.${hint ? ` <em>Dica: ${hint}</em>` : ""}`;
       }
 
       if (window.renderMathInElement) {
@@ -262,11 +263,13 @@ function initTrueFalse(containerId, isTrueCorrect, conceptName, trueFeedback, fa
 
   function evaluate(chosenTrue, clickedBtn, otherBtn) {
     const isCorrect = (chosenTrue === isTrueCorrect);
-    const feedback = chosenTrue ? trueFeedback : falseFeedback;
+    const rawFeedback = chosenTrue ? trueFeedback : falseFeedback;
+    const cleanFeedback = (rawFeedback || "")
+      .replace(/^(Brilhante!|Exato!|Correto!|Atenção à falácia:|Atenção:|Cuidado:|Incorreto:)\s*/i, "");
 
     if (feedbackBox) {
       feedbackBox.className = "feedback-box show " + (isCorrect ? "success" : "error");
-      feedbackBox.innerHTML = (isCorrect ? "<strong>Exato! </strong>" : "<strong>Atenção à falácia: </strong>") + feedback;
+      feedbackBox.innerHTML = (isCorrect ? "<strong>Correto: </strong>" : "<strong>Incorreto: </strong>") + cleanFeedback;
 
       if (window.renderMathInElement) {
         window.renderMathInElement(feedbackBox, {
@@ -324,25 +327,25 @@ const ThemeManager = {
     { id: "space", name: "🚀 Tech Sans (Space Grotesk)" }
   ],
   weights: [
-    { id: "light", name: "🪶 Peso: Light (300)" },
-    { id: "extra-light", name: "✨ Peso: Extra-Light (200)" },
-    { id: "regular", name: "📝 Peso: Regular (400)" },
-    { id: "medium", name: "💪 Peso: Médio (500)" }
+    { id: "light", name: "Light (300)" },
+    { id: "extra-light", name: "Extra-Light (200)" },
+    { id: "regular", name: "Regular (400)" },
+    { id: "medium", name: "Médio (500)" }
   ],
   sizes: [
-    { id: "13px", name: "A 13px (Micro)" },
-    { id: "14px", name: "A 14px (Pequeno)" },
-    { id: "15px", name: "A 15px (Leitura)" },
-    { id: "normal", name: "A 15.5px (Padrão)" },
-    { id: "16.5px", name: "A 16.5px (Médio)" },
-    { id: "17.5px", name: "A 17.5px (Conforto)" },
-    { id: "19px", name: "A 19px (Grande)" },
-    { id: "21px", name: "A 21px (Extra)" }
+    { id: "13px", name: "13px" },
+    { id: "14px", name: "14px" },
+    { id: "15px", name: "15px" },
+    { id: "normal", name: "15.5px (Padrão)" },
+    { id: "16.5px", name: "16.5px" },
+    { id: "17.5px", name: "17.5px" },
+    { id: "19px", name: "19px" },
+    { id: "21px", name: "21px" }
   ],
   densities: [
-    { id: "normal", name: "📏 Espaçamento: Normal" },
-    { id: "compact", name: "📐 Espaçamento: Compacto" },
-    { id: "relaxed", name: "🛋️ Espaçamento: Amplo" }
+    { id: "compact", name: "Compacto" },
+    { id: "normal", name: "Normal" },
+    { id: "relaxed", name: "Amplo" }
   ],
 
   init() {
@@ -399,12 +402,24 @@ const ThemeManager = {
   mountSwitcher() {
     const container = document.querySelector(".container");
     if (!container) return;
+    if (document.getElementById("theme-toggle-btn")) return;
 
-    if (document.getElementById("theme-control-panel")) return;
+    const topBar = document.createElement("div");
+    topBar.className = "top-nav-bar";
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "theme-switcher-wrapper";
+
+    const toggleBtn = document.createElement("button");
+    toggleBtn.id = "theme-toggle-btn";
+    toggleBtn.className = "theme-toggle-btn";
+    toggleBtn.type = "button";
+    toggleBtn.title = "Aparência";
+    toggleBtn.innerHTML = `⚙ Aparência`;
 
     const panel = document.createElement("div");
-    panel.id = "theme-control-panel";
-    panel.className = "theme-panel-bar";
+    panel.id = "theme-settings-modal";
+    panel.className = "theme-settings-panel";
 
     const currentTheme = localStorage.getItem("intelcomp_theme") || "tufte";
     const currentFont = localStorage.getItem("intelcomp_font") || "clean";
@@ -413,24 +428,67 @@ const ThemeManager = {
     const currentDensity = localStorage.getItem("intelcomp_density") || "normal";
 
     panel.innerHTML = `
-      <select id="theme-selector-input" class="theme-pill-select" title="Trocar Tema Visual">
-        ${this.themes.map(t => `<option value="${t.id}" ${t.id === currentTheme ? 'selected' : ''}>${t.name}</option>`).join("")}
-      </select>
-      <select id="font-selector-input" class="theme-pill-select" title="Trocar Família Tipográfica">
-        ${this.fonts.map(f => `<option value="${f.id}" ${f.id === currentFont ? 'selected' : ''}>${f.name}</option>`).join("")}
-      </select>
-      <select id="weight-selector-input" class="theme-pill-select" title="Trocar Peso da Fonte (Espessura)">
-        ${this.weights.map(w => `<option value="${w.id}" ${w.id === currentWeight ? 'selected' : ''}>${w.name}</option>`).join("")}
-      </select>
-      <select id="size-selector-input" class="theme-pill-select" title="Ajustar Tamanho da Fonte">
-        ${this.sizes.map(s => `<option value="${s.id}" ${s.id === currentSize ? 'selected' : ''}>${s.name}</option>`).join("")}
-      </select>
-      <select id="density-selector-input" class="theme-pill-select" title="Ajustar Espaçamento e Densidade">
-        ${this.densities.map(d => `<option value="${d.id}" ${d.id === currentDensity ? 'selected' : ''}>${d.name}</option>`).join("")}
-      </select>
+      <div class="theme-panel-header">
+        <strong>Aparência</strong>
+        <button id="theme-close-btn" class="theme-panel-close" title="Fechar">&times;</button>
+      </div>
+      <div class="theme-panel-row">
+        <label for="theme-selector-input">Tema</label>
+        <select id="theme-selector-input" class="theme-pill-select">
+          ${this.themes.map(t => `<option value="${t.id}" ${t.id === currentTheme ? 'selected' : ''}>${t.name}</option>`).join("")}
+        </select>
+      </div>
+      <div class="theme-panel-row">
+        <label for="font-selector-input">Fonte</label>
+        <select id="font-selector-input" class="theme-pill-select">
+          ${this.fonts.map(f => `<option value="${f.id}" ${f.id === currentFont ? 'selected' : ''}>${f.name}</option>`).join("")}
+        </select>
+      </div>
+      <div class="theme-panel-row">
+        <label for="weight-selector-input">Peso</label>
+        <select id="weight-selector-input" class="theme-pill-select">
+          ${this.weights.map(w => `<option value="${w.id}" ${w.id === currentWeight ? 'selected' : ''}>${w.name}</option>`).join("")}
+        </select>
+      </div>
+      <div class="theme-panel-row">
+        <label for="size-selector-input">Tamanho</label>
+        <select id="size-selector-input" class="theme-pill-select">
+          ${this.sizes.map(s => `<option value="${s.id}" ${s.id === currentSize ? 'selected' : ''}>${s.name}</option>`).join("")}
+        </select>
+      </div>
+      <div class="theme-panel-row">
+        <label for="density-selector-input">Espaçamento</label>
+        <select id="density-selector-input" class="theme-pill-select">
+          ${this.densities.map(d => `<option value="${d.id}" ${d.id === currentDensity ? 'selected' : ''}>${d.name}</option>`).join("")}
+        </select>
+      </div>
     `;
 
-    container.insertBefore(panel, container.firstChild);
+    wrapper.appendChild(toggleBtn);
+    wrapper.appendChild(panel);
+    topBar.appendChild(wrapper);
+    container.insertBefore(topBar, container.firstChild);
+
+    toggleBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      panel.classList.toggle("show");
+    });
+
+    panel.querySelector("#theme-close-btn")?.addEventListener("click", () => {
+      panel.classList.remove("show");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!wrapper.contains(e.target)) {
+        panel.classList.remove("show");
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && panel.classList.contains("show")) {
+        panel.classList.remove("show");
+      }
+    });
 
     panel.querySelector("#theme-selector-input")?.addEventListener("change", (e) => this.applyTheme(e.target.value));
     panel.querySelector("#font-selector-input")?.addEventListener("change", (e) => this.applyFont(e.target.value));
@@ -447,8 +505,8 @@ const PinnedGraph = {
 
     const btn = document.createElement("button");
     btn.className = "pinned-graph-btn";
-    btn.innerHTML = `🗺️ Ver Grafo`;
-    btn.title = "Visualizar o grafo de rastreamento da lição";
+    btn.innerHTML = `Ver Grafo`;
+    btn.title = "Visualizar o grafo de busca da lição";
     document.body.appendChild(btn);
 
     const modal = document.createElement("div");
@@ -456,7 +514,7 @@ const PinnedGraph = {
     modal.innerHTML = `
       <div class="pinned-graph-box">
         <div class="pinned-graph-header">
-          <strong style="color:var(--text-heading); font-size:1rem;">Grafo de Busca da Lição</strong>
+          <strong style="color:var(--text-heading); font-size:0.95rem;">Grafo de Busca</strong>
           <button class="pinned-graph-close" title="Fechar">&times;</button>
         </div>
         <div class="pinned-graph-body">

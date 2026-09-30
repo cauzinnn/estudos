@@ -15,16 +15,17 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Redes de Computadores • Módulo 2: Vetor de Distância • Lição 0003</div>
+      <div class="lesson-meta">Módulo 2 • Lição 0003</div>
       <h1>Vetor de Distância e Algoritmo de Bellman-Ford</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Filosofia distribuída de "diga aos vizinhos o que você sabe sobre todo o mundo", a equação fundamental de Bellman-Ford, rastreamento de convergência e a regra mandatária de atualização.
+        Filosofia distribuída de Vetor de Distância, equação fundamental de Bellman-Ford e atualização de rotas.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="0002-cabecalho-ipv4-opcoes-encaminhamento.html">← 0002: Cabeçalho</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
     </div>
 
     <!-- BLOCO 1: FILOSOFIA DISTRIBUÍDA E A EQUAÇÃO DE BELLMAN-FORD -->
@@ -48,7 +49,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: O Modelo Mental do Roteador em Bellman-Ford</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Qual é a extensão real do conhecimento topológico que um roteador possui ao operar estritamente sob o algoritmo de Vetor de Distância clássico?
@@ -132,7 +132,6 @@
     <section class="card-exercise" id="ex2" data-hint="Ao ligar a rede, cada nó tem distância zero para si e infinito para os outros. Quando A envia seu vetor (A=0), B soma o custo do enlace E1 (1) e atualiza sua rota para A: custo 1.">
       <div class="exercise-header">
         <h3>Exercício 2: Rastreamento da Primeira Atualização</h3>
-        <span class="exercise-tag recall">Active Recall / Mesa</span>
       </div>
       <div class="question-text">
         A rede acabou de ser ligada. O roteador <strong>A</strong> envia seu primeiro vetor de distância contendo <code>(A=0)</code> para seus vizinhos diretos <strong>B</strong> e <strong>D</strong>.<br><br>
@@ -171,7 +170,6 @@
     <section class="card-exercise" id="ex3" data-hint="O caminho de menor custo de C até D sai de C, passa por B (custo 1) e de B vai para D (custo 1). Some os custos dos enlaces.">
       <div class="exercise-header">
         <h3>Exercício 3: Métrica de Caminho Mínimo Convergido</h3>
-        <span class="exercise-tag recall">Active Recall / Prova</span>
       </div>
       <div class="question-text">
         Após a convergência completa do algoritmo de Bellman-Ford na topologia da Figura 1, <strong>qual é o custo total mínimo registrado na tabela de C para alcançar o nó D?</strong> (Digite apenas o número inteiro).
@@ -204,7 +202,6 @@
     <section class="card-exercise" id="ex4">
       <div class="exercise-header">
         <h3>Exercício 4: A Falácia da Rejeição de Métricas Piores</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Considere a seguinte afirmação teórica:<br>
@@ -226,7 +223,6 @@
     <section class="card-exercise" id="ex5">
       <div class="exercise-header">
         <h3>Exercício 5: Rota de E para C na Topologia</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Na Figura 1, por que o roteador <strong>E</strong> escolhe enviar pacotes destinados a <strong>C</strong> através do roteador <strong>D</strong> (percorrendo 3 saltos) em vez de utilizar o enlace direto $E_6$ conectado diretamente a C?
@@ -251,9 +247,10 @@
 
     <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="0002-cabecalho-ipv4-opcoes-encaminhamento.html">← Lição Anterior: 0002 — Cabeçalho e Opções</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
-      <a href="0004-loops-bouncing-contagem-ao-infinito.html">Próxima Lição: 0004 — Loops e Contagem ao Infinito &rarr;</a>
+      <a href="0002-cabecalho-ipv4-opcoes-encaminhamento.html">← 0002: Cabeçalho</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
+      <a href="0004-loops-bouncing-contagem-ao-infinito.html">Próxima: 0004 — Loops e Contagem ao Infinito &rarr;</a>
     </div>
 
   </div>

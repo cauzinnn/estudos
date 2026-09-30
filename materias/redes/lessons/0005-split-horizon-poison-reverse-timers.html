@@ -15,16 +15,17 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Redes de Computadores • Módulo 2: Vetor de Distância • Lição 0005</div>
+      <div class="lesson-meta">Módulo 2 • Lição 0005</div>
       <h1>Mitigação de Loops: Split Horizon, Poison Reverse e Timers</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Mecanismos de contenção de instabilidades: omissão de rotas no Split Horizon, envenenamento reverso com métrica 16, a vulnerabilidade fatal a loops de 3 nós e os temporizadores do RIP.
+        Omissão de rotas, envenenamento reverso com métrica 16, comportamento em loops de 3 nós e temporizadores do RIP.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="0004-loops-bouncing-contagem-ao-infinito.html">← 0004: Instabilidades</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
     </div>
 
     <!-- BLOCO 1: SPLIT HORIZON SIMPLES -->
@@ -45,7 +46,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: Regra Operacional do Split Horizon Simples</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Em que consiste a implementação padrão da regra do <em>Split Horizon</em> simples em um roteador executando Vetor de Distância?
@@ -86,7 +86,6 @@
     <section class="card-exercise" id="ex2">
       <div class="exercise-header">
         <h3>Exercício 2: A Falácia da Economia de Tráfego</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Analise a seguinte afirmação sobre otimização de protocolo:<br>
@@ -122,7 +121,6 @@
     <section class="card-exercise" id="ex3">
       <div class="exercise-header">
         <h3>Exercício 3: Limitações Estruturais do Split Horizon</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Por que o mecanismo de <em>Split Horizon</em> (mesmo com Poison Reverse) é matematicamente incapaz de prevenir a ocorrência de loops de roteamento que envolvam 3 ou mais roteadores (ex: ciclo $A \to B \to C \to A$)?
@@ -163,7 +161,6 @@
     <section class="card-exercise" id="ex4" data-hint="Termo em inglês 'Triggered Updates' ou em português 'Atualizações Disparadas'. Digite 'Triggered Updates' ou 'Atualizações Disparadas'.">
       <div class="exercise-header">
         <h3>Exercício 4: Mecanismo de Anúncio Imediato</h3>
-        <span class="exercise-tag recall">Active Recall / Conceito</span>
       </div>
       <div class="question-text">
         Qual é a denominação técnica do mecanismo de aceleração de convergência no qual um roteador transmite imediatamente uma mensagem de atualização logo após detectar a alteração de custo de uma rota, rompendo o ciclo de espera do temporizador periódico de 30 segundos?
@@ -192,7 +189,6 @@
     <section class="card-exercise" id="ex5">
       <div class="exercise-header">
         <h3>Exercício 5: Rastreamento do Ciclo de Expiração de Rotas</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Se um roteador RIP deixa repentinamente de receber anúncios periódicos referentes a uma determinada rede remota, qual evento ocorrerá exatamente após o transcurso de <strong>180 segundos</strong> de silêncio?
@@ -217,9 +213,10 @@
 
     <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="0004-loops-bouncing-contagem-ao-infinito.html">← Lição Anterior: 0004 — Loops e Bouncing</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
-      <a href="0006-protocolo-rip-v1-v2-ripng.html">Próxima Lição: 0006 — Protocolo RIP &rarr;</a>
+      <a href="0004-loops-bouncing-contagem-ao-infinito.html">← 0004: Instabilidades</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
+      <a href="0006-protocolo-rip-v1-v2-ripng.html">Próxima: 0006 — Protocolo RIP &rarr;</a>
     </div>
 
   </div>

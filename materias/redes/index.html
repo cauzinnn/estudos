@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redes de Computadores — Trilha Ativa de Roteamento Unicast</title>
+  <title>Redes de Computadores — Roteamento Unicast</title>
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -15,59 +15,42 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Ambiente de Aprendizagem Ativa e Orientada pelo Erro • Ciência da Computação</div>
-      <h1>Redes de Computadores: Roteamento Unicast</h1>
+      <h1>Redes de Computadores</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Trilha interativa completa baseada nas aulas e listas do Prof. Luís Henrique M. K. Costa (UFRJ / COPPE / GTA): teoria condensada (&lt; 2 min), diagnósticos de erro em tempo real, rastreamento de mesa e exames integrados.
+        Camada de rede e protocolos de roteamento unicast.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../../index.html">← Portal Principal de Estudos</a>
-      <a href="reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Ficha 0001: IPv4 e Cabeçalho</a>
-      <a href="reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha 0002: Algoritmos de Roteamento</a>
+      <a href="../../index.html">← Estudos</a>
+      <a href="reference/0001-enderecamento-ipv4-e-cabecalho.html">Ficha: IPv4 e Cabeçalho</a>
+      <a href="reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
     </div>
-
-    <!-- METODOLOGIA -->
-    <section class="card-theory">
-      <h2>Metodologia de Aprendizagem Ativa</h2>
-      <p>
-        O aprendizado duradouro e à prova de pegadinhas de exame fundamenta-se na <strong>dificuldade desejável</strong> e na <strong>recuperação ativa com diagnóstico de erros</strong>:
-      </p>
-      <ul>
-        <li><strong>Teoria Granular:</strong> Cada conceito teórico é explicado em blocos enxutos e seguido imediatamente por um exercício prático.</li>
-        <li><strong>Diagnóstico Cirúrgico no Erro:</strong> Sem questões estáticas sem feedback; cada distrator identifica a falácia conceitual exata cometida pelo aluno.</li>
-        <li><strong>Rastreamento de Mesa de Prova:</strong> Exercícios de mesa para Bellman-Ford, convergência com falhas, bouncing effect, Dijkstra SPF e cálculo de adjacências OSPF.</li>
-      </ul>
-    </section>
 
     <!-- MÓDULO 1: ARQUITETURA IPV4, CLASSES E CABEÇALHO -->
     <section class="card-exercise">
       <div class="exercise-header">
         <h2>Módulo 1: Camada de Rede, Endereçamento IPv4 e Encaminhamento</h2>
-        <span class="exercise-tag">2 Lições</span>
       </div>
       <div class="options-list">
         <a href="lessons/0001-enderecamento-ipv4-classes-cidr.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+            <div style="margin-bottom: 0.25rem;">
               <strong style="color: var(--accent);">Lição 0001: Endereçamento IPv4, Classes e CIDR/VLSM</strong>
-              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Estrutura de 32 bits, classes A a E, cálculo de sub-redes ($2^h - 2$), a armadilha do prefixo com bits variáveis em 1 e parsing de interfaces <code>ifconfig</code>.
+              Estrutura de 32 bits, classes A a E, cálculo de sub-redes ($2^h - 2$) e interfaces de rede.
             </small>
           </div>
         </a>
 
         <a href="lessons/0002-cabecalho-ipv4-opcoes-encaminhamento.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-              <strong style="color: var(--accent);">Lição 0002: Cabeçalho IPv4, Fragmentação, Roteamento pela Fonte e ICMP</strong>
-              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0002: Cabeçalho IPv4, Fragmentação, Opções e ICMP</strong>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Campos do cabeçalho, cálculo do Fragment Offset em blocos de 8 octetos, Fast Path vs Slow Path, Loose/Strict Source Routing vs IP-in-IP e ICMP Redirect.
+              Campos do cabeçalho, Fragment Offset em blocos de 8 octetos, Source Routing e ICMP Redirect.
             </small>
           </div>
         </a>
@@ -78,53 +61,48 @@
     <section class="card-exercise">
       <div class="exercise-header">
         <h2>Módulo 2: Roteamento por Vetor de Distância (DV) e Protocolo RIP</h2>
-        <span class="exercise-tag">4 Lições</span>
       </div>
       <div class="options-list">
         <a href="lessons/0003-vetor-de-distancia-bellman-ford.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+            <div style="margin-bottom: 0.25rem;">
               <strong style="color: var(--accent);">Lição 0003: Vetor de Distância e Algoritmo de Bellman-Ford</strong>
-              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Filosofia distribuída de fofoca, a Equação de Bellman-Ford, tabelas de roteamento locais e a regra mandatória de atualização de métricas piores.
+              Equação de Bellman-Ford, tabelas de roteamento locais e atualização periódica por vizinhança.
             </small>
           </div>
         </a>
 
         <a href="lessons/0004-loops-bouncing-contagem-ao-infinito.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-              <strong style="color: var(--accent);">Lição 0004: Instabilidades em DV: Loops, Bouncing Effect e Contagem ao Infinito</strong>
-              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0004: Instabilidades em DV: Loops e Contagem ao Infinito</strong>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Por que más notícias viajam devagar, formação de loops de 2 nós, efeito ricochete, particionamento de redes e a solução do infinito igual a 16.
+              Loops de 2 nós, efeito ricochete e a definição de infinito igual a 16 no RIP.
             </small>
           </div>
         </a>
 
         <a href="lessons/0005-split-horizon-poison-reverse-timers.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+            <div style="margin-bottom: 0.25rem;">
               <strong style="color: var(--accent);">Lição 0005: Mitigação de Loops: Split Horizon, Poison Reverse e Timers</strong>
-              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Omissão no Split Horizon, envenenamento reverso com métrica 16, a falha fatal em ciclos de 3 nós, Triggered Updates e os 3 temporizadores do RIP.
+              Split Horizon com Poison Reverse, comportamento em ciclos de 3 nós e temporizadores do RIP.
             </small>
           </div>
         </a>
 
         <a href="lessons/0006-protocolo-rip-v1-v2-ripng.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-              <strong style="color: var(--accent);">Lição 0006: Protocolo RIP: RIPv1, RIPv2, RIPng e Operação Prática</strong>
-              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0006: Protocolo RIP: RIPv1, RIPv2 e RIPng</strong>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Da limitação classful em broadcast para multicast 224.0.0.9, o campo Next Hop de 32 bits, mensagens Request e RIPng para IPv6 na porta UDP 521.
+              Diferenças entre versões, suporte a máscaras de sub-rede, multicast e operação em IPv6.
             </small>
           </div>
         </a>
@@ -135,53 +113,48 @@
     <section class="card-exercise">
       <div class="exercise-header">
         <h2>Módulo 3: Roteamento por Estado de Enlace (LS) e Protocolo OSPF</h2>
-        <span class="exercise-tag">4 Lições</span>
       </div>
       <div class="options-list">
         <a href="lessons/0007-estado-de-enlace-dijkstra.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-              <strong style="color: var(--accent);">Lição 0007: Estado de Enlace e o Algoritmo SPF de Dijkstra</strong>
-              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0007: Estado de Enlace e Algoritmo SPF de Dijkstra</strong>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Filosofia LS e base topológica unificada (LSDB), rastreamento formal dos conjuntos C, O e R no grafo UFRJ, derivação da FIB e complexidade $O(M \log M)$.
+              Base topológica unificada (LSDB), rastreamento de conjuntos de Dijkstra e derivação da FIB.
             </small>
           </div>
         </a>
 
         <a href="lessons/0008-ospf-arquitetura-areas-lsas.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+            <div style="margin-bottom: 0.25rem;">
               <strong style="color: var(--accent);">Lição 0008: OSPF: Arquitetura em Áreas e Tipos de LSAs</strong>
-              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Hierarquia de 2 níveis, Área 0 (Backbone), papéis de roteadores (IR, ABR, ASBR), os 5 tipos de LSAs e a precedência absoluta de tipos de rotas.
+              Área 0 Backbone, papéis de roteadores (IR, ABR, ASBR) e tipos de LSAs.
             </small>
           </div>
         </a>
 
         <a href="lessons/0009-ospf-subprotocolos-hello-exchange-dr.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+            <div style="margin-bottom: 0.25rem;">
               <strong style="color: var(--accent);">Lição 0009: OSPF: Subprotocolos Hello, Exchange e Roteador Designado (DR)</strong>
-              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Formação de adjacências via Hello, redução de adjacências de $N(N-1)/2$ para $N$ pelo DR/BDR, multicast 224.0.0.5/6 e sincronização cirúrgica com DBDs.
+              Adjacências via Hello, redução de complexidade por DR/BDR e sincronização de base.
             </small>
           </div>
         </a>
 
         <a href="lessons/0010-ecmp-e-comparativo-rip-ospf.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-              <strong style="color: var(--accent);">Lição 0010: ECMP (Equal-Cost Multi-Path) e Comparativo RIP vs OSPF</strong>
-              <span class="exercise-tag" style="background-color: var(--success-bg); color: #7ee787;">Disponível</span>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0010: ECMP e Comparativo RIP vs OSPF</strong>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Balanceamento de carga em múltiplos caminhos, preservação de ordenação TCP via hash de 5-tupla e a matriz de decisão completa RIP x OSPF.
+              Balanceamento por múltiplos caminhos, consistência de fluxo TCP e critérios de escolha de protocolo.
             </small>
           </div>
         </a>
@@ -191,18 +164,16 @@
     <!-- MÓDULO ESPECIAL: PROVA FINAL UNIFICADA -->
     <section class="card-exercise">
       <div class="exercise-header">
-        <h2>Módulo Especial: Prova Final Unificada</h2>
-        <span class="exercise-tag" style="background-color: rgba(210, 153, 34, 0.2); color: #d29922;">Exame Capstone</span>
+        <h2>Simulado Geral</h2>
       </div>
       <div class="options-list">
-        <a href="lessons/0011-simulado-geral-exame-completo.html" class="option-btn" style="text-decoration: none; border-color: rgba(210, 153, 34, 0.4);">
+        <a href="lessons/0011-simulado-geral-exame-completo.html" class="option-btn" style="text-decoration: none;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-              <strong style="color: #f0883e;">Lição 0011: Simulado Geral: Exame Completo de Roteamento Unicast</strong>
-              <span class="exercise-tag" style="background-color: var(--warning-bg); color: #d29922;">12 Questões Integradas</span>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Simulado 0011: Exame Completo de Roteamento Unicast</strong>
             </div>
             <small style="color: var(--text-muted); display: block;">
-              Exame integrador definitivo cobrindo todos os módulos: cálculo de sub-redes, fragmentação, bouncing effect, Dijkstra SPF, DR/BDR, OSPF e ECMP sobre uma topologia mestre.
+              Questões integradas cobrindo sub-redes, fragmentação, Bellman-Ford, Dijkstra e OSPF.
             </small>
           </div>
         </a>
@@ -222,40 +193,36 @@
       </div>
     </section>
 
-    <!-- MATERIAIS DE APOIO, SLIDES E GABARITOS -->
+    <!-- MATERIAIS DE APOIO -->
     <section class="card-exercise">
       <div class="exercise-header">
-        <h2>Apostilas, Gabaritos UFRJ e Referências Estruturadas</h2>
-        <span class="exercise-tag">Material Fonte</span>
+        <h2>Materiais de Apoio</h2>
       </div>
       <div class="options-list">
         <a href="materials/Parte1-roteamento-introducao-2021-1P.pdf" target="_blank" class="option-btn">
-          <div><strong>📄 Slides Parte 1: Introdução ao Roteamento Unicast</strong> — IPv4, endereçamento e opções (79 páginas)</div>
+          <div><strong>Slides Parte 1: Introdução ao Roteamento Unicast</strong> — IPv4, endereçamento e opções</div>
         </a>
         <a href="materials/Parte2-roteamento-unicast-dv-2021-1P.pdf" target="_blank" class="option-btn">
-          <div><strong>📄 Slides Parte 2: Roteamento por Vetor de Distância (DV)</strong> — Bellman-Ford e RIP (85 páginas)</div>
+          <div><strong>Slides Parte 2: Roteamento por Vetor de Distância (DV)</strong> — Bellman-Ford e RIP</div>
         </a>
         <a href="materials/Parte3-roteamento-unicast-ls-2021-1P.pdf" target="_blank" class="option-btn">
-          <div><strong>📄 Slides Parte 3: Roteamento por Estado de Enlace (LS)</strong> — Dijkstra e OSPF (89 páginas)</div>
+          <div><strong>Slides Parte 3: Roteamento por Estado de Enlace (LS)</strong> — Dijkstra e OSPF</div>
         </a>
         <a href="materials/bgp-roteamento-interdominio.md" target="_blank" class="option-btn">
-          <div><strong>📄 Guia Técnico: BGP-4 e Roteamento Interdomínio (Path Vector)</strong> — ASNs, eBGP/iBGP e seleção de rotas</div>
+          <div><strong>Guia Técnico: BGP-4 e Roteamento Interdomínio</strong> — Sistema autônomo e políticas</div>
         </a>
         <a href="materials/lista1%20-%20gabarito.pdf" target="_blank" class="option-btn">
-          <div><strong>📝 Lista 1 Resolvida:</strong> Classes, sub-redes, ifconfig, IP-in-IP e ICMP Redirect</div>
+          <div><strong>Lista 1 Resolvida:</strong> Classes, sub-redes, ifconfig, IP-in-IP e ICMP Redirect</div>
         </a>
         <a href="materials/lista2%20-%20gabarito.pdf" target="_blank" class="option-btn">
-          <div><strong>📝 Lista 2 Resolvida:</strong> Bellman-Ford, bouncing effect, métrica 16, RIP e Split Horizon</div>
+          <div><strong>Lista 2 Resolvida:</strong> Bellman-Ford, bouncing effect, métrica 16, RIP e Split Horizon</div>
         </a>
         <a href="materials/lista3%20-%20gabarito.pdf" target="_blank" class="option-btn">
-          <div><strong>📝 Lista 3 Resolvida:</strong> Dijkstra SPF, OSPF vs RIP, Eleição de DR/BDR, Exchange e ECMP</div>
+          <div><strong>Lista 3 Resolvida:</strong> Dijkstra SPF, OSPF vs RIP, DR/BDR e ECMP</div>
         </a>
       </div>
     </section>
 
-    <footer style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1.5rem 0;">
-      Redes de Computadores • Portal de Aprendizagem Ativa • UFRJ / COPPE / GTA
-    </footer>
   </div>
 </body>
 </html>

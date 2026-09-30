@@ -15,21 +15,21 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">intelcomp2 • Buscas Não Informadas (Cegas) • Lição 0001</div>
-      <h1>Algoritmo de Busca em Largura (BFS)</h1>
+      <div class="lesson-meta">Módulo 1 • Lição 0001</div>
+      <h1>Busca em Largura (BFS)</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Modelo mental de camadas concêntricas, fila FIFO, armadilha da otimalidade com custos e rastreamento de mesa de prova.
+        Modelo mental de camadas concêntricas, fila FIFO, otimalidade com custos e rastreamento de mesa.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
     </div>
 
-    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <!-- TEORIA -->
     <section class="card-theory">
-      <h2>1. Teoria Enxuta: O Modelo Mental da BFS</h2>
+      <h2>1. Teoria: O Modelo Mental da BFS</h2>
       <p>
         A <strong>Busca em Largura</strong> (<em>Breadth-First Search — BFS</em>) explora o espaço de estados em <strong>ondas ou camadas concêntricas</strong> de profundidade a partir da raiz:
       </p>
@@ -183,11 +183,10 @@
 
     <!-- EXERCÍCIOS PRÁTICOS ORIENTADOS PELO ERRO -->
 
-    <!-- EXERCÍCIO 1: MECÂNICA DA FRONTEIRA E DISTRATORES -->
+    <!-- EXERCÍCIO 1 -->
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: Invariante da Fronteira</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Qual mecanismo garante matematicamente que a Busca em Largura nunca explore um nó de profundidade $d+1$ antes de ter explorado todos os nós de profundidade $d$?
@@ -209,11 +208,10 @@
       <div class="feedback-box"></div>
     </section>
 
-    <!-- EXERCÍCIO 2: IDENTIFICAÇÃO DE FALÁCIA (A PEGADINHA DA OTIMALIDADE) -->
+    <!-- EXERCÍCIO 2 -->
     <section class="card-exercise" id="ex2">
       <div class="exercise-header">
         <h3>Exercício 2: Pegadinha de Prova — A Falácia da Otimalidade</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Analise a seguinte afirmação de prova:<br>
@@ -231,11 +229,10 @@
       <div class="feedback-box"></div>
     </section>
 
-    <!-- EXERCÍCIO 3: ACTIVE RECALL / RASTREAMENTO DA FILA FIFO -->
+    <!-- EXERCÍCIO 3 -->
     <section class="card-exercise" id="ex3" data-hint="Lembre-se: B já estava na fila esperando na cabeça. Quando A é expandido, seus filhos C e D entram no FIM da fila.">
       <div class="exercise-header">
         <h3>Exercício 3: Rastreamento Ativo da Fila (FIFO)</h3>
-        <span class="exercise-tag recall">Active Recall / Mesa</span>
       </div>
       <div class="question-text">
         Considere o grafo da Figura 1:<br>
@@ -250,11 +247,10 @@
       <div class="feedback-box"></div>
     </section>
 
-    <!-- EXERCÍCIO 4: DIAGNÓSTICO DO MOMENTO DO TESTE DE META -->
+    <!-- EXERCÍCIO 4 -->
     <section class="card-exercise" id="ex4">
       <div class="exercise-header">
         <h3>Exercício 4: O Momento do Teste de Meta</h3>
-        <span class="exercise-tag diagnostic">Mecânica de Algoritmos</span>
       </div>
       <div class="question-text">
         Em provas rigorosas de Inteligência Artificial, por que a BFS clássica pode testar se um nó é meta <strong>no momento da geração</strong> do filho, enquanto a Busca de Custo Uniforme (UCS / Dijkstra) é obrigada a testar <strong>apenas no momento da retirada</strong> da fila?
@@ -276,11 +272,10 @@
       <div class="feedback-box"></div>
     </section>
 
-    <!-- EXERCÍCIO 5: COMPLEXIDADE DE MEMÓRIA (O CALCANHAR DE AQUILES) -->
+    <!-- EXERCÍCIO 5 -->
     <section class="card-exercise" id="ex5">
       <div class="exercise-header">
         <h3>Exercício 5: O Calcanhar de Aquiles da BFS</h3>
-        <span class="exercise-tag diagnostic">Complexidade Assintótica</span>
       </div>
       <div class="question-text">
         Se um problema de busca possui fator de ramificação médio $b = 10$ e a solução mais rasa está na profundidade $d = 5$, qual é a ordem de grandeza do número de nós que a BFS precisará manter na memória na pior das hipóteses?
@@ -303,11 +298,11 @@
     </section>
 
 
-    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="../index.html">← Voltar ao Painel da Matéria</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Consultar Ficha de Referência</a>
-      <a href="0002-busca-em-profundidade-dfs.html">Próxima Lição: 0002 — DFS &rarr;</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
+      <a href="0002-busca-em-profundidade-dfs.html">Próxima: 0002 — DFS &rarr;</a>
     </div>
 
   </div>

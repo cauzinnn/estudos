@@ -15,16 +15,17 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Redes de Computadores • Módulo 3: Estado de Enlace • Lição 0010</div>
-      <h1>ECMP (Equal-Cost Multi-Path) e Comparativo RIP vs OSPF</h1>
+      <div class="lesson-meta">Módulo 3 • Lição 0010</div>
+      <h1>ECMP e Comparativo RIP vs OSPF</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Balanceamento de carga em caminhos equivalentes, a armadilha do desordenamento no TCP mitigada por hash de 5-tupla e a matriz definitiva de decisão RIP x OSPF.
+        Balanceamento de carga em múltiplos caminhos, consistência por hash de 5-tupla e critérios de escolha de protocolo.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="0009-ospf-subprotocolos-hello-exchange-dr.html">← 0009: Subprotocolos OSPF</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
     </div>
 
     <!-- BLOCO 1: ECMP E BALANCEAMENTO DE CARGA -->
@@ -47,7 +48,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: Benefícios Estratégicos do ECMP no OSPF</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Quais são os principais benefícios de desempenho obtidos ao habilitar a funcionalidade de <em>Equal-Cost Multi-Path</em> (ECMP) em uma rede roteada por OSPF?
@@ -87,7 +87,6 @@
     <section class="card-exercise" id="ex2">
       <div class="exercise-header">
         <h3>Exercício 2: A Falácia do Round-Robin por Pacote</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Avalie a seguinte assertiva de engenharia de redes:<br>
@@ -123,7 +122,6 @@
     <section class="card-exercise" id="ex3">
       <div class="exercise-header">
         <h3>Exercício 3: Os 5 Campos do Hash de Fluxo TCP</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Quais são os cinco campos de cabeçalho inspecionados pelos circuitos de comutação para calcular o hash de fluxo que impede o desordenamento de pacotes em enlaces ECMP?
@@ -202,7 +200,6 @@
     <section class="card-exercise" id="ex4">
       <div class="exercise-header">
         <h3>Exercício 4: Análise Crítica RIP vs. OSPF</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Em relação à robustez a perdas de mensagens de sinalização na rede, como o protocolo OSPF assegura a integridade de sua sincronização em contraste com o mecanismo do RIP?
@@ -228,7 +225,6 @@
     <section class="card-exercise" id="ex5" data-hint="No RIP a métrica máxima válida é 15 saltos (16 já é inalcançável). No OSPF, o campo de métrica padrão possui 16 bits de custo, atingindo até 65.535. Digite '15'.">
       <div class="exercise-header">
         <h3>Exercício 5: Limite Métrico de Escalabilidade</h3>
-        <span class="exercise-tag recall">Active Recall / Prova</span>
       </div>
       <div class="question-text">
         Enquanto o OSPF suporta métricas de enlace expressas em números inteiros de 16 bits (custos de até 65.535), <strong>qual é o maior valor numérico de métrica útil que uma rota válida pode atingir no protocolo RIP</strong> antes de ser sumariamente descartada como inalcançável? (Digite apenas o número inteiro).
@@ -243,9 +239,10 @@
 
     <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="0009-ospf-subprotocolos-hello-exchange-dr.html">← Lição Anterior: 0009 — Subprotocolos OSPF e DR</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
-      <a href="0011-simulado-geral-exame-completo.html">Próxima Lição: 0011 — Simulado Geral de Prova &rarr;</a>
+      <a href="0009-ospf-subprotocolos-hello-exchange-dr.html">← 0009: Subprotocolos OSPF</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
+      <a href="0011-simulado-geral-exame-completo.html">Próxima: Simulado Geral &rarr;</a>
     </div>
 
   </div>

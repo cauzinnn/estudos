@@ -11,22 +11,22 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">intelcomp • Buscas Não Informadas (Cegas) • Lição 0004</div>
-      <h1>Busca com Limite de Profundidade (DLS — L=6)</h1>
+      <div class="lesson-meta">Módulo 1 • Lição 0004</div>
+      <h1>Busca em Profundidade Limitada (DLS)</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Contenção do poço infinito da DFS através de poda artificial em profundidade L=6, os 3 retornos cruciais (Solução, Falha e Cutoff) e o dilema do diâmetro.
+        Contenção da profundidade máxima por limite artificial $L$, retornos de Solução, Falha e Cutoff.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../lessons/0003-busca-com-retrocesso-backtracking.html">← Lição 0003: Backtracking</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../lessons/0003-busca-com-retrocesso-backtracking.html">← 0003: Backtracking</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
     </div>
 
-    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <!-- TEORIA -->
     <section class="card-theory">
-      <h2>1. Teoria Enxuta: O Modelo Mental do DLS</h2>
+      <h2>1. Teoria: O Modelo Mental do DLS</h2>
       <p>
         A <strong>Busca em Profundidade Limitada</strong> (<em>Depth-Limited Search — DLS</em>) resolve a vulnerabilidade fatal da DFS em árvores infinitas: ela impõe um <strong>limite máximo de profundidade <code>L</code></strong> (neste estudo, fixado em <code>L = 6</code>).
       </p>
@@ -168,7 +168,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: A Vulnerabilidade Central do DLS</h3>
-        <span class="exercise-tag diagnostic">Completude</span>
       </div>
       <div class="question-text">
         Se escolhermos um limite <code>L = 6</code> para um problema cujo objetivo mais raso está situado na profundidade <code>d = 8</code>, qual será o comportamento da DLS?
@@ -194,7 +193,6 @@
     <section class="card-exercise" id="ex2">
       <div class="exercise-header">
         <h3>Exercício 2: Pegadinha de Prova — Falha Definitiva vs Cutoff</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Analise a proposição de exame:<br>
@@ -216,7 +214,6 @@
     <section class="card-exercise" id="ex3" data-hint="A memória da DLS é linear O(b × L), onde b é o fator de ramificação e L é o limite de profundidade.">
       <div class="exercise-header">
         <h3>Exercício 3: Consumo de Memória do DLS (L=6)</h3>
-        <span class="exercise-tag recall">Active Recall Numérico</span>
       </div>
       <div class="question-text">
         Considere um problema com fator de ramificação médio <strong>b = 10</strong> submetido ao DLS com limite <strong>L = 6</strong>.<br><br>
@@ -232,8 +229,7 @@
     <!-- EXERCÍCIO 4 -->
     <section class="card-exercise" id="ex4" data-hint="Lembre-se dos 3 retornos: Solução, Falha e Cutoff. Quando nós são podados no limite sem achar a meta, o retorno é...">
       <div class="exercise-header">
-        <h3>Exercício 4: Active Recall do Retorno no Cenário da Figura 1</h3>
-        <span class="exercise-tag recall">Active Recall / Prova</span>
+        <h3>Exercício 4: Retorno no Cenário da Figura 1</h3>
       </div>
       <div class="question-text">
         No grafo da <strong>Figura 1</strong>, a busca iniciou em S, desceu até N6 (profundidade 6 = L) onde foi podada sem alcançar a meta G (profundidade 7).<br><br>
@@ -250,7 +246,6 @@
     <section class="card-exercise" id="ex5">
       <div class="exercise-header">
         <h3>Exercício 5: O Dilema da Escolha do Limite L</h3>
-        <span class="exercise-tag diagnostic">Tomada de Decisão</span>
       </div>
       <div class="question-text">
         Em termos práticos, qual é a principal dificuldade em aplicar o DLS diretamente em problemas do mundo real onde não conhecemos a estrutura prévia do grafo?
@@ -276,7 +271,6 @@
     <section class="card-exercise" id="ex6">
       <div class="exercise-header">
         <h3>Exercício 6: Condição para 'Falha Definitiva'</h3>
-        <span class="exercise-tag diagnostic">Lógica Formal</span>
       </div>
       <div class="question-text">
         Sob qual condição estrita o DLS (L=6) pode retornar legitimamente <strong>'Falha Definitiva' (Failure)</strong> em vez de 'Cutoff'?
@@ -302,7 +296,6 @@
     <section class="card-exercise" id="ex7" data-hint="Se L=6 e a meta estiver na profundidade 4, o que o DLS retorna? Solução!">
       <div class="exercise-header">
         <h3>Exercício 7: Previsão de Saída com Meta em Profundidade 4</h3>
-        <span class="exercise-tag recall">Síntese de Casos</span>
       </div>
       <div class="question-text">
         Se no mesmo grafo executarmos o DLS com <code>L = 6</code>, mas a meta estiver localizada na profundidade <code>d = 4</code>, <strong>qual será o resultado retornado pelo DLS</strong>?
@@ -315,12 +308,12 @@
     </section>
 
 
-    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="../lessons/0003-busca-com-retrocesso-backtracking.html">← Lição Anterior: 0003 — Backtracking</a>
-      <a href="../index.html">Voltar ao Painel da Matéria</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
-      <a href="0005-aprofundamento-iterativo-4-iteracoes-ids.html">Próxima Lição: 0005 — IDS &rarr;</a>
+      <a href="../lessons/0003-busca-com-retrocesso-backtracking.html">← 0003: Backtracking</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
+      <a href="0005-aprofundamento-iterativo-4-iteracoes-ids.html">Próxima: 0005 — IDS &rarr;</a>
     </div>
 
   </div>

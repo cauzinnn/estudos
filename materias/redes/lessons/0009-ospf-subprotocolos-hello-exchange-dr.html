@@ -15,16 +15,17 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Redes de Computadores • Módulo 3: Estado de Enlace • Lição 0009</div>
-      <h1>OSPF: Subprotocolos Hello, Exchange e Roteador Designado (DR)</h1>
+      <div class="lesson-meta">Módulo 3 • Lição 0009</div>
+      <h1>OSPF: Subprotocolos Hello, Exchange e DR/BDR</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Formação de adjacências via Hello, a contenção combinatória de $N(N-1)/2$ para $N$ pelo DR/BDR, multicast 224.0.0.5/6 e a ressincronização seletiva pelo protocolo Exchange.
+        Formação de adjacências via Hello, redução de complexidade por DR/BDR, multicast e sincronização via Exchange.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="0008-ospf-arquitetura-areas-lsas.html">← 0008: Áreas</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
     </div>
 
     <!-- BLOCO 1: O SUBPROTOCOLO HELLO E A FORMAÇÃO DE VIZINHANÇA -->
@@ -51,7 +52,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: Parâmetros Mandatórios de Acordo no OSPF Hello</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Dois roteadores OSPF conectados diretamente pelo mesmo switch Ethernet não conseguem estabelecer adjacência, permanecendo eternamente no estado <em>Init</em>. Qual divergência de configuração explica conclusivamente essa falha?
@@ -97,7 +97,6 @@
     <section class="card-exercise" id="ex2" data-hint="Com N = 8 roteadores, a malha completa sem DR exigiria N*(N-1)/2 = 8*7/2 = 28 adjacências. Com o DR, a rede simula uma estrela, exigindo exatamente N = 8 adjacências. Digite '8'.">
       <div class="exercise-header">
         <h3>Exercício 2: Redução Combinatória de Adjacências OSPF</h3>
-        <span class="exercise-tag recall">Active Recall / Prova UFRJ</span>
       </div>
       <div class="question-text">
         Em um data center, <strong>8 roteadores OSPF</strong> ($N = 8$) estão interconectados no mesmo domínio de difusão Ethernet (VLAN de trânsito).<br><br>
@@ -129,7 +128,6 @@
     <section class="card-exercise" id="ex3">
       <div class="exercise-header">
         <h3>Exercício 3: A Falácia da Difusão Direta de DROthers</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Analise a seguinte afirmação sobre o fluxo de pacotes LSU em redes locais:<br>
@@ -172,7 +170,6 @@
     <section class="card-exercise" id="ex4">
       <div class="exercise-header">
         <h3>Exercício 4: Eficiência da Sincronização por DBDs</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Qual é a vantagem operacional de utilizar o protocolo de troca (<em>Exchange</em>) com pacotes DBD em vez de simplesmente re-inundar toda a base topológica (LSDB) quando um enlace retorna de uma falha?
@@ -211,7 +208,6 @@
     <section class="card-exercise" id="ex5" data-hint="MaxAge corresponde exatamente a 1 hora convertida em segundos (60 x 60). Digite '3600'.">
       <div class="exercise-header">
         <h3>Exercício 5: O Parâmetro MaxAge do OSPF</h3>
-        <span class="exercise-tag recall">Active Recall / Parâmetros</span>
       </div>
       <div class="question-text">
         No protocolo OSPF, quando um anúncio de estado de enlace na LSDB deixa de ser renovado pelo seu originador e seu campo <em>LSA Age</em> atinge o teto do parâmetro <strong>MaxAge</strong>, ele é purgado da base de dados.<br><br>
@@ -227,9 +223,10 @@
 
     <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="0008-ospf-arquitetura-areas-lsas.html">← Lição Anterior: 0008 — OSPF e Áreas</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
-      <a href="0010-ecmp-e-comparativo-rip-ospf.html">Próxima Lição: 0010 — ECMP e Comparativo RIP x OSPF &rarr;</a>
+      <a href="0008-ospf-arquitetura-areas-lsas.html">← 0008: Áreas</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
+      <a href="0010-ecmp-e-comparativo-rip-ospf.html">Próxima: 0010 — ECMP &rarr;</a>
     </div>
 
   </div>

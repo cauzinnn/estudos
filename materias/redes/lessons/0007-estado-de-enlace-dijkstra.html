@@ -15,16 +15,17 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Redes de Computadores • Módulo 3: Estado de Enlace • Lição 0007</div>
-      <h1>Estado de Enlace e o Algoritmo SPF de Dijkstra</h1>
+      <div class="lesson-meta">Módulo 3 • Lição 0007</div>
+      <h1>Estado de Enlace e Algoritmo SPF de Dijkstra</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Inundação confiável de LSAs, a base topológica unificada (LSDB), rastreamento formal de mesa dos conjuntos C, O e R, e derivação da tabela de encaminhamento (FIB).
+        Inundação de LSAs, base topológica unificada (LSDB), conjuntos de Dijkstra e derivação da FIB.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Ficha de Referência: Algoritmos de Roteamento</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="0006-protocolo-rip-v1-v2-ripng.html">← 0006: RIP</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
     </div>
 
     <!-- BLOCO 1: A FILOSOFIA LINK STATE E A LSDB -->
@@ -48,7 +49,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: A Causa da Imunidade a Loops em Estado de Enlace</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Por que o cálculo de rotas no algoritmo de Estado de Enlace (Dijkstra) não é vulnerável ao problema da contagem ao infinito que assola o Vetor de Distância?
@@ -96,7 +96,6 @@
     <section class="card-exercise" id="ex2">
       <div class="exercise-header">
         <h3>Exercício 2: A Invariante dos Nós Confirmados</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Analise a seguinte afirmativa sobre a execução de mesa do Dijkstra:<br>
@@ -187,7 +186,6 @@
     <section class="card-exercise" id="ex3" data-hint="Compare os caminhos de A até F: via C (A->B->C->F: 4 + 6 + 4 = 14) contra o caminho via E (A->B->E->F: 4 + 5 + 2 = 11). Qual é a menor soma?">
       <div class="exercise-header">
         <h3>Exercício 3: Rastreamento do Menor Caminho até F</h3>
-        <span class="exercise-tag recall">Active Recall / Prova UFRJ</span>
       </div>
       <div class="question-text">
         Executando o algoritmo de Dijkstra na topologia da Figura 2 tendo o roteador <strong>A</strong> como nó raiz:<br><br>
@@ -222,7 +220,6 @@
     <section class="card-exercise" id="ex4" data-hint="O caminho ótimo de A para F é A -> B -> E -> F. O primeiro salto ao sair de A é o vizinho B. Digite 'B'.">
       <div class="exercise-header">
         <h3>Exercício 4: Mapeamento de Próximo Salto na Tabela FIB</h3>
-        <span class="exercise-tag recall">Active Recall / Mesa</span>
       </div>
       <div class="question-text">
         Na tabela de encaminhamento (FIB) do roteador <strong>A</strong>, <strong>qual é o identificador do roteador vizinho configurado no campo Próximo Salto (Next Hop)</strong> para despachar os pacotes cujo destino final seja a estação conectada ao nó <strong>F</strong>? (Digite apenas a letra do nó, ex: B).
@@ -253,7 +250,6 @@
     <section class="card-exercise" id="ex5">
       <div class="exercise-header">
         <h3>Exercício 5: Escala Computacional com Fila de Prioridade</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Qual é a complexidade assintótica de tempo do algoritmo de Dijkstra quando implementado eficientemente com uma estrutura de fila de prioridades (Heap) em um grafo com $N$ roteadores e $M$ enlaces?
@@ -278,9 +274,10 @@
 
     <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="0006-protocolo-rip-v1-v2-ripng.html">← Lição Anterior: 0006 — Protocolo RIP</a>
-      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">📄 Consultar Ficha de Referência</a>
-      <a href="0008-ospf-arquitetura-areas-lsas.html">Próxima Lição: 0008 — OSPF e Áreas &rarr;</a>
+      <a href="0006-protocolo-rip-v1-v2-ripng.html">← 0006: RIP</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-algoritmos-e-protocolos-roteamento.html">Ficha: Algoritmos de Roteamento</a>
+      <a href="0008-ospf-arquitetura-areas-lsas.html">Próxima: 0008 — OSPF Áreas &rarr;</a>
     </div>
 
   </div>

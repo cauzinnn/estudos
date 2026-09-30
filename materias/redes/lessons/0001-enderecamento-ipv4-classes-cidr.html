@@ -15,16 +15,16 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">Redes de Computadores • Módulo 1: Camada de Rede • Lição 0001</div>
+      <div class="lesson-meta">Módulo 1 • Lição 0001</div>
       <h1>Endereçamento IPv4: Classes, Sub-redes e CIDR/VLSM</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Estrutura de 32 bits, identificação de classes legadas, cálculo estrito de sub-redes ($2^h - 2$), a armadilha do prefixo com bits variáveis e análise de saídas <code>ifconfig</code>.
+        Estrutura de 32 bits, classes legadas, cálculo de sub-redes ($2^h - 2$) e interfaces de rede.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Ficha de Referência: IPv4 e Cabeçalho</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">Ficha: IPv4 e Cabeçalho</a>
     </div>
 
     <!-- BLOCO 1: CLASSES HISTÓRICAS DE IP -->
@@ -48,7 +48,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: Identificação Rápida de Classe e Semântica</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
         Ao configurar manualmente um servidor de banco de dados em uma rede corporativa, um operador tentou atribuir o endereço IP <code>229.0.2.45</code> à placa de rede da máquina. O sistema operacional rejeitou a atribuição com mensagem de erro. Qual é o diagnóstico técnico correto para essa recusa?
@@ -95,7 +94,6 @@
     <section class="card-exercise" id="ex2" data-hint="Máscara 255.255.252.0 possui 22 bits fixos (252 = 11111100 em binário). Logo, restam h = 32 - 22 = 10 bits para hospedeiros. Calcule 2^10 - 2.">
       <div class="exercise-header">
         <h3>Exercício 2: Cálculo Rigoroso de Hospedeiros Úteis</h3>
-        <span class="exercise-tag recall">Active Recall / Cálculo</span>
       </div>
       <div class="question-text">
         Seu departamento recebeu a faixa de endereços de rede <code>136.27.32.0</code> com máscara de sub-rede <code>255.255.252.0</code>.<br><br>
@@ -126,7 +124,6 @@
     <section class="card-exercise" id="ex3">
       <div class="exercise-header">
         <h3>Exercício 3: A Pegadinha da Validação de Prefixo</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Um administrador de redes cadastrou em um roteador a rota para a sub-rede declarada como <code>136.27.33.0/23</code> (máscara <code>255.255.254.0</code>).<br><br>
@@ -166,7 +163,6 @@
     <section class="card-exercise" id="ex4" data-hint="De /23 para /30 são 30 - 23 = 7 bits emprestados para sub-redes. Calcule 2^7 para o número de sub-redes e multiplique por 2 máquinas por enlace.">
       <div class="exercise-header">
         <h3>Exercício 4: Engenharia de Sub-redes Ponto a Ponto</h3>
-        <span class="exercise-tag recall">Active Recall / Prova</span>
       </div>
       <div class="question-text">
         Considere a faixa alocada <code>146.164.80.0/23</code>. Um engenheiro precisa dividi-la no <strong>maior número possível de sub-redes úteis /30</strong> para conectar pares de roteadores.<br><br>
@@ -200,11 +196,10 @@
     <section class="card-exercise" id="ex5" data-hint="IP = 146.164.69.253 com máscara 255.255.255.224. 224 corresponde a /27 (passo de 256 - 224 = 32). Identifique o múltiplo de 32 imediatamente inferior a 253. Formato: x.x.x.x/yy">
       <div class="exercise-header">
         <h3>Exercício 5: Rastreamento de Sub-rede a partir de Log Real</h3>
-        <span class="exercise-tag recall">Active Recall / Terminal</span>
       </div>
       <div class="question-text">
         Analise a linha extraída da interface <code>eth1</code> de um roteador em produção:<br>
-        <code>eth1 inet addr:146.164.69.253 Bcast:146.164.69.255 Mask:255.255.255.224</code><br><br>
+        <pre><code>eth1 inet addr:146.164.69.253 Bcast:146.164.69.255 Mask:255.255.255.224</code></pre>
         <strong>Digite a sub-rede IP conectada a esta interface</strong> no formato padrão de prefixo CIDR (ex: <code>x.x.x.x/yy</code>):
       </div>
       <div class="input-row">
@@ -218,10 +213,11 @@
     <section class="card-exercise" id="ex6">
       <div class="exercise-header">
         <h3>Exercício 6: Fronteiras de Sub-rede com Máscara .128</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico de Distratores</span>
       </div>
       <div class="question-text">
-        Dada a saída da interface <code>eth2</code>: <code>inet addr: 146.164.69.1 Mask: 255.255.255.128</code>. Qual é, respectivamente, o endereço de identificação da sub-rede e o último endereço de host válido utilizável?
+        Dada a saída da interface <code>eth2</code>:<br>
+        <pre><code>inet addr: 146.164.69.1 Mask: 255.255.255.128</code></pre>
+        Qual é, respectivamente, o endereço de identificação da sub-rede e o último endereço de host válido utilizável?
       </div>
       <div class="options-list">
         <button class="option-btn" data-correct="false" data-feedback="Atenção: A máscara 255.255.255.128 divide o bloco em duas metades de 128 endereços. O IP .1 está na primeira metade (0 a 127). O endereço .254 pertence à segunda sub-rede (.128 a .255).">
@@ -243,9 +239,9 @@
 
     <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="../index.html">← Voltar ao Painel da Matéria</a>
-      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">📄 Consultar Ficha de Referência</a>
-      <a href="0002-cabecalho-ipv4-opcoes-encaminhamento.html">Próxima Lição: 0002 — Cabeçalho e Opções &rarr;</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-enderecamento-ipv4-e-cabecalho.html">Ficha: IPv4 e Cabeçalho</a>
+      <a href="0002-cabecalho-ipv4-opcoes-encaminhamento.html">Próxima: 0002 — Cabeçalho e Opções &rarr;</a>
     </div>
 
   </div>

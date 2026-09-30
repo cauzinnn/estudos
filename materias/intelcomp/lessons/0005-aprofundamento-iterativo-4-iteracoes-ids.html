@@ -11,22 +11,22 @@
   <div class="container">
 
     <header>
-      <div class="lesson-meta">intelcomp • Buscas Não Informadas (Cegas) • Lição 0005</div>
-      <h1>Aprofundamento Iterativo (IDS — 4 Iterações)</h1>
+      <div class="lesson-meta">Módulo 1 • Lição 0005</div>
+      <h1>Aprofundamento Iterativo (IDS)</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        O melhor dos dois mundos: a otimalidade e completude da BFS aliada à economia de memória linear da DFS O(b &times; d).
+        Otimalidade e completude da BFS aliada à economia de memória linear da DFS $O(b \cdot d)$.
       </p>
     </header>
 
     <div class="nav-links">
-      <a href="../index.html">← Painel da Disciplina</a>
-      <a href="../lessons/0004-busca-profundidade-limite-6-dls.html">← Lição 0004: DLS</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência: Buscas Cegas</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../lessons/0004-busca-profundidade-limite-6-dls.html">← 0004: DLS</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
     </div>
 
-    <!-- SEÇÃO 1: TEORIA ENXUTA (< 5 MINUTOS) -->
+    <!-- TEORIA -->
     <section class="card-theory">
-      <h2>1. Teoria Enxuta: O Modelo Mental do IDS</h2>
+      <h2>1. Teoria: O Modelo Mental do IDS</h2>
       <p>
         A <strong>Busca em Profundidade com Aprofundamento Iterativo</strong> (<em>Iterative Deepening Search — IDS</em>) contorna simultaneamente o estouro de memória da BFS e a escolha incerta do limite do DLS:
       </p>
@@ -161,7 +161,6 @@
     <section class="card-exercise" id="ex1">
       <div class="exercise-header">
         <h3>Exercício 1: A Grande Vantagem Híbrida do IDS</h3>
-        <span class="exercise-tag diagnostic">Diagnóstico Conceitual</span>
       </div>
       <div class="question-text">
         Por que o IDS é frequentemente considerado o melhor algoritmo de busca cega quando o espaço de estados é muito grande e os custos das ações são idênticos?
@@ -187,7 +186,6 @@
     <section class="card-exercise" id="ex2">
       <div class="exercise-header">
         <h3>Exercício 2: Identificação de Falácia — Sobrecarga de Tempo</h3>
-        <span class="exercise-tag diagnostic">Identificação de Falácia</span>
       </div>
       <div class="question-text">
         Analise a crítica de um desenvolvedor:<br>
@@ -209,7 +207,6 @@
     <section class="card-exercise" id="ex3" data-hint="No grafo da Figura 1, o objetivo mais raso está em d = 3. O IDS começa em L=0. Em qual iteração L ele alcança d = 3?">
       <div class="exercise-header">
         <h3>Exercício 3: Número da Iteração da Descoberta</h3>
-        <span class="exercise-tag recall">Active Recall Numérico</span>
       </div>
       <div class="question-text">
         No problema da Figura 1, onde a meta está situada na profundidade <code>d = 3</code>, o IDS inicia em <code>L = 0</code> (1ª iteração).<br><br>
@@ -226,7 +223,6 @@
     <section class="card-exercise" id="ex4" data-hint="A raiz (d=0) é gerada em TODAS as iterações: L=0, L=1, L=2 e L=3.">
       <div class="exercise-header">
         <h3>Exercício 4: Frequência de Geração da Raiz</h3>
-        <span class="exercise-tag recall">Cálculo de Mesa</span>
       </div>
       <div class="question-text">
         Se o IDS executa as iterações com <code>L = 0, 1, 2, 3</code> até encontrar a meta na profundidade 3, <strong>quantas vezes o nó raiz S foi gerado ao todo</strong> ao longo de todo o processo?
@@ -242,7 +238,6 @@
     <section class="card-exercise" id="ex5">
       <div class="exercise-header">
         <h3>Exercício 5: Consumo de Memória Linear</h3>
-        <span class="exercise-tag diagnostic">Complexidade Assintótica</span>
       </div>
       <div class="question-text">
         Se um problema possui fator de ramificação <code>b = 10</code> e a solução mais rasa está na profundidade <code>d = 5</code>, qual é a ordem de grandeza do consumo de memória do IDS no momento em que a meta é encontrada?
@@ -268,7 +263,6 @@
     <section class="card-exercise" id="ex6">
       <div class="exercise-header">
         <h3>Exercício 6: Critério de Término em Falha no IDS</h3>
-        <span class="exercise-tag diagnostic">Lógica de Controle</span>
       </div>
       <div class="question-text">
         Como o laço principal do IDS sabe que o espaço de estados finito não possui nenhuma meta e pode parar com <strong>Falha Definitiva</strong> em vez de continuar incrementando <code>L</code> eternamente?
@@ -294,7 +288,6 @@
     <section class="card-exercise" id="ex7" data-hint="Lembre-se da tabela: na 2ª iteração (L=1), visitamos S e depois seus sucessores imediatos A e B.">
       <div class="exercise-header">
         <h3>Exercício 7: Rastreamento dos Nós na 2ª Iteração (L = 1)</h3>
-        <span class="exercise-tag recall">Active Recall / Mesa</span>
       </div>
       <div class="question-text">
         No rastreamento da Figura 1, <strong>quais são os nós expandidos/visitados durante a 2ª iteração (quando o limite é L = 1)</strong>?<br>
@@ -308,12 +301,12 @@
     </section>
 
 
-    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <!-- NAVEGAÇÃO -->
     <div class="lesson-nav">
-      <a href="../lessons/0004-busca-profundidade-limite-6-dls.html">← Lição Anterior: 0004 — DLS</a>
-      <a href="../index.html">Voltar ao Painel da Matéria</a>
-      <a href="../reference/0001-tabela-buscas-cegas.html">📄 Ficha de Referência</a>
-      <a href="0006-busca-custo-uniforme-ucs.html">Próxima Lição: 0006 — UCS &rarr;</a>
+      <a href="../lessons/0004-busca-profundidade-limite-6-dls.html">← 0004: DLS</a>
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
+      <a href="0006-busca-custo-uniforme-ucs.html">Próxima: 0006 — UCS &rarr;</a>
     </div>
 
   </div>
