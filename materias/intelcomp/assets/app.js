@@ -119,19 +119,47 @@ function randomizeInputPlaceholder(input, validAnswers = []) {
 
   const exampleBody = original.replace(/^ex\s*:\s*/i, "").trim();
   const normalizedAnswers = (Array.isArray(validAnswers) ? validAnswers : [validAnswers])
-    .map(a => String(a || "").trim().toLowerCase());
+    .map(a => String(a || "").trim().toLowerCase().replace(/,/g, "."));
 
   let fakeExample = "";
 
-  // 1. IP com Máscara CIDR (ex: 146.164.69.128/26)
-  if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/.test(exampleBody)) {
+  // 1. Porcentagem (ex: 47% ou 53%)
+  if (/^\d+(\.\d+)?%$/.test(exampleBody)) {
+    let candidate = "";
+    let attempts = 0;
+    do {
+      attempts++;
+      const val = Math.floor(Math.random() * 85) + 10;
+      candidate = `${val}%`;
+    } while (attempts < 50 && (normalizedAnswers.includes(candidate.toLowerCase()) || candidate === exampleBody));
+    fakeExample = candidate;
+  }
+  // 2. Número Decimal com vírgula ou ponto (ex: 0.64, 0,64, 304.89, 5.55, 7.745)
+  else if (/^\d+[\.,]\d+$/.test(exampleBody)) {
+    const isComma = exampleBody.includes(",");
+    const parts = exampleBody.split(/[\.,]/);
+    const intPart = parseInt(parts[0], 10);
+    const decPlaces = parts[1].length;
+    let candidate = "";
+    let attempts = 0;
+    do {
+      attempts++;
+      let randInt = intPart === 0 ? 0 : Math.floor(Math.random() * (intPart * 1.5 + 20));
+      let randDec = Math.floor(Math.random() * Math.pow(10, decPlaces));
+      let decStr = String(randDec).padStart(decPlaces, "0");
+      candidate = `${randInt}${isComma ? "," : "."}${decStr}`;
+    } while (attempts < 50 && (normalizedAnswers.includes(candidate.replace(",", ".")) || candidate === exampleBody));
+    fakeExample = candidate;
+  }
+  // 3. IP com Máscara CIDR (ex: 146.164.69.128/26)
+  else if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/.test(exampleBody)) {
     const fakeOctet1 = [10, 172, 192][Math.floor(Math.random() * 3)];
     const fakeOctet2 = Math.floor(Math.random() * 200) + 1;
     const fakeOctet3 = Math.floor(Math.random() * 200);
     const fakeMask = Math.floor(Math.random() * 6) + 24; // /24 a /29
     fakeExample = `${fakeOctet1}.${fakeOctet2}.${fakeOctet3}.0/${fakeMask}`;
   }
-  // 2. Endereço IP Simples (ex: 224.0.0.9)
+  // 4. Endereço IP Simples (ex: 224.0.0.9)
   else if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(exampleBody)) {
     const isMulticast = /^22[4-9]|23\d/.test(exampleBody);
     if (isMulticast) {
@@ -140,7 +168,7 @@ function randomizeInputPlaceholder(input, validAnswers = []) {
       fakeExample = `192.168.${Math.floor(Math.random() * 100) + 1}.${Math.floor(Math.random() * 254) + 1}`;
     }
   }
-  // 3. Apenas Dígitos / Número Inteiro (ex: 4, 15, 185, 370, 3600)
+  // 5. Apenas Dígitos / Número Inteiro (ex: 4, 15, 185, 370, 3600)
   else if (/^\d+$/.test(exampleBody)) {
     const len = exampleBody.length;
     let candidate = "";
@@ -159,22 +187,36 @@ function randomizeInputPlaceholder(input, validAnswers = []) {
     } while (attempts < 50 && (normalizedAnswers.includes(candidate.toLowerCase()) || candidate === exampleBody));
     fakeExample = candidate;
   }
-  // 4. Letra Única (ex: B)
+  // 6. Letra Única (ex: B, P, M, G)
   else if (/^[A-Za-z]$/.test(exampleBody)) {
     const pool = "XYZKWMHPRTDJ".split("");
     const available = pool.filter(l => !normalizedAnswers.includes(l.toLowerCase()) && l.toUpperCase() !== exampleBody.toUpperCase());
     fakeExample = available[Math.floor(Math.random() * available.length)] || "X";
   }
-  // 5. Sigla Curta em Maiúsculas (ex: ABR)
+  // 7. Regra ou identificador de regra (ex: R1, R2)
+  else if (/^R\d+/i.test(exampleBody)) {
+    const dummyRules = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"].filter(
+      r => !normalizedAnswers.includes(r.toLowerCase()) && r.toLowerCase() !== exampleBody.toLowerCase()
+    );
+    fakeExample = dummyRules[Math.floor(Math.random() * dummyRules.length)] || "R9";
+  }
+  // 8. Expressão lógica (ex: j ^ w ou q v c)
+  else if (/[\^v\~]/.test(exampleBody)) {
+    const dummyLogics = ["x ^ y", "a v b", "p ^ ~q", "u v w", "m ^ k"].filter(
+      l => !normalizedAnswers.includes(l.toLowerCase()) && l !== exampleBody
+    );
+    fakeExample = dummyLogics[Math.floor(Math.random() * dummyLogics.length)] || "p ^ q";
+  }
+  // 9. Sigla Curta em Maiúsculas (ex: ABR, MOM, TSK)
   else if (/^[A-Z]{2,5}$/.test(exampleBody)) {
-    const dummyAcronyms = ["BGP", "DNS", "XYZ", "TCP", "ASBR", "NAT", "SNMP", "MPLS", "VPN"].filter(
+    const dummyAcronyms = ["MOM", "COG", "TSK", "BR", "BF", "SOM", "LOM"].filter(
       a => !normalizedAnswers.includes(a.toLowerCase()) && a !== exampleBody
     );
-    fakeExample = dummyAcronyms[Math.floor(Math.random() * dummyAcronyms.length)] || "XYZ";
+    fakeExample = dummyAcronyms[Math.floor(Math.random() * dummyAcronyms.length)] || "TSK";
   }
-  // 6. Texto com Várias Palavras (ex: Triggered Updates)
+  // 10. Texto com Várias Palavras ou termos conceituais
   else {
-    const dummyPhrases = ["Nome do Mecanismo", "Termo Conceitual", "Nome do Protocolo", "Conceito Técnico"];
+    const dummyPhrases = ["Saudável", "Doente", "Pequeno", "Médio", "Grande", "Modus Ponens", "Encadeamento Progressivo", "Termo Linguístico"];
     fakeExample = dummyPhrases[Math.floor(Math.random() * dummyPhrases.length)];
   }
 
@@ -203,7 +245,8 @@ function initInputExercise(containerId, validAnswers, conceptName, customValidat
       .replace(/\s+/g, "")
       .replace(/→/g, "->")
       .replace(/–/g, "-")
-      .replace(/[\(\)\[\]\{\}]/g, "");
+      .replace(/[\(\)\[\]\{\}]/g, "")
+      .replace(/,/g, ".");
   }
 
   function checkAnswer() {
@@ -213,10 +256,19 @@ function initInputExercise(containerId, validAnswers, conceptName, customValidat
 
     if (customValidator && typeof customValidator === "function") {
       isCorrect = customValidator(rawVal, cleanUserVal);
-    } else if (Array.isArray(validAnswers)) {
-      isCorrect = validAnswers.some(ans => normalize(ans) === cleanUserVal);
     } else {
-      isCorrect = normalize(validAnswers) === cleanUserVal;
+      const answersArr = Array.isArray(validAnswers) ? validAnswers : [validAnswers];
+      isCorrect = answersArr.some(ans => {
+        const normAns = normalize(ans);
+        if (normAns === cleanUserVal) return true;
+        // Tolerância para números decimais
+        const uNum = parseFloat(cleanUserVal);
+        const aNum = parseFloat(normAns);
+        if (!isNaN(uNum) && !isNaN(aNum) && cleanUserVal.match(/^\d+(\.\d+)?$/) && normAns.match(/^\d+(\.\d+)?$/)) {
+          return Math.abs(uNum - aNum) < 0.015;
+        }
+        return false;
+      });
     }
 
     if (feedbackBox) {

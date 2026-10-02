@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulado Geral: Sistemas Especialistas e Lógica Fuzzy — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Simulado Geral • Módulo 3</div>
+      <h1>Simulado: Sistemas Especialistas e Lógica Fuzzy</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Exame mestre integrado com 15 questões: Modus Ponens, Forward/Backward Chaining, Max-Min, Soma-Produto, Mamdani MOM, TSK e Wang & Mendel.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0011-simulado-geral-exame-completo.html">Simulado 1: Buscas</a>
+      <a href="../reference/0003-sistemas-especialistas-fuzzy-guia-rapido.html">Ficha: Sistemas Especialistas & Fuzzy</a>
+    </div>
+
+    <!-- PAINEL DE DADOS MESTRE DO EXAME -->
+    <section class="card-theory">
+      <h2>Base de Conhecimento e Parâmetros Unificados do Simulado</h2>
+      <p>
+        As questões deste simulado baseiam-se nos dados e regras oficiais da resolução do exame:
+      </p>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 0.75rem;">
+        <!-- Base A -->
+        <div style="background: var(--bg-card-hover); border: 1px solid var(--border-subtle); padding: 0.85rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.5;">
+          <strong style="color: var(--accent);">Base A (Lógica Clássica):</strong><br>
+          R1: s ∧ t → a ∧ d<br>
+          R2: a ∧ ~c → h ∧ i<br>
+          R3: ~a ∨ s → p ∧ q ∧ r ∧ b<br>
+          R4: p ∧ s → t ∧ ~c<br>
+          R5: a ∧ b ∧ ~c → e ∨ f ∧ ~g<br>
+          R6: a ∧ ~b → j ∧ l<br>
+          R7: ~r ∨ (j ∧ ~m) → u ∨ w<br>
+          <em>Fatos:</em> F1: s, F2: ~m &nbsp;|&nbsp; <em>Meta:</em> j ∧ w
+        </div>
+
+        <!-- Incerteza Clínica -->
+        <div style="background: var(--bg-card-hover); border: 1px solid var(--border-subtle); padding: 0.85rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.5;">
+          <strong style="color: var(--purple);">Base Clínica (Incerteza):</strong><br>
+          R1: f1 ∧ f2 ∨ ~f3 → doente (GC=0.80)<br>
+          R2: f5 ∨ f6 ∧ ~f7 → f10 (GC=0.85)<br>
+          R3: ~f5 ∧ f6 ∨ f10 → saudável (GC=0.95)<br>
+          R4: f4 ∨ f6 ∧ f9 → doente (GC=0.90)<br>
+          R5: f1 ∧ f8 ∧ ~f10 → saudável (GC=0.70)<br>
+          R6: f10 ∧ ~f2 ∨ f4 → saudável (GC=0.90)<br>
+          <em>GC(f1)=0.5, GC(f2)=0.5, GC(f3)=0.2, GC(f4)=0.8</em>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUESTÃO 1: MODUS PONENS EM BASE A -->
+    <section class="card-exercise" id="q1" data-hint="Verifique os fatos iniciais {s, ~m}. R1 exige s e t (falta t). R2 exige a e ~c. R3 possui ~a ∨ s; como s é fato, ela é a PRIMEIRA a disparar. Digite R3.">
+      <div class="exercise-header">
+        <h3>Questão 1: Primeiro Disparo no Encadeamento Progressivo</h3>
+      </div>
+      <div class="question-text">
+        Na Base A com memória de trabalho inicial $BF = \{s, \sim m\}$, analisando as regras na ordem textual (R1 até R7):<br><br>
+        <strong>Qual é o identificador da primeiríssima regra que reúne premissas verdadeiras para disparar?</strong>
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: R3" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Resposta</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 2: BLOQUEIO DA META EM BASE A -->
+    <section class="card-exercise" id="q2">
+      <div class="exercise-header">
+        <h3>Questão 2: Causa da Refutação da Meta j ∧ w</h3>
+      </div>
+      <div class="question-text">
+        No encadeamento progressivo da Base A, a meta $j \wedge w$ <strong>não é provada</strong>. Qual é a causa lógica precisa desse bloqueio?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A regra R4 dispara normalmente pois p (gerado em R3) e s (fato inicial) estão ambos presentes em BF.">
+          A regra R4 é bloqueada pela ausência da premissa 'p' na memória de trabalho.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A regra R3 deriva o fato afirmativo 'b'. Logo, a premissa '~b' exigida pela regra R6 (a ∧ ~b → j ∧ l) é estritamente falsa! Como R6 nunca dispara, o literal 'j' jamais é incorporado a BF, impedindo a prova de j ∧ w!">
+          A regra R6 exige a premissa ~b, mas a regra R3 derivou o fato afirmativo 'b', tornando ~b falso e impedindo a geração de 'j'.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A regra R1 dispara com sucesso no segundo ciclo após R4 derivar 't'. O literal 'a' é gerado validamente.">
+          A regra R1 não consegue derivar 'a' porque o literal 't' nunca é produzido pelo sistema.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A regra R7 possui disjunção com ~r; a falha de j decorre diretamente do bloqueio de R6.">
+          A regra R7 entra em contradição direta com o fato primitivo ~m.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 3: BACKWARD CHAINING FALHA -->
+    <section class="card-exercise" id="q3">
+      <div class="exercise-header">
+        <h3>Questão 3: Diagnóstico da Árvore de Objetivos E/OU</h3>
+      </div>
+      <div class="question-text">
+        A afirmação: <em>"No Encadeamento Regressivo para a meta j ∧ w, ao expandir a submeta 'j' através de R6, o ramo da submeta '~b' falha porque inexiste qualquer regra na base cujo consequente seja ~b e ~b não é fato primitivo."</em> é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Exato! O nó ~b é uma folha estéril: nenhuma regra produz ~b e ele não é fato. Como o nó de R6 é do tipo E (AND), a falha em ~b invalida todo o ramo de 'j'!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Cuidado: A afirmação é verdadeira! A falha no encadeamento regressivo ocorre precisamente porque não há suporte para a submeta ~b.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 4: FORWARD CHAINING BASE B -->
+    <section class="card-exercise" id="q4" data-hint="Na base B (~a, l, g), R4 gera b e j, R6 gera e, R3 gera h e ~i, e R8 (j ∧ ~i → q) gera q. Com q em BF, a meta disjuntiva q ∨ c é provada. Digite 'sim' ou 'nao'.">
+      <div class="exercise-header">
+        <h3>Questão 4: Validação da Meta na Base B</h3>
+      </div>
+      <div class="question-text">
+        Na Base B com fatos iniciais $BF = \{\sim a, l, g\}$ e meta $q \vee c$:<br><br>
+        <strong>A meta disjuntiva $q \vee c$ é satisfatoriamente provada após a execução do encadeamento progressivo?</strong> (Digite <code>sim</code> ou <code>nao</code>).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: sim" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Confirmar Meta</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 5: PROPAGAÇÃO MAX-MIN R1 -->
+    <section class="card-exercise" id="q5" data-hint="~f3 = 1 - 0.2 = 0.8. Conjunção min(0.5, 0.5) = 0.5. Disjunção max(0.5, 0.8) = 0.8. Multiplique pelo GC da regra: 0.8 * 0.80 = 0.64.">
+      <div class="exercise-header">
+        <h3>Questão 5: Grau de Certeza Derivado em Max-Min</h3>
+      </div>
+      <div class="question-text">
+        Dada a regra $R_1: f_1 \wedge f_2 \vee \sim f_3 \to \text{doente}$ com $GC_{regra} = 0.80$.<br>
+        Fatos: $GC(f_1) = 0.50$, $GC(f_2) = 0.50$, $GC(f_3) = 0.20$.<br><br>
+        <strong>Calcule o grau de certeza final da conclusão 'doente' produzida por R1 no modelo Max-Min.</strong> (Digite com duas casas decimais, ex: 0.64).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.64" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar GC</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 6: DECISÃO FINAL MAX-MIN -->
+    <section class="card-exercise" id="q6">
+      <div class="exercise-header">
+        <h3>Questão 6: Agrupamento e Decisão Clínica em Max-Min</h3>
+      </div>
+      <div class="question-text">
+        Após a inferência Max-Min de todas as regras clínicas, o agrupamento por máximo resultou em $GC(\text{doente}) = 0.64$ e $GC(\text{saudável}) = 0.72$. Qual é a decisão final tomada pelo sistema especialista?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: 0.64 é estritamente menor do que 0.72. O sistema adota a regra agregada mais forte.">
+          Doente, pois a hipótese de doença possui prioridade crítica de segurança médica.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O critério de decisão em sistemas com fatores de certeza elege a hipótese com o maior grau de certeza agregado. Como 0.72 > 0.64, a decisão final é SAUDÁVEL!">
+          Saudável, pois obteve o maior grau de certeza agregado pelo modelo Max-Min (0.72 > 0.64).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A diferença de 0.08 é suficiente para desempatar; os sistemas especialistas baseados em GC não se declaram inconclusivos quando há assimetria numérica.">
+          Inconclusivo, pois a diferença entre os graus de certeza situa-se abaixo de 0.10.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O agrupamento no Max-Min utiliza a operação de máximo entre as regras da mesma conclusão, e não a média.">
+          Ambas as hipóteses são descartadas por não atingirem o patamar mínimo de 0.80.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 7: NORMALIZAÇÃO PERCENTUAL -->
+    <section class="card-exercise" id="q7" data-hint="Divida 0.72 por (0.64 + 0.72) = 0.72 / 1.36 ≈ 53%. Digite 53% ou 53.">
+      <div class="exercise-header">
+        <h3>Questão 7: Padronização Percentual da Resposta</h3>
+      </div>
+      <div class="question-text">
+        Considerando as certezas brutas $GC(\text{doente}) = 0.64$ e $GC(\text{saudável}) = 0.72$:<br><br>
+        <strong>Qual é o percentual normalizado arredondado (\%) da hipótese vencedora 'Saudável'?</strong> (Digite o valor inteiro com porcentagem, ex: <code>53%</code>).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 53%" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Porcentagem</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 8: SOMA PROBABILÍSTICA -->
+    <section class="card-exercise" id="q8" data-hint="Aplique a fórmula da soma probabilística: 0.68 + 0.54 - (0.68 * 0.54) = 1.22 - 0.3672 = 0.8528 ≈ 0.85.">
+      <div class="exercise-header">
+        <h3>Questão 8: Agrupamento em Soma-Produto (Σ-Π)</h3>
+      </div>
+      <div class="question-text">
+        No modelo Soma-Produto ($\Sigma-\Pi$), duas regras distintas concluíram 'doente' com certezas parciais $GC_1 = 0.68$ e $GC_2 = 0.54$.<br><br>
+        <strong>Calcule o grau de certeza agrupado resultante pela soma probabilística ($a + b - ab$).</strong> (Digite com duas casas decimais, ex: 0.85).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.85" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Calcular Agrupamento</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 9: PROPRIEDADES ALGÉBRICAS -->
+    <section class="card-exercise" id="q9">
+      <div class="exercise-header">
+        <h3>Questão 9: Propriedades Formais dos Operadores de Incerteza</h3>
+      </div>
+      <div class="question-text">
+        Qual das seguintes afirmações sobre as propriedades algébricas dos modelos Max-Min e Soma-Produto ($\Sigma-\Pi$) é <strong>correta</strong>?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: O elemento neutro da conjunção é 1 (pois a ∧ 1 = a). 0 é o elemento absorvente (a ∧ 0 = 0).">
+          O valor 0 é o elemento neutro da conjunção fuzzy (∧) em ambos os modelos.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A comutatividade é universal: a ∧ b = b ∧ a e a ∨ b = b ∧ a em ambos os modelos quando os operadores são avaliados isoladamente.">
+          A comutatividade é satisfeita tanto pela conjunção (∧) quanto pela disjunção (∨) em ambos os modelos de inferência.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A conjunção é MONOTONAMENTE DECRESCENTE (o resultado é sempre menor ou igual às partes), enquanto a disjunção é crescente.">
+          A conjunção fuzzy é monotonamente crescente, aumentando o GC a cada premissa agregada.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Na soma probabilística a ∨ 1 = a + 1 - a = 1, demonstrando que 1 é o elemento absorvente e não neutro.">
+          O valor 1 atua como elemento neutro da disjunção probabilística no modelo Soma-Produto.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 10: FUZZIFICAÇÃO ANALÍTICA -->
+    <section class="card-exercise" id="q10" data-hint="Para x = 240 na variável PESO, o ramo descendente de Médio é (350 - x)/150. Calcule (350 - 240)/150 = 110/150 ≈ 0.733. Digite 0.73.">
+      <div class="exercise-header">
+        <h3>Questão 10: Fuzzificação Analítica de Entrada Real</h3>
+      </div>
+      <div class="question-text">
+        Dada a função de pertinência do conjunto <em>Médio</em> na variável $\text{PESO} \in [0, 350]$:
+        $$\mu_{\text{médio}}(x) = \begin{cases} \frac{x}{200}, & x \le 200 \\ \frac{350 - x}{150}, & x > 200 \end{cases}$$
+        <strong>Calcule o grau de pertinência $\mu_{\text{médio}}(240)$ para o valor de entrada $x = 240$.</strong> (Digite com duas casas decimais, ex: 0.73).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.73" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Pertinência</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 11: TRUNCAMENTO MAMDANI -->
+    <section class="card-exercise" id="q11" data-hint="Multiplique o antecedente pelo GC da regra: 0.73 * 0.75 = 0.5475 ≈ 0.55. Digite 0.55 ou 0.548.">
+      <div class="exercise-header">
+        <h3>Questão 11: Altura de Truncamento na Implicação de Mamdani</h3>
+      </div>
+      <div class="question-text">
+        A regra $R_4$ de um sistema Mamdani possui $GC_{\text{regra}} = 0.75$. Seu antecedente disjuntivo atingiu ativação $\max(\mu_M(\text{PESO}), \mu_M(\text{TAMANHO})) = 0.73$.<br><br>
+        <strong>Qual é a altura de truncamento horizontal aplicada à função de pertinência da conclusão (ESFORÇO MÉDIO)?</strong> (Digite com duas casas decimais, ex: 0.55).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.55" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Truncamento</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 12: DEFUZZIFICAÇÃO MOM -->
+    <section class="card-exercise" id="q12" data-hint="Some as abscissas do platô máximo e divida por 2: (3.288 + 7.808) / 2 = 11.096 / 2 = 5.548 ≈ 5.55. Digite 5.55 ou 5.548.">
+      <div class="exercise-header">
+        <h3>Questão 12: Defuzzificação pela Média dos Máximos (MOM)</h3>
+      </div>
+      <div class="question-text">
+        Na agregação das conclusões pelo método de Mamdani, o patamar máximo de pertinência foi delimitado pelas abscissas $x_1 = 3.288$ e $x_2 = 7.808$.<br><br>
+        <strong>Determine a resposta crisp final obtida pela Média dos Máximos (MOM).</strong> (Digite com duas ou três casas decimais, ex: 5.55).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 5.55" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Calcular MOM</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 13: CONSEQUENTE TSK -->
+    <section class="card-exercise" id="q13" data-hint="Substitua PESO = 240 e TAMANHO = 80 na fórmula: 0.7*240 + 1.2*80 = 168 + 96 = 264.">
+      <div class="exercise-header">
+        <h3>Questão 13: Consequente Funcional em Sistema TSK</h3>
+      </div>
+      <div class="question-text">
+        No sistema fuzzy TSK, a regra $R_1$ possui consequente linear: $\text{ESFORÇO} = 0.7 \times \text{PESO} + 1.2 \times \text{TAMANHO}$.<br><br>
+        <strong>Calcule o valor crisp do consequente para as entradas $\text{PESO} = 240$ e $\text{TAMANHO} = 80$.</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 264" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Calcular Consequente</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 14: MÉDIA PONDERADA TSK -->
+    <section class="card-exercise" id="q14" data-hint="Divida a soma ponderada 379.288 pela soma dos pesos 1.244. O valor resultante é 304.89. Digite 304.89.">
+      <div class="exercise-header">
+        <h3>Questão 14: Defuzzificação TSK por Média Ponderada</h3>
+      </div>
+      <div class="question-text">
+        Após a inferência de todas as regras TSK, obteve-se $\sum (GC_k \times y_k) = 379.288$ e $\sum GC_k = 1.244$.<br><br>
+        <strong>Determine a resposta analítica final produzida pelo modelo TSK.</strong> (Digite com duas casas decimais, ex: 304.89).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 304.89" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Resposta TSK</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 15: RESOLUÇÃO DE CONFLITO WANG & MENDEL -->
+    <section class="card-exercise" id="q15">
+      <div class="exercise-header">
+        <h3>Questão 15: Arbitragem de Conflitos em Wang & Mendel (1992)</h3>
+      </div>
+      <div class="question-text">
+        Duas instâncias de treino mineradas pelo método de Wang & Mendel produziram antecedentes perfeitamente idênticos: <em>"SE Var1 é Baixo e Var2 é Médio e Var3 é Médio"</em>. A Instância #2 propõe consequente <em>"Var4 é GRANDE"</em> com $GC = 0.8330$. A Instância #5 propõe consequente <em>"Var4 é MÉDIO"</em> com $GC = 0.5513$. Qual é o procedimento prescrito pelo algoritmo?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A média aritmética das saídas não preserva a integridade estrutural das regras linguísticas discretas.">
+          Interpolar os consequentes gerando uma regra intermediária híbrida.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! O algoritmo de Wang & Mendel resolve o conflito elegendo estritamente a regra com o MAIOR Grau de Certeza (GC). Como 0.8330 > 0.5513, a regra da Instância #2 é incorporada à base definitiva e a regra #5 é descartada!">
+          Preservar a regra da Instância #2 na base definitiva por possuir maior GC (0.8330), eliminando a regra concorrente #5.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Conflitos não invalidam a mineração; o algoritmo foi formulado justamente com a etapa de seleção por maior GC para resolver essas colisões.">
+          Eliminar ambas as instâncias da base por contradição empírica insolúvel.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A antiguidade da amostra é irrelevante; o critério matemático é estritamente o maior produto de pertinências (GC).">
+          Priorizar a Instância #5 por ter sido processada mais tarde no conjunto de treino.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0016-aprendizado-de-regras-fuzzy-wang-mendel.html">← Lição 0016: Wang & Mendel</a>
+      <a href="0011-simulado-geral-exame-completo.html">Simulado 1: Algoritmos de Busca &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Q1: Primeira regra a disparar na base A (R3)
+      initInputExercise("q1", ["R3", "r3"], "Primeira regra a disparar na Base A é R3");
+
+      // Q2: Causa da falha de j ∧ w
+      initMultipleChoice("q2", "Causa da falha: R3 deriva b afirmativo tornando ~b falso em R6");
+
+      // Q3: Falha em folha regressiva
+      initTrueFalse("q3", true, "Ramo ~b falha por ausência de regra e inexistência como fato",
+        "Exato! ~b não tem suporte dedutivo e nem primitivo, reprovando o nó E de j.",
+        "Atenção: A afirmação é verdadeira! A falha ocorre precisamente no nó ~b.");
+
+      // Q4: Base B provada
+      initInputExercise("q4", ["sim", "s", "true", "provada"], "Meta da base B é provada");
+
+      // Q5: GC derivado R1 (0.64)
+      initInputExercise("q5", ["0.64", "0,64"], "GC derivado R1: 0.8 * 0.80 = 0.64");
+
+      // Q6: Decisão final Max-Min
+      initMultipleChoice("q6", "Decisão final é Saudável por possuir o maior GC (0.72 > 0.64)");
+
+      // Q7: Normalização percentual (53%)
+      initInputExercise("q7", ["53%", "53", "52.9%", "53 %"], "Normalização percentual: 0.72 / 1.36 ≈ 53%");
+
+      // Q8: Soma probabilística (0.85)
+      initInputExercise("q8", ["0.85", "0,85", "0.8528"], "Soma probabilística 0.68 + 0.54 - 0.3672 ≈ 0.85");
+
+      // Q9: Propriedades algébricas
+      initMultipleChoice("q9", "Comutatividade é válida universalmente para AND e OR em ambos os modelos");
+
+      // Q10: Fuzzificação analítica (0.73)
+      initInputExercise("q10", ["0.73", "0,73", "0.733", "0,733"], "Fuzzificação Peso=240: 110/150 ≈ 0.73");
+
+      // Q11: Truncamento Mamdani (0.55 ou 0.548)
+      initInputExercise("q11", ["0.55", "0,55", "0.548", "0,548", "0.54"], "Altura de truncamento R4: 0.73 * 0.75 ≈ 0.55");
+
+      // Q12: MOM analítico (5.55)
+      initInputExercise("q12", ["5.55", "5,55", "5.548", "5,548", "5.5"], "MOM: (3.288 + 7.808)/2 = 5.548");
+
+      // Q13: Consequente TSK (264)
+      initInputExercise("q13", ["264"], "Consequente TSK R1: 0.7*240 + 1.2*80 = 264");
+
+      // Q14: Média ponderada TSK (304.89)
+      initInputExercise("q14", ["304.89", "304,89", "304.9", "304,9"], "Média ponderada TSK: 379.288 / 1.244 = 304.89");
+
+      // Q15: Resolução Wang & Mendel
+      initMultipleChoice("q15", "Wang & Mendel elege a regra com maior GC (0.8330) descartando a menor (0.5513)");
+    });
+  </script>
+</body>
+</html>

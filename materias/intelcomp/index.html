@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inteligência Computacional — Algoritmos de Busca</title>
+  <title>Inteligência Computacional — Buscas, Sistemas Especialistas & Lógica Fuzzy</title>
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -17,7 +17,7 @@
     <header>
       <h1>Inteligência Computacional</h1>
       <p style="color: var(--text-muted); margin-top: 0.25rem;">
-        Algoritmos de busca cegos e heurísticos.
+        Algoritmos de busca cegos e heurísticos, sistemas especialistas, inferência com incerteza e lógica fuzzy.
       </p>
     </header>
 
@@ -25,6 +25,7 @@
       <a href="../../index.html">← Estudos</a>
       <a href="reference/0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
       <a href="reference/0002-formulas-e-heuristicas-guia-rapido.html">Ficha: Heurísticas</a>
+      <a href="reference/0003-sistemas-especialistas-fuzzy-guia-rapido.html">Ficha: Sistemas Especialistas & Fuzzy</a>
     </div>
 
     <!-- MÓDULO 1: BUSCAS NÃO INFORMADAS (CEGAS) -->
@@ -153,19 +154,93 @@
       </div>
     </section>
 
-    <!-- SIMULADO GERAL -->
+    <!-- MÓDULO 3: SISTEMAS ESPECIALISTAS E LÓGICA FUZZY -->
     <section class="card-exercise">
       <div class="exercise-header">
-        <h2>Simulado Geral</h2>
+        <h2>Módulo 3: Sistemas Especialistas e Lógica Fuzzy</h2>
+      </div>
+      <div class="options-list">
+        <a href="lessons/0012-sistemas-especialistas-encadeamento-progressivo-regressivo.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0012: Encadeamento Progressivo e Regressivo</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Arquitetura de sistemas especialistas, Modus Ponens, dedução orientada a dados vs. orientada a metas e árvores E/OU.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0013-raciocinio-com-incerteza-fatores-de-certeza-maxmin-soma-produto.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0013: Raciocínio com Incerteza e Graus de Certeza</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Fatores de certeza ($GC$), propagação condicional, modelos Max-Min vs. Soma-Produto ($\Sigma-\Pi$), normalização e propriedades algébricas.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0014-logica-fuzzy-e-sistemas-de-controle-mamdani.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0014: Lógica Fuzzy e Controle de Mamdani</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Fuzzificação analítica, variáveis linguísticas, implicação por truncamento mínimo e defuzzificação pela Média dos Máximos (MOM).
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0015-sistemas-fuzzy-takagi-sugeno-kang-tsk.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0015: Sistemas Fuzzy Takagi-Sugeno-Kang (TSK)</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Consequentes funcionais lineares, graus de disparo, eliminação de defuzzificação geométrica e média ponderada em tempo real.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0016-aprendizado-de-regras-fuzzy-wang-mendel.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0016: Aprendizado de Regras Fuzzy (Wang & Mendel 1992)</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Extração indutiva de conhecimento a partir de tabelas numéricas, cálculo de $GC$ do par dado-regra e arbitragem de regras conflitantes.
+            </small>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- SIMULADOS -->
+    <section class="card-exercise">
+      <div class="exercise-header">
+        <h2>Simulados</h2>
       </div>
       <div class="options-list">
         <a href="lessons/0011-simulado-geral-exame-completo.html" class="option-btn" style="text-decoration: none;">
           <div>
             <div style="margin-bottom: 0.25rem;">
-              <strong style="color: var(--accent);">Simulado 0011: Exame Mestre (12 Questões)</strong>
+              <strong style="color: var(--accent);">Simulado 1: Algoritmos de Busca (Exame Completo — 12 Questões)</strong>
             </div>
             <small style="color: var(--text-muted); display: block;">
               Questões integradas cobrindo os 10 algoritmos de busca sobre topologia unificada.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/simulado-sistemas-especialistas.html" class="option-btn" style="text-decoration: none; border-color: rgba(155, 44, 44, 0.4);">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Simulado 2: Sistemas Especialistas e Lógica Fuzzy (Exame Completo — 15 Questões)</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Exame mestre integrado com Modus Ponens, Forward e Backward Chaining, Max-Min, Soma-Produto, Mamdani MOM, TSK e Wang & Mendel.
             </small>
           </div>
         </a>
@@ -189,6 +264,13 @@
           <div>
             <strong style="color: var(--accent);">Ficha de Consulta: Buscas Informadas e Heurísticas</strong><br>
             <small style="color: var(--text-muted);">Funções de avaliação, propriedades de admissibilidade/consistência e heurísticas clássicas.</small>
+          </div>
+        </a>
+
+        <a href="reference/0003-sistemas-especialistas-fuzzy-guia-rapido.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <strong style="color: var(--accent);">Guia Rápido: Sistemas Especialistas e Lógica Fuzzy</strong><br>
+            <small style="color: var(--text-muted);">Formulário de prova: Modus Ponens, Max-Min, Soma-Produto, Mamdani MOM, TSK e Wang & Mendel.</small>
           </div>
         </a>
       </div>

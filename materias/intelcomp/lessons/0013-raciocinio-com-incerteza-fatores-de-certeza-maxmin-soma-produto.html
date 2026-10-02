@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0013: Raciocínio com Incerteza e Graus de Certeza — Sistemas Especialistas</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0013</div>
+      <h1>Raciocínio com Incerteza: Graus de Certeza, Max-Min e Soma-Produto</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Fatores de certeza ($GC$), propagação condicional, operadores Max-Min vs. Soma-Produto ($\Sigma-\Pi$), combinação de evidências e propriedades algébricas.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0012-sistemas-especialistas-encadeamento-progressivo-regressivo.html">Lição Anterior: 0012 — Encadeamento</a>
+    </div>
+
+    <!-- BLOCO 1: PROPAGAÇÃO DE GRAUS DE CERTEZA -->
+    <section class="card-theory">
+      <h2>1. Fator de Confiança e Propagação de Grau de Certeza ($GC$)</h2>
+      <p>
+        No mundo real, fatos observados raramente são $100\%$ absolutos e regras heurísticas possuem exceções. Atribui-se a cada fato $f_i$ e a cada regra $R_k$ um <strong>Grau de Certeza</strong> ($GC \in [0, 1]$).
+      </p>
+      <p>
+        Quando uma regra $R_k: \text{Antecedente} \to \text{Conclusão}$ é disparada, o grau de certeza transmitido à sua conclusão depende tanto da força do antecedente quanto da confiança intrínseca da regra:
+      </p>
+      <p style="text-align: center; font-size: 1.15rem; margin: 0.5rem 0;">
+        $$GC_{conclusão} = GC_{antecedente} \times GC_{regra}$$
+      </p>
+      <p>
+        A negação de qualquer evidência é regida universalmente pelo complemento:
+      </p>
+      <p style="text-align: center; font-size: 1.1rem; margin: 0.35rem 0;">
+        $$GC(\sim f_i) = 1 - GC(f_i)$$
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1: PROPAGAÇÃO BÁSICA -->
+    <section class="card-exercise" id="ex1" data-hint="GC_ant = 1 - 0.2 = 0.8. Aplique GC_conc = 0.8 * 0.85 = 0.68. Digite o número com ponto ou vírgula.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Propagação de Certeza com Negação</h3>
+      </div>
+      <div class="question-text">
+        Seja a regra $R: \sim febre \to \text{alta\_hospitalar}$ com $GC_{regra} = 0.85$. O paciente foi avaliado e mediu-se o fato primitivo $GC(febre) = 0.20$.<br><br>
+        <strong>Qual é o grau de certeza $GC$ resultante para a conclusão $\text{alta\_hospitalar}$ gerada por esta regra?</strong> (Digite com duas casas decimais, ex: 0.68).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.68" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Calcular GC</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: INFERÊNCIA MAX-MIN -->
+    <section class="card-theory">
+      <h2>2. O Modelo de Inferência Max-Min (Zadeh Clássico)</h2>
+      <p>
+        No modelo <strong>Max-Min</strong>, os conectivos lógicos operam através dos operadores extremais:
+      </p>
+      <ul>
+        <li><strong>Conjunção ($A \wedge B$):</strong> $\min(GC_A, GC_B)$ — a força da corrente é limitada pelo seu elo mais fraco.</li>
+        <li><strong>Disjunção ($A \vee B$):</strong> $\max(GC_A, GC_B)$ — a evidência mais forte prevalece.</li>
+        <li><strong>Negação ($\sim A$):</strong> $1 - GC_A$.</li>
+        <li><strong>Agrupamento de Conclusões Idênticas:</strong> Se múltiplas regras distintas inferirem a mesma conclusão (ex: $R_1 \to \text{doente}$ com $0.64$ e $R_4 \to \text{doente}$ com $0.63$), o modelo Max-Min combina-as tomando o <strong>máximo</strong>:
+          $$\max(0.64, 0.63) = 0.64$$
+        </li>
+      </ul>
+      <p>
+        A <strong>Decisão Final</strong> elege a hipótese com a regra agregada mais forte (maior $GC$).
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 2: MAX-MIN COM AGRUPAMENTO -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Inferência Max-Min e Decisão Clínica</h3>
+      </div>
+      <div class="question-text">
+        Dada a regra $R_1: f_1 \wedge f_2 \vee \sim f_3 \to \text{doente}$ ($GC_{regra} = 0.80$). Os fatos possuem: $GC_{f1} = 0.50$, $GC_{f2} = 0.50$, $GC_{f3} = 0.20$.<br>
+        Qual é, respectivamente, o $GC_{antecedente}$ e o $GC_{\text{doente}}$ derivado por $R_1$ no modelo Max-Min?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A negação ~f3 resulta em 1 - 0.2 = 0.8. A disjunção max(min(0.5, 0.5), 0.8) escolhe o máximo entre 0.5 e 0.8, que é 0.8!">
+          GC_antecedente = 0.50 e GC_doente = 0.40
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! min(f1, f2) = min(0.5, 0.5) = 0.5. A negação ~f3 é 1 - 0.2 = 0.8. A disjunção toma max(0.5, 0.8) = 0.8. Multiplicando pelo GC da regra: 0.8 × 0.80 = 0.64!">
+          GC_antecedente = 0.80 e GC_doente = 0.64
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Não confunda Max-Min com Soma-Produto; no Max-Min a conjunção é o mínimo min(0.5, 0.5) = 0.5 e não o produto 0.25.">
+          GC_antecedente = 0.25 e GC_doente = 0.20
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O GC da regra (0.80) deve ser multiplicado pelo GC_antecedente (0.80), resultando em 0.64, e não somado.">
+          GC_antecedente = 0.80 e GC_doente = 1.00
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: INFERÊNCIA SOMA-PRODUTO (SIGMA - PI) -->
+    <section class="card-theory">
+      <h2>3. O Modelo de Inferência Soma-Produto ($\Sigma - \Pi$)</h2>
+      <p>
+        No modelo <strong>Soma-Produto</strong>, as incertezas são tratadas sob óptica probabilística / contínua:
+      </p>
+      <ul>
+        <li><strong>Conjunção ($A \wedge B$):</strong> Produto $\Pi = GC_A \times GC_B$.</li>
+        <li><strong>Disjunção ($A \vee B$):</strong> Soma probabilística:
+          $$GC_A \oplus GC_B = GC_A + GC_B - (GC_A \times GC_B)$$
+        </li>
+        <li><strong>Negação ($\sim A$):</strong> $1 - GC_A$.</li>
+        <li><strong>Agrupamento de Conclusões Idênticas:</strong> Múltiplas evidências independentes apoiam e reforçam a hipótese através da soma probabilística cumulativa:
+          $$GC_{total} = GC_1 + GC_2 - (GC_1 \times GC_2)$$
+        </li>
+      </ul>
+      <p>
+        <strong>Exemplo da Lista:</strong> Duas regras concluem <em>doente</em> com $0.68$ e $0.54$. A combinação $\Sigma-\Pi$ resulta em:
+        $$0.68 + 0.54 - (0.68 \times 0.54) = 1.22 - 0.3672 = 0.8528 \approx 0.85$$
+        Enquanto o Max-Min estacionaria em $0.64$, o Soma-Produto acumula o reforço mútuo das duas regras até $0.85$!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3: SOMA PROBABILÍSTICA -->
+    <section class="card-exercise" id="ex3" data-hint="Calcule a + b - a*b = 0.60 + 0.50 - (0.60 * 0.50) = 1.10 - 0.30 = 0.80.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Agrupamento Probabilístico ($\Sigma - \Pi$)</h3>
+      </div>
+      <div class="question-text">
+        Duas regras independentes em um sistema de diagnóstico automotivo apontam falha no alternador com graus $GC_1 = 0.60$ e $GC_2 = 0.50$.<br><br>
+        <strong>Qual é o grau de certeza agrupado final pelo modelo Soma-Produto ($\Sigma-\Pi$)?</strong> (Digite com duas casas decimais, ex: 0.80).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.80" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Calcular Agrupamento</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: NORMALIZAÇÃO EM % E PROPRIEDADES FORMAIS -->
+    <section class="card-theory">
+      <h2>4. Padronização Percentual e Propriedades Formais</h2>
+      <p>
+        Para apresentar o resultado final ao usuário de forma comparativa, as certezas das hipóteses em disputa são <strong>normalizadas</strong> em porcentagem dividindo cada uma pela soma total dos $GC$ das conclusões:
+      </p>
+      <p style="text-align: center; font-size: 1.1rem; margin: 0.5rem 0;">
+        $$GC_{\%}(C_i) = \frac{GC(C_i)}{\sum_{j} GC(C_j)} \times 100\%$$
+      </p>
+      <p>
+        No exercício oficial, obtém-se $GC(doente) = 0.64$ e $GC(saudável) = 0.72$ (Soma = $1.36$):
+        <br>• $GC_{\%}(doente) = \frac{0.64}{1.36} \approx 47\%$
+        <br>• $GC_{\%}(saudável) = \frac{0.72}{1.36} \approx 53\%$
+      </p>
+
+      <div class="callout definition">
+        <div class="callout-title">📐 Propriedades Formais das Inferências (Questão 3 da Lista)</div>
+        <ul>
+          <li><strong>Comutatividade:</strong> Válida para $\wedge$ e $\vee$ em ambos os modelos quando isolados ($a \wedge b = b \wedge a$ e $a \vee b = b \vee a$).</li>
+          <li><strong>Associatividade:</strong> No modelo $\Sigma-\Pi$, a soma probabilística $(a \vee b) \vee c = a \vee (b \vee c) = a + b + c - ab - ac - bc + abc$ é perfeitamente associativa.</li>
+          <li><strong>Monotonicidade:</strong>
+            <br>• Conjunção ($\wedge$) é <strong>monotonamente decrescente</strong> ($a \wedge b \le a$).
+            <br>• Disjunção ($\vee$) é <strong>monotonamente crescente</strong> ($a \vee b \ge a$).
+          </li>
+          <li><strong>Elementos Neutros e Absorventes:</strong>
+            <br>• Elemento Neutro: Para $\wedge$ é <strong>$1$</strong> ($a \wedge 1 = a$); para $\vee$ é <strong>$0$</strong> ($a \vee 0 = a$).
+            <br>• Elemento Absorvente: Para $\wedge$ é <strong>$0$</strong> ($a \wedge 0 = 0$); para $\vee$ é <strong>$1$</strong> ($a \vee 1 = 1$).
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 4: ELEMENTO ABSORVENTE E MONOTONICIDADE -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Análise das Propriedades Algébricas</h3>
+      </div>
+      <div class="question-text">
+        A afirmação: <em>"O número 0 atua como elemento neutro na conjunção fuzzy (∧) e como elemento absorvente na disjunção fuzzy (∨)."</em> é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Atenção: Os papéis estão invertidos! 0 é o elemento ABSORVENTE da conjunção (a ∧ 0 = 0). O elemento neutro da conjunção é 1 (a ∧ 1 = a). Para a disjunção, 0 é o neutro (a ∨ 0 = a) e 1 é o absorvente (a ∨ 1 = 1)!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! A afirmação inverteu os papéis: o elemento absorvente da conjunção é 0 (pois a ∧ 0 = 0) e seu elemento neutro é 1. Já na disjunção, 0 é o elemento neutro (a ∨ 0 = a) e 1 é o elemento absorvente (a ∨ 1 = 1)!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 5: SIMULADOR INTERATIVO MAX-MIN VS SOMA-PRODUTO -->
+    <div class="game-box" id="sim-uncertainty">
+      <div class="game-header">
+        <div class="game-title">⚖️ Batalha das Incertezas: Max-Min vs. Soma-Produto ($\Sigma-\Pi$)</div>
+        <span class="game-badge">Simulador Dinâmico</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        Ajuste os fatores de certeza dos fatos de entrada e veja em tempo real como cada modelo calcula a conjunção, a disjunção e a normalização percentual final para as decisões <strong>Doente</strong> vs. <strong>Saudável</strong>.
+      </p>
+
+      <div class="game-canvas-area" style="align-items: stretch;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+          <div class="slider-control-group">
+            <div class="slider-label">
+              <span>GC(f1): Febre</span>
+              <strong id="val-f1">0.50</strong>
+            </div>
+            <input type="range" class="interactive-slider" id="slider-f1" min="0" max="1" step="0.05" value="0.50" oninput="UncertaintySimulator.update()">
+          </div>
+
+          <div class="slider-control-group">
+            <div class="slider-label">
+              <span>GC(f3): Tosse</span>
+              <strong id="val-f3">0.20</strong>
+            </div>
+            <input type="range" class="interactive-slider" id="slider-f3" min="0" max="1" step="0.05" value="0.20" oninput="UncertaintySimulator.update()">
+          </div>
+
+          <div class="slider-control-group">
+            <div class="slider-label">
+              <span>GC(f4): Exame Normal</span>
+              <strong id="val-f4">0.80</strong>
+            </div>
+            <input type="range" class="interactive-slider" id="slider-f4" min="0" max="1" step="0.05" value="0.80" oninput="UncertaintySimulator.update()">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" id="charts-grid">
+          <!-- Max Min Card -->
+          <div style="background-color: var(--bg-card); border: 1px solid var(--border-subtle); padding: 1rem; border-radius: 8px;">
+            <strong style="color: var(--accent); font-size: 0.95rem; display: block; margin-bottom: 0.5rem;">Modelo Max-Min (Extremal)</strong>
+            <div class="bar-chart-container">
+              <div class="bar-row">
+                <span class="bar-label">Doente:</span>
+                <div class="bar-track">
+                  <div class="bar-fill accent" id="bar-maxmin-doente" style="width: 47%;">47%</div>
+                </div>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Saudável:</span>
+                <div class="bar-track">
+                  <div class="bar-fill success" id="bar-maxmin-saudavel" style="width: 53%;">53%</div>
+                </div>
+              </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;" id="txt-maxmin-res">
+              Decisão: <strong>Saudável</strong> (GC bruto: 0.72 vs 0.64)
+            </div>
+          </div>
+
+          <!-- Soma Produto Card -->
+          <div style="background-color: var(--bg-card); border: 1px solid var(--border-subtle); padding: 1rem; border-radius: 8px;">
+            <strong style="color: var(--purple); font-size: 0.95rem; display: block; margin-bottom: 0.5rem;">Modelo Soma-Produto ($\Sigma-\Pi$)</strong>
+            <div class="bar-chart-container">
+              <div class="bar-row">
+                <span class="bar-label">Doente:</span>
+                <div class="bar-track">
+                  <div class="bar-fill purple" id="bar-somaprod-doente" style="width: 50%;">50%</div>
+                </div>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Saudável:</span>
+                <div class="bar-track">
+                  <div class="bar-fill success" id="bar-somaprod-saudavel" style="width: 50%;">50%</div>
+                </div>
+              </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;" id="txt-somaprod-res">
+              Decisão: <strong>Saudável</strong> (GC bruto: 0.86 vs 0.85)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-status-bar" id="uncertainty-status">
+        <span>Arraste os controles deslizantes para simular diferentes perfis de sintomas e conferir a sensibilidade dos modelos.</span>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 5: NORMALIZAÇÃO FINAL PERCENTUAL -->
+    <section class="card-exercise" id="ex5" data-hint="Divida 0.72 por (0.64 + 0.72) = 0.72 / 1.36 = 0.5294... Arredondado dá 53%. Digite 53% ou 53.">
+      <div class="exercise-header">
+        <h3>Exercício 5: Cálculo da Normalização Percentual</h3>
+      </div>
+      <div class="question-text">
+        No exercício do exame com inferência Max-Min, as hipóteses concorrentes atingiram $GC(doente) = 0.64$ e $GC(saudável) = 0.72$.<br><br>
+        <strong>Qual é a probabilidade normalizada (\%) da hipótese vencedora 'Saudável'?</strong> (Digite o valor inteiro em porcentagem, ex: <code>53%</code>).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 53%" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Porcentagem</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0012-sistemas-especialistas-encadeamento-progressivo-regressivo.html">Lição Anterior: 0012</a>
+      <a href="0014-logica-fuzzy-e-sistemas-de-controle-mamdani.html">Próxima: 0014 — Lógica Fuzzy e Controle Mamdani &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    const UncertaintySimulator = {
+      update() {
+        const f1 = parseFloat(document.getElementById("slider-f1").value);
+        const f3 = parseFloat(document.getElementById("slider-f3").value);
+        const f4 = parseFloat(document.getElementById("slider-f4").value);
+
+        document.getElementById("val-f1").textContent = f1.toFixed(2);
+        document.getElementById("val-f3").textContent = f3.toFixed(2);
+        document.getElementById("val-f4").textContent = f4.toFixed(2);
+
+        // Max Min
+        // R1: f1 ^ f1 v ~f3 -> doente (GC=0.80)
+        const ant1_mm = Math.max(f1, 1 - f3);
+        const doente_mm = ant1_mm * 0.80;
+
+        // R6: f4 -> saudavel (GC=0.90)
+        const saudavel_mm = f4 * 0.90;
+
+        const sum_mm = doente_mm + saudavel_mm || 0.001;
+        const p_doente_mm = Math.round((doente_mm / sum_mm) * 100);
+        const p_saudavel_mm = 100 - p_doente_mm;
+
+        document.getElementById("bar-maxmin-doente").style.width = `${p_doente_mm}%`;
+        document.getElementById("bar-maxmin-doente").textContent = `${p_doente_mm}%`;
+        document.getElementById("bar-maxmin-saudavel").style.width = `${p_saudavel_mm}%`;
+        document.getElementById("bar-maxmin-saudavel").textContent = `${p_saudavel_mm}%`;
+        document.getElementById("txt-maxmin-res").innerHTML = `Decisão: <strong>${doente_mm > saudavel_mm ? 'Doente' : 'Saudável'}</strong> (GC bruto: ${doente_mm.toFixed(3)} vs ${saudavel_mm.toFixed(3)})`;
+
+        // Soma Produto
+        // R1 ant: f1*f1 v (1-f3) = (f1*f1) + (1-f3) - (f1*f1)*(1-f3)
+        const p1 = f1 * f1;
+        const p2 = 1 - f3;
+        const ant1_sp = p1 + p2 - (p1 * p2);
+        const doente_sp = ant1_sp * 0.80;
+        const saudavel_sp = f4 * 0.90;
+
+        const sum_sp = doente_sp + saudavel_sp || 0.001;
+        const p_doente_sp = Math.round((doente_sp / sum_sp) * 100);
+        const p_saudavel_sp = 100 - p_doente_sp;
+
+        document.getElementById("bar-somaprod-doente").style.width = `${p_doente_sp}%`;
+        document.getElementById("bar-somaprod-doente").textContent = `${p_doente_sp}%`;
+        document.getElementById("bar-somaprod-saudavel").style.width = `${p_saudavel_sp}%`;
+        document.getElementById("bar-somaprod-saudavel").textContent = `${p_saudavel_sp}%`;
+        document.getElementById("txt-somaprod-res").innerHTML = `Decisão: <strong>${doente_sp > saudavel_sp ? 'Doente' : 'Saudável'}</strong> (GC bruto: ${doente_sp.toFixed(3)} vs ${saudavel_sp.toFixed(3)})`;
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Propagação de certeza
+      initInputExercise("ex1", ["0.68", "0,68"], "GC da conclusão = 0.8 * 0.85 = 0.68");
+
+      // Ex 2: Max-min
+      initMultipleChoice("ex2", "Max-min: max(min(0.5, 0.5), 0.8) = 0.8 e GC = 0.64");
+
+      // Ex 3: Soma probabilística
+      initInputExercise("ex3", ["0.80", "0,80", "0.8", "0,8"], "Soma probabilística 0.6 + 0.5 - 0.3 = 0.80");
+
+      // Ex 4: Elementos absorventes e neutros
+      initTrueFalse("ex4", false, "0 é absorvente de AND e neutro de OR",
+        "Atenção: A afirmação inverteu: 0 é o elemento absorvente do AND e neutro do OR!",
+        "Exato! 0 absorve a conjunção (a ∧ 0 = 0) e é neutro na disjunção (a ∨ 0 = a).");
+
+      // Ex 5: Normalização percentual
+      initInputExercise("ex5", ["53%", "53", "52.9%", "53 %"], "Normalização: 0.72 / 1.36 = 53%");
+
+      UncertaintySimulator.update();
+    });
+  </script>
+</body>
+</html>

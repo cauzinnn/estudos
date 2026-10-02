@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Referência: Sistemas Especialistas e Lógica Fuzzy — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Referência • Módulo 3</div>
+      <h1>Guia Rápido: Sistemas Especialistas e Lógica Fuzzy</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Formulário canônico de prova: Modus Ponens, Encadeamentos, Modelos Max-Min vs. Σ-Π, Mamdani MOM, Takagi-Sugeno-Kang (TSK) e Wang & Mendel.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0001-tabela-buscas-cegas.html">Ficha: Buscas Cegas</a>
+      <a href="0002-formulas-e-heuristicas-guia-rapido.html">Ficha: Heurísticas</a>
+      <a href="../lessons/0012-sistemas-especialistas-encadeamento-progressivo-regressivo.html">Lição 0012: Encadeamento</a>
+    </div>
+
+    <!-- SEÇÃO 1: RACIOCÍNIO AUTOMÁTICO E ENCADEAMENTO -->
+    <section class="card-theory">
+      <h2>1. Raciocínio Automático Clássico (Lógica Proposicional)</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Conceito</th>
+              <th>Definição Formal</th>
+              <th>Propriedades Operacionais</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Base de Fatos ($BF$)</strong></td>
+              <td>Conjunto de proposições atômicas conhecidas como verdadeiras no instante $t$.</td>
+              <td>Dinâmica e mutável; armazena o estado atual da inferência.</td>
+            </tr>
+            <tr>
+              <td><strong>Base de Regras ($BR$)</strong></td>
+              <td>Conjunto estático de cláusulas $R_k: A \to B$ (SE antecedente ENTÃO consequente).</td>
+              <td>Procedural e permanente; conhecimento heurístico codificado.</td>
+            </tr>
+            <tr>
+              <td><strong>Modus Ponens</strong></td>
+              <td>$\frac{A, \quad A \to B}{B}$</td>
+              <td>Premissa verdadeira + regra condicional deduz validamente a conclusão.</td>
+            </tr>
+            <tr>
+              <td><strong>Forward Chaining (Progressivo)</strong></td>
+              <td>Orientado a dados (<em>data-driven</em>): $BF_{\text{início}} \to \text{disparos sucessivos} \to \text{Meta}$.</td>
+              <td>Varre as regras na ordem textual; para ao provar a meta ou atingir ponto fixo.</td>
+            </tr>
+            <tr>
+              <td><strong>Backward Chaining (Regressivo)</strong></td>
+              <td>Orientado a objetivos (<em>goal-driven</em>): $\text{Meta} \to \text{submetas} \to \text{nós-folha em } BF$.</td>
+              <td>Constrói árvore E/OU de trás para frente; retrocede (<em>backtracking</em>) em ramos sem suporte.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: MODELOS DE INFERÊNCIA COM INCERTEZA -->
+    <section class="card-theory">
+      <h2>2. Modelos de Incerteza: Max-Min vs. Soma-Produto ($\Sigma-\Pi$)</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Operador</th>
+              <th>Modelo Max-Min (Extremal)</th>
+              <th>Modelo Soma-Produto ($\Sigma-\Pi$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Negação ($\sim A$)</strong></td>
+              <td>$1 - GC_A$</td>
+              <td>$1 - GC_A$</td>
+            </tr>
+            <tr>
+              <td><strong>Conjunção ($A \wedge B$)</strong></td>
+              <td>$\min(GC_A, GC_B)$</td>
+              <td>$GC_A \times GC_B$ (Produto $\Pi$)</td>
+            </tr>
+            <tr>
+              <td><strong>Disjunção ($A \vee B$)</strong></td>
+              <td>$\max(GC_A, GC_B)$</td>
+              <td>$GC_A + GC_B - (GC_A \times GC_B)$ (Soma Probabilística)</td>
+            </tr>
+            <tr>
+              <td><strong>Disparo de Regra ($GC_{\text{conc}}$)</strong></td>
+              <td>$GC_{\text{ant}} \times GC_{\text{regra}}$</td>
+              <td>$GC_{\text{ant}} \times GC_{\text{regra}}$</td>
+            </tr>
+            <tr>
+              <td><strong>Agrupamento de Conclusões Idênticas</strong></td>
+              <td>$\max(GC_1, GC_2, \dots)$</td>
+              <td>$GC_1 + GC_2 - (GC_1 \times GC_2)$ (Acúmulo de Evidências)</td>
+            </tr>
+            <tr>
+              <td><strong>Normalização Percentual</strong></td>
+              <td colspan="2" style="text-align: center;">$GC_{\%}(C_i) = \frac{GC(C_i)}{\sum_j GC(C_j)} \times 100\%$</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout definition" style="margin-top: 1rem;">
+        <div class="callout-title">📐 Propriedades Formais Algébricas (Questão 3 da Prova)</div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Comutatividade:</strong> Válida para $\wedge$ e $\vee$ em ambos os modelos quando sozinhos.</li>
+          <li><strong>Associatividade:</strong> Válida em $\Sigma-\Pi$ para a soma probabilística: $(a \vee b) \vee c = a+b+c-ab-ac-bc+abc$.</li>
+          <li><strong>Monotonicidade:</strong> Conjunção ($\wedge$) é monotonamente <strong>decrescente</strong> ($\le a$); Disjunção ($\vee$) é monotonamente <strong>crescente</strong> ($\ge a$).</li>
+          <li><strong>Elemento Neutro:</strong> Conjunção $\to \mathbf{1}$; Disjunção $\to \mathbf{0}$.</li>
+          <li><strong>Elemento Absorvente:</strong> Conjunção $\to \mathbf{0}$; Disjunção $\to \mathbf{1}$.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 3: CONTROLE FUZZY DE MAMDANI -->
+    <section class="card-theory">
+      <h2>3. Lógica Fuzzy e Controle de Mamdani</h2>
+      <ul>
+        <li><strong>Fuzzificação:</strong> Mapeia entradas contínuas reais para graus de pertinência $\mu_A(x) \in [0, 1]$.</li>
+        <li><strong>Avaliação do Antecedente:</strong> Operadores $\min$ (E) e $\max$ (OU) sobre os $\mu(x)$.</li>
+        <li><strong>Implicação por Truncamento (Mínimo):</strong> O conjunto de saída é cortado na altura $\alpha = GC_{\text{ant}} \times GC_{\text{regra}}$.</li>
+        <li><strong>Agregação:</strong> União (máximo) dos polígonos truncados de todas as regras ativas.</li>
+        <li><strong>Defuzzificação Média dos Máximos (MOM):</strong> Ponto médio do patamar de pertinência máxima absoluta:
+          $$x_{\text{MOM}} = \frac{x_1 + x_2}{2}$$
+          (onde $x_1$ é o início da subida até a altura de corte e $x_2$ é o ponto de descida).
+        </li>
+      </ul>
+    </section>
+
+    <!-- SEÇÃO 4: SISTEMA FUZZY TAKAGI-SUGENO-KANG (TSK) -->
+    <section class="card-theory">
+      <h2>4. Sistemas Fuzzy Takagi-Sugeno-Kang (TSK)</h2>
+      <ul>
+        <li><strong>Estrutura da Regra:</strong>
+          $$\text{SE } x_1 \text{ é } A_1 \text{ E } x_2 \text{ é } A_2 \text{ ENTÃO } y_k = f_k(x_1, x_2) = a x_1 + b x_2 + c$$
+        </li>
+        <li><strong>Grau de Disparo da Regra:</strong> $GC_k = GC_{\text{ant}_k} \times GC_{\text{regra}_k}$.</li>
+        <li><strong>Defuzzificação por Média Ponderada:</strong> Elimina integrais e cálculo de áreas geométricas:
+          $$Y = \frac{\sum_{k=1}^R GC_k \times y_k}{\sum_{k=1}^R GC_k}$$
+        </li>
+      </ul>
+    </section>
+
+    <!-- SEÇÃO 5: APRENDIZADO WANG & MENDEL (1992) -->
+    <section class="card-theory">
+      <h2>5. Aprendizado de Regras Fuzzy (Wang & Mendel 1992)</h2>
+      <ol>
+        <li>Particionar os domínios em $K$ regiões fuzzy (ex: Pequeno, Médio, Grande).</li>
+        <li>Para cada amostra numérica $(x_1, \dots, x_n, y)$, selecionar o conjunto de <strong>maior pertinência</strong> ($\max \mu$).</li>
+        <li>Gerar a regra candidata IF-THEN com os rótulos selecionados.</li>
+        <li>Calcular o <strong>Grau de Certeza da Regra</strong>:
+          $$GC = \prod_{j=1}^n \mu_{A_j}(x_j) \times \mu_B(y)$$
+        </li>
+        <li><strong>Resolução de Conflitos:</strong> Para regras com antecedentes idênticos e saídas divergentes, <strong>mantém-se a regra com MAIOR $GC$</strong> e descarta-se a concorrente.</li>
+      </ol>
+    </section>
+
+    <div class="lesson-nav">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/0012-sistemas-especialistas-encadeamento-progressivo-regressivo.html">Lição 0012: Encadeamento &rarr;</a>
+    </div>
+
+  </div>
+</body>
+</html>

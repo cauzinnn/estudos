@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0012: Encadeamento Progressivo e Regressivo — Sistemas Especialistas</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0012</div>
+      <h1>Encadeamento Progressivo e Regressivo (Forward & Backward Chaining)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Arquitetura de sistemas especialistas clássicos, Modus Ponens, dedução orientada a dados vs. orientada a metas e árvores E/OU.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0011-simulado-geral-exame-completo.html">Lição Anterior: 0011 — Simulado</a>
+    </div>
+
+    <!-- BLOCO 1: BASE DE CONHECIMENTO E MODUS PONENS -->
+    <section class="card-theory">
+      <h2>1. Arquitetura da Base de Conhecimento e Operador Modus Ponens</h2>
+      <p>
+        Um <strong>Sistema Especialista Clássico</strong> baseado em regras separa estritamente o conhecimento procedural do estado corrente do problema em dois componentes essenciais:
+      </p>
+      <ul>
+        <li>
+          <strong>Base de Fatos ($BF$) ou Memória de Trabalho:</strong> Armazena as evidências e proposições atômicas conhecidas como verdadeiras em um dado instante (ex: $s$, $\sim a$, $febre$, $tensao\_alta$). É dinâmica e mutável ao longo da inferência.
+        </li>
+        <li>
+          <strong>Base de Regras ($BR$):</strong> Conjunto estático de cláusulas condicionais estruturadas no formato <code>SE &lt;antecedente&gt; ENTÃO &lt;consequente&gt;</code> ($A \to B$).
+        </li>
+      </ul>
+      <p>
+        O motor de inferência opera através da regra clássica de dedução <strong>Modus Ponens</strong>: se a base de fatos sustenta a verdade do antecedente $A$, e existe a regra $A \to B$, pode-se deduzir validamente a conclusão $B$, incorporando $B$ à base de fatos.
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Forma Canônica do Modus Ponens</div>
+        <p style="margin-bottom: 0;">
+          $$\frac{A, \quad A \to B}{B}$$
+          Se a premissa for composta por conjunção ($A_1 \wedge A_2$), <em>ambos</em> os literais precisam estar presentes em $BF$. Se for disjunção ($A_1 \vee A_2$), basta que <em>pelo menos um</em> pertença a $BF$.
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 1: MODUS PONENS E COMPONENTES -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Aplicação Formal de Modus Ponens</h3>
+      </div>
+      <div class="question-text">
+        Considere uma base de regras que contém a regra $R_k: (p \wedge \sim q) \vee r \to s \wedge t$. Sabe-se que a base de fatos atual contém estritamente $BF = \{p, w, z\}$. O operador Modus Ponens permite disparar $R_k$ imediatamente neste momento?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A primeira parte da disjunção exige a conjunção p ∧ ~q. Ter p em BF não basta para garantir ~q; em lógica clássica, a ausência de q não prova automaticamente ~q sem hipótese do mundo fechado explicitada como fato.">
+          Sim, pois p está presente em BF e a disjunção com r torna a regra automaticamente disparável.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Para o antecedente (p ∧ ~q) ∨ r ser verdadeiro, é obrigatório que: (1) p e ~q estejam ambos em BF, OU (2) r esteja em BF. Como BF contém apenas {p, w, z}, nenhuma das ramificações disjuntivas está satisfeita!">
+          Não, pois nem a conjunção (p ∧ ~q) e nem o literal r estão plenamente comprovados nos fatos de BF.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: As variáveis w e z não pertencem ao antecedente de Rk, sendo irrelevantes para o disparo ou bloqueio da regra.">
+          Não, porque a presença de variáveis extras como w e z na memória de trabalho anula a regra.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Modus Ponens se aplica normalmente a regras cujo consequente contém conjunção, gerando ambos os literais (s e t) na base de fatos se o antecedente for satisfeito.">
+          Não, pois o Modus Ponens só é aplicável quando o consequente possui um único literal atômico.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: ENCADEAMENTO PROGRESSIVO (FORWARD CHAINING) -->
+    <section class="card-theory">
+      <h2>2. Encadeamento Progressivo (Forward Chaining — Data-Driven)</h2>
+      <p>
+        O <strong>Encadeamento Progressivo</strong> parte dos fatos iniciais disponíveis na $BF$ e realiza ciclos sucessivos de varredura sobre a Base de Regras:
+      </p>
+      <ol>
+        <li>Avalia as regras na ordem em que aparecem na $BR$.</li>
+        <li>Identifica as regras cujos antecedentes são verdadeiros frente à $BF$ corrente.</li>
+        <li>Dispara as regras elegíveis, adicionando suas conclusões à $BF$.</li>
+        <li>Repete o ciclo até que a <strong>meta pretendida seja adicionada aos fatos</strong> (sucesso) ou até que ocorra a <strong>saturação / ponto fixo</strong> sem que nenhuma nova regra consiga disparar (falha).</li>
+      </ol>
+      <p>
+        <strong>Exemplo Prático (Exercício da Lista Oficial):</strong> Considere a base abaixo:
+      </p>
+      <div style="background-color: var(--bg-card-hover); border: 1px solid var(--border-subtle); padding: 0.85rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5;">
+        R1: s ∧ t → a ∧ d<br>
+        R2: a ∧ ~c → h ∧ i<br>
+        R3: ~a ∨ s → p ∧ q ∧ r ∧ b<br>
+        R4: p ∧ s → t ∧ ~c<br>
+        R5: a ∧ b ∧ ~c → e ∨ f ∧ ~g<br>
+        R6: a ∧ ~b → j ∧ l<br>
+        R7: ~r ∨ j ∧ ~m → u ∨ w<br>
+        <strong>Fatos Iniciais:</strong> F1: s, F2: ~m &nbsp;|&nbsp; <strong>Meta:</strong> j ∧ w
+      </div>
+      <p style="margin-top: 0.75rem;">
+        Rastreando passo a passo:
+      </p>
+      <ul>
+        <li>$R_1$ falha (falta $t$), $R_2$ falha (falta $a$).</li>
+        <li>$R_3$ <strong>dispara</strong> porque $s \in BF$. Novos fatos adicionados: $\{p, q, r, b\}$.</li>
+        <li>$R_4$ <strong>dispara</strong> porque $p, s \in BF$. Novos fatos adicionados: $\{t, \sim c\}$.</li>
+        <li>Com $t$ e $s$, $R_1$ agora <strong>dispara</strong> no segundo ciclo: adiciona $\{a, d\}$.</li>
+        <li>Com $a$ e $\sim c$, $R_2$ <strong>dispara</strong>: adiciona $\{h, i\}$.</li>
+        <li>$R_5$ <strong>dispara</strong> ($a, b, \sim c \in BF$): adiciona $e$.</li>
+        <li>$R_6$ ($a \wedge \sim b \to j \wedge l$) <strong>NÃO dispara</strong>, pois $b \in BF$, logo $\sim b$ é falso!</li>
+        <li>Como $j$ nunca é produzido, $R_7$ não satisfaz a conjunção com $\sim m$, e como $r \in BF$, $\sim r$ é falso.</li>
+        <li><strong>Resultado:</strong> A meta $j \wedge w$ <u>NÃO</u> é provada!</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 2: RASTREAMENTO DO FORWARD CHAINING -->
+    <section class="card-exercise" id="ex2" data-hint="Analise a base b) da lista: Fatos iniciais são ~a, l, g. Verifique qual a primeira regra a disparar (R1 a R6) na ordem apresentada.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Rastreamento Progressivo da Base B</h3>
+      </div>
+      <div class="question-text">
+        Dada a base:<br>
+        <code>R1: l ∧ j → ~m</code><br>
+        <code>R2: b ∧ ~p → ~f ∧ g ∧ q</code><br>
+        <code>R3: e ∧ b → h ∧ ~i</code><br>
+        <code>R4: n ∨ ~a → b ∧ j</code><br>
+        <code>R5: ~a ∨ d → r ∨ ~s</code><br>
+        <code>R6: ~a ∧ g → e</code><br>
+        <code>Fatos Iniciais: ~a, l, g</code><br><br>
+        <strong>Qual é o identificador da primeiríssima regra que dispara na ordem textual de varredura (R1 até R6)?</strong>
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: R1" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Regra</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: ENCADEAMENTO REGRESSIVO E ÁRVORES E/OU -->
+    <section class="card-theory">
+      <h2>3. Encadeamento Regressivo (Backward Chaining — Goal-Driven)</h2>
+      <p>
+        O <strong>Encadeamento Regressivo</strong> inverte a direção de busca:
+      </p>
+      <ol>
+        <li>Inicia diretamente na <strong>Meta pretendida</strong> ($G$).</li>
+        <li>Localiza regras na $BR$ cujo <em>consequente</em> unifique com a meta.</li>
+        <li>Transforma os <em>antecedentes</em> dessa regra em <strong>novas submetas</strong> a serem comprovadas.</li>
+        <li>Desce recursivamente pela árvore até atingir nós-folha que sejam <strong>fatos primitivos em $BF$</strong> (ramo aprovado) ou encontrar um beco sem saída (<em>backtracking</em>).</li>
+      </ol>
+      <div class="callout definition">
+        <div class="callout-title">🌲 Árvore E/OU (AND/OR Tree)</div>
+        <p style="margin-bottom: 0;">
+          Para provar uma meta $X$:
+          <br>• Se $X = Y \wedge Z$, é um nó <strong>E (AND)</strong>: obrigatoriamente tanto $Y$ quanto $Z$ precisam ser provados com sucesso.
+          <br>• Se $X = Y \vee Z$, ou se existem duas regras alternativas ($R_a: Y \to X$ e $R_b: Z \to X$), trata-se de um nó <strong>OU (OR)</strong>: basta que um dos ramos atinja fatos confirmados.
+        </p>
+      </div>
+      <p>
+        <strong>A armadilha clássica do exercício:</strong> Na meta $j \wedge w$, o nó é do tipo E. A submeta $j$ exige a regra $R_6$, cujas premissas são $a$ e $\sim b$. Porém, a submeta $\sim b$ não é fato e não existe nenhuma regra com consequente $\sim b$. O ramo de $\sim b$ <strong>falha imediatamente</strong>, invalidando a meta inteira sem precisar sequer expandir $w$!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3: FALHA EM NÓ FOLHA DA ÁRVORE -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: Identificação de Falha no Retrocesso</h3>
+      </div>
+      <div class="question-text">
+        A afirmação: <em>"No Encadeamento Regressivo para provar a meta j ∧ w a partir de BF = {s, ~m}, o sistema conclui que a meta é falsa porque a submeta 'a' não pode ser deduzida na árvore de submetas."</em> é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado: A submeta 'a' PODE ser deduzida (via R1 com antecedentes s e t, provados por R4 e R3). O motivo real da falha é o literal '~b', que não possui nenhuma regra geradora e não existe na base de fatos!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! A submeta 'a' possui sustentação completa através de R1 (s ∧ t), R4 (p ∧ s) e R3 (~a ∨ s). A falha fatal do nó ocorre estritamente na submeta irmã '~b', para a qual inexiste regra na base e cujo fato correspondente b foi gerado como afirmativo.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: MINI-SIMULADOR INTERATIVO DE ENCADEAMENTO -->
+    <div class="game-box" id="sim-chaining">
+      <div class="game-header">
+        <div class="game-title">🕹️ Simulador Interativo: Motor de Inferência (Forward & Backward)</div>
+        <span class="game-badge">Laboratório em Tempo Real</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        Alterne entre as duas bases de regras clássicas da lista. Ative ou desative fatos iniciais clicando nos chips e acompanhe as regras disparando passo a passo até provar ou refutar a meta!
+      </p>
+
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="game-btn secondary" id="btn-load-base-a" onclick="ChainingSimulator.loadBase('a')">Carregar Base A (Meta: j ∧ w)</button>
+        <button class="game-btn secondary" id="btn-load-base-b" onclick="ChainingSimulator.loadBase('b')">Carregar Base B (Meta: q ∨ c)</button>
+      </div>
+
+      <div class="game-canvas-area" style="min-height: 220px; align-items: stretch; justify-content: flex-start;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <strong style="color: var(--text-heading); font-size: 0.9rem;">Memória de Trabalho (Base de Fatos $BF$):</strong>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" id="meta-display">Meta Atual: <strong>j ∧ w</strong></span>
+        </div>
+
+        <div class="chips-container" id="facts-chips">
+          <!-- Chips gerados via JS -->
+        </div>
+
+        <div style="margin-top: 0.75rem;">
+          <strong style="color: var(--text-heading); font-size: 0.9rem;">Status das Regras da Base:</strong>
+        </div>
+        <div id="rules-list-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.4rem; margin-top: 0.4rem;">
+          <!-- Regras geradas via JS -->
+        </div>
+      </div>
+
+      <div class="game-controls">
+        <button class="game-btn success" onclick="ChainingSimulator.stepForward()">⚡ Disparar Próxima Regra (Passo a Passo)</button>
+        <button class="game-btn" onclick="ChainingSimulator.runAll()">🚀 Executar até Ponto Fixo</button>
+        <button class="game-btn secondary" onclick="ChainingSimulator.reset()">🔄 Reiniciar Fatos</button>
+      </div>
+
+      <div class="game-status-bar" id="sim-status">
+        <span>Selecione uma base ou clique em 'Disparar Próxima Regra' para iniciar a inferência.</span>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 4: SÍNTESE DE PROVA DA BASE B -->
+    <section class="card-exercise" id="ex4" data-hint="Na base B com fatos ~a, l, g, a regra R8 (j ∧ ~i → q) gera 'q'. Com q em BF, a meta disjuntiva (q ∨ c) está satisfeita. Digite 'sim' ou 'não'.">
+      <div class="exercise-header">
+        <h3>Exercício 4: Conclusão Final sobre a Base B</h3>
+      </div>
+      <div class="question-text">
+        Considerando a Base B com fatos iniciais $BF = \{\sim a, l, g\}$ e meta $q \vee c$:<br><br>
+        <strong>A meta $q \vee c$ é satisfatoriamente provada ao término do encadeamento progressivo?</strong> (Digite <code>sim</code> ou <code>nao</code>).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: sim" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Confirmar Diagnóstico</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0011-simulado-geral-exame-completo.html">Lição Anterior: 0011</a>
+      <a href="0013-raciocinio-com-incerteza-fatores-de-certeza-maxmin-soma-produto.html">Próxima: 0013 — Incerteza e Graus de Certeza &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    // SIMULADOR INTERATIVO DE ENCADEAMENTO
+    const ChainingSimulator = {
+      currentBase: 'a',
+      bases: {
+        a: {
+          meta: "j ∧ w",
+          initialFacts: ["s", "~m"],
+          rules: [
+            { id: "R1", text: "s ∧ t → a ∧ d", ant: ["s", "t"], cons: ["a", "d"], fired: false },
+            { id: "R2", text: "a ∧ ~c → h ∧ i", ant: ["a", "~c"], cons: ["h", "i"], fired: false },
+            { id: "R3", text: "~a ∨ s → p ∧ q ∧ r ∧ b", antOr: ["~a", "s"], cons: ["p", "q", "r", "b"], fired: false },
+            { id: "R4", text: "p ∧ s → t ∧ ~c", ant: ["p", "s"], cons: ["t", "~c"], fired: false },
+            { id: "R5", text: "a ∧ b ∧ ~c → e ∨ f ∧ ~g", ant: ["a", "b", "~c"], cons: ["e"], fired: false },
+            { id: "R6", text: "a ∧ ~b → j ∧ l", ant: ["a", "~b"], cons: ["j", "l"], fired: false },
+            { id: "R7", text: "~r ∨ (j ∧ ~m) → u ∨ w", antOr: ["~r", "j ∧ ~m"], cons: ["u", "w"], fired: false }
+          ]
+        },
+        b: {
+          meta: "q ∨ c",
+          initialFacts: ["~a", "l", "g"],
+          rules: [
+            { id: "R1", text: "l ∧ j → ~m", ant: ["l", "j"], cons: ["~m"], fired: false },
+            { id: "R2", text: "b ∧ ~p → ~f ∧ g ∧ q", ant: ["b", "~p"], cons: ["~f", "g", "q"], fired: false },
+            { id: "R3", text: "e ∧ b → h ∧ ~i", ant: ["e", "b"], cons: ["h", "~i"], fired: false },
+            { id: "R4", text: "n ∨ ~a → b ∧ j", antOr: ["n", "~a"], cons: ["b", "j"], fired: false },
+            { id: "R5", text: "~a ∨ d → r ∨ ~s", antOr: ["~a", "d"], cons: ["r", "~s"], fired: false },
+            { id: "R6", text: "~a ∧ g → e", ant: ["~a", "g"], cons: ["e"], fired: false },
+            { id: "R7", text: "~b → c ∧ ~e", ant: ["~b"], cons: ["c", "~e"], fired: false },
+            { id: "R8", text: "j ∧ ~i → q", ant: ["j", "~i"], cons: ["q"], fired: false },
+            { id: "R9", text: "e ∧ ~j ∧ b → ~p", ant: ["e", "~j", "b"], cons: ["~p"], fired: false }
+          ]
+        }
+      },
+      facts: new Set(),
+
+      loadBase(type) {
+        this.currentBase = type;
+        const b = this.bases[type];
+        this.facts = new Set(b.initialFacts);
+        b.rules.forEach(r => r.fired = false);
+
+        document.getElementById("meta-display").innerHTML = `Meta Atual: <strong>${b.meta}</strong>`;
+        document.getElementById("btn-load-base-a").classList.toggle("success", type === 'a');
+        document.getElementById("btn-load-base-b").classList.toggle("success", type === 'b');
+        
+        this.render();
+        this.setStatus(`Base ${type.toUpperCase()} carregada com fatos: {${Array.from(this.facts).join(", ")}}. Meta: ${b.meta}.`);
+      },
+
+      reset() {
+        this.loadBase(this.currentBase);
+      },
+
+      setStatus(msg, isSuccess = false, isError = false) {
+        const el = document.getElementById("sim-status");
+        el.className = "game-status-bar" + (isSuccess ? " success" : isError ? " error" : "");
+        el.innerHTML = `<span>${msg}</span>`;
+      },
+
+      checkRuleEligibility(r) {
+        if (r.fired) return false;
+        if (r.ant) {
+          return r.ant.every(literal => this.facts.has(literal));
+        }
+        if (r.antOr) {
+          return r.antOr.some(literal => {
+            if (literal.includes("∧")) {
+              const parts = literal.split("∧").map(s => s.trim());
+              return parts.every(p => this.facts.has(p));
+            }
+            return this.facts.has(literal);
+          });
+        }
+        return false;
+      },
+
+      stepForward() {
+        const b = this.bases[this.currentBase];
+        const nextRule = b.rules.find(r => this.checkRuleEligibility(r));
+
+        if (!nextRule) {
+          const metaAchieved = this.checkMeta();
+          if (metaAchieved) {
+            this.setStatus(`🎉 Meta '${b.meta}' PROVADA com sucesso! Nenhuma nova regra elegível.`, true);
+          } else {
+            this.setStatus(`⛔ Ponto Fixo atingido! Nenhuma regra adicional pode disparar. A meta '${b.meta}' NÃO foi provada.`, false, true);
+          }
+          return;
+        }
+
+        nextRule.fired = true;
+        nextRule.cons.forEach(c => this.facts.add(c));
+        this.render();
+
+        const metaAchieved = this.checkMeta();
+        if (metaAchieved) {
+          this.setStatus(`⚡ Regra ${nextRule.id} disparou e adicionou: {${nextRule.cons.join(", ")}}! 🎉 A meta '${b.meta}' foi ALCANÇADA!`, true);
+        } else {
+          this.setStatus(`⚡ Regra ${nextRule.id} disparou e gerou fatos: {${nextRule.cons.join(", ")}}. Novos fatos em BF: {${Array.from(this.facts).join(", ")}}.`);
+        }
+      },
+
+      runAll() {
+        let firedAny = false;
+        do {
+          const b = this.bases[this.currentBase];
+          const nextRule = b.rules.find(r => this.checkRuleEligibility(r));
+          if (nextRule) {
+            nextRule.fired = true;
+            nextRule.cons.forEach(c => this.facts.add(c));
+            firedAny = true;
+            if (this.checkMeta()) break;
+          } else {
+            break;
+          }
+        } while (true);
+
+        this.render();
+        const b = this.bases[this.currentBase];
+        if (this.checkMeta()) {
+          this.setStatus(`🎉 Meta '${b.meta}' PROVADA com sucesso após execução completa!`, true);
+        } else {
+          this.setStatus(`⛔ Execução concluída. A meta '${b.meta}' NÃO pôde ser provada a partir dos fatos iniciais.`, false, true);
+        }
+      },
+
+      checkMeta() {
+        const b = this.bases[this.currentBase];
+        if (this.currentBase === 'a') {
+          // j ∧ w
+          return this.facts.has("j") && this.facts.has("w");
+        } else {
+          // q ∨ c
+          return this.facts.has("q") || this.facts.has("c");
+        }
+      },
+
+      render() {
+        const b = this.bases[this.currentBase];
+        const chipsContainer = document.getElementById("facts-chips");
+        chipsContainer.innerHTML = "";
+
+        Array.from(this.facts).sort().forEach(f => {
+          const chip = document.createElement("span");
+          chip.className = "chip fired";
+          chip.innerHTML = `✓ ${f}`;
+          chipsContainer.appendChild(chip);
+        });
+
+        const rulesContainer = document.getElementById("rules-list-container");
+        rulesContainer.innerHTML = "";
+
+        b.rules.forEach(r => {
+          const isEligible = this.checkRuleEligibility(r);
+          const div = document.createElement("div");
+          div.style.padding = "0.45rem 0.65rem";
+          div.style.borderRadius = "6px";
+          div.style.border = "1px solid var(--border-subtle)";
+          div.style.fontSize = "0.82rem";
+          div.style.fontFamily = "var(--font-mono)";
+
+          if (r.fired) {
+            div.style.backgroundColor = "var(--success-bg)";
+            div.style.borderColor = "var(--success)";
+            div.style.color = "var(--success)";
+            div.innerHTML = `<strong>${r.id}:</strong> ${r.text} <span style="float: right;">[DISPARADA]</span>`;
+          } else if (isEligible) {
+            div.style.backgroundColor = "var(--warning-bg)";
+            div.style.borderColor = "var(--warning)";
+            div.style.color = "var(--warning)";
+            div.innerHTML = `<strong>${r.id}:</strong> ${r.text} <span style="float: right;">[PRONTA]</span>`;
+          } else {
+            div.style.backgroundColor = "var(--bg-card)";
+            div.style.color = "var(--text-muted)";
+            div.innerHTML = `<strong>${r.id}:</strong> ${r.text}`;
+          }
+
+          rulesContainer.appendChild(div);
+        });
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Modus Ponens
+      initMultipleChoice("ex1", "Modus Ponens requer satisfação total do antecedente na base de fatos");
+
+      // Ex 2: Primeira regra a disparar (R4)
+      initInputExercise("ex2", ["R4", "r4"], "Primeira regra a disparar na base B é R4");
+
+      // Ex 3: Árvore regressiva
+      initTrueFalse("ex3", false, "Falha na meta ocorre por ausência de regra para ~b e não por a",
+        "Atenção: A submeta 'a' possui sustentação dedutiva em R1. A falha ocorre na submeta ~b!",
+        "Exato! 'a' é dedutível; a meta falha pelo ramo de ~b, que não possui regra produtora.");
+
+      // Ex 4: Meta da Base B provada
+      initInputExercise("ex4", ["sim", "s", "true", "provada"], "Meta da base B é provada");
+
+      // Inicializa Simulador
+      ChainingSimulator.loadBase('a');
+    });
+  </script>
+</body>
+</html>

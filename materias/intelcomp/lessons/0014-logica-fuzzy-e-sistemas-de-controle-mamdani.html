@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0014: Lógica Fuzzy e Controle de Mamdani — Sistemas Especialistas</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0014</div>
+      <h1>Lógica Fuzzy e Sistemas de Inferência de Mamdani</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Fuzzificação analítica, variáveis linguísticas, implicação por truncamento mínimo, agregação gráfica e defuzzificação pela Média dos Máximos (MOM).
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0013-raciocinio-com-incerteza-fatores-de-certeza-maxmin-soma-produto.html">Lição Anterior: 0013 — Incerteza</a>
+    </div>
+
+    <!-- BLOCO 1: FUZZIFICAÇÃO E FUNÇÕES DE PERTINÊNCIA -->
+    <section class="card-theory">
+      <h2>1. Fuzzificação e Variáveis Linguísticas</h2>
+      <p>
+        Enquanto a lógica booleana restringe a verdade a $\{0, 1\}$, a <strong>Lógica Fuzzy</strong> modela o mundo através de variáveis linguísticas cujos valores são conjuntos nebulosos definidos por uma <strong>função de pertinência</strong> $\mu(x) \in [0, 1]$.
+      </p>
+      <p>
+        Para uma entrada real numérica (valor <em>crisp</em>), a <strong>fuzzificação</strong> consiste em calcular o grau em que o valor pertence a cada rótulo linguístico (ex: <em>Pequeno</em>, <em>Médio</em>, <em>Grande</em>).
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📐 Funções por Partes da Variável PESO [0, 350] (Lista Oficial)</div>
+        <p style="margin-bottom: 0;">
+          $$\mu_{\text{pequeno}}(x) = \begin{cases} x/50, & x \le 50 \\ 1, & 50 < x < 100 \\ (150 - x)/50, & 100 \le x \le 150 \\ 0, & x \ge 150 \end{cases} \quad
+          \mu_{\text{médio}}(x) = \begin{cases} x/200, & x \le 200 \\ (350 - x)/150, & x > 200 \end{cases}$$
+          $$\mu_{\text{grande}}(x) = \begin{cases} 0, & x \le 100 \\ (x - 100)/250, & x > 100 \end{cases}$$
+        </p>
+      </div>
+      <p>
+        Se a entrada for $x = 240$, ela supera $200$ e entra no ramo descendente de <em>Médio</em>:
+        $$\mu_{\text{médio}}(240) = \frac{350 - 240}{150} = \frac{110}{150} \approx 0.733$$
+        E no ramo ascendente de <em>Grande</em> ($x > 100$):
+        $$\mu_{\text{grande}}(240) = \frac{240 - 100}{250} = \frac{140}{250} = 0.560$$
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1: FUZZIFICAÇÃO PONTUAL -->
+    <section class="card-exercise" id="ex1" data-hint="Para x = 80 na variável TAMANHO [0, 250], a função médio é (x - 50)/100 para 50 < x <= 150. Calcule (80 - 50)/100.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Fuzzificação Analítica da Entrada</h3>
+      </div>
+      <div class="question-text">
+        Dada a variável linguística $\text{TAMANHO} \in [0, 250]$ com conjunto $\text{Médio}$:
+        $$\mu_{\text{médio}}(x) = \begin{cases} \frac{x - 50}{100}, & 50 < x \le 150 \\ \frac{250 - x}{100}, & x > 150 \\ 0, & \text{caso contrário} \end{cases}$$
+        <strong>Calcule o grau de pertinência $\mu_{\text{médio}}(80)$ para a entrada $x = 80$.</strong> (Digite com duas casas decimais, ex: 0.30).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.30" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Pertinência</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: INFERÊNCIA DE MAMDANI E TRUNCAMENTO MÍNIMO -->
+    <section class="card-theory">
+      <h2>2. O Mecanismo de Inferência de Mamdani</h2>
+      <p>
+        No sistema padrão de <strong>Mamdani</strong> (1975), a inferência segue 4 etapas fundamentais:
+      </p>
+      <ol>
+        <li><strong>Avaliação do Antecedente:</strong> Aplica $\min$ para operadores <code>E</code> e $\max$ para <code>OU</code> sobre os graus de pertinência das variáveis de entrada.</li>
+        <li><strong>Fator da Regra:</strong> Multiplica a ativação do antecedente pela confiança da regra ($GC_{regra}$).</li>
+        <li><strong>Implicação por Truncamento (Corte Mínimo):</strong> O conjunto fuzzy da conclusão de cada regra tem sua altura máxima 'ceifada' (truncada horizontalmente) no nível do grau de ativação calculado ($\alpha_k = GC_{regra} \times GC_{ant}$).</li>
+        <li><strong>Agregação Gráfica:</strong> Une os gráficos truncados de todas as regras disparadas tomando o envelope superior (máximo pontual de todos os polígonos).</li>
+      </ol>
+      <p>
+        <strong>Exemplo da Lista (Regra R4):</strong> <em>"Se PESO é MÉDIO ou TAMANHO é MÉDIO, então ESFORÇO é MÉDIO (GC = 0.75)"</em>
+        <br>• Antecedente: $\max(\mu_{\text{médio}}(\text{PESO}), \mu_{\text{médio}}(\text{TAMANHO})) = \max(0.73, 0.30) = 0.73$.
+        <br>• Ativação final da regra: $GR_4 = 0.73 \times 0.75 \approx 0.548$.
+        <br>O triângulo de <em>ESFORÇO = MÉDIO</em> é cortado horizontalmente no nível $y = 0.548$.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 2: ATIVAÇÃO DE REGRA MAMDANI -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Cálculo do Grau de Truncamento de Regra</h3>
+      </div>
+      <div class="question-text">
+        Seja a regra $R_2$: <em>"Se PESO é (MÉDIO ou PEQUENO) e TAMANHO é PEQUENO, então ESFORÇO é PEQUENO"</em> com $GC_{regra} = 0.85$.
+        Sabe-se que $\mu_{\text{médio}}(\text{PESO}) = 0.73$, $\mu_{\text{pequeno}}(\text{PESO}) = 0.00$ e $\mu_{\text{pequeno}}(\text{TAMANHO}) = 0.385$.
+        Qual é a altura de truncamento horizontal aplicada à função de pertinência de <em>ESFORÇO = PEQUENO</em>?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A conjunção 'E' entre o primeiro bloco (0.73) e o tamanho (0.385) utiliza a função mínimo: min(0.73, 0.385) = 0.385, e não 0.73.">
+          Altura = 0.730 × 0.85 = 0.620
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A disjunção (0.73 v 0.0) dá 0.73. A conjunção 'E' com tamanho pequeno (0.385) dá min(0.73, 0.385) = 0.385. Multiplicando pelo GC da regra: 0.385 × 0.85 = 0.327!">
+          Altura = min(max(0.73, 0), 0.385) × 0.85 = 0.327
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: A função de pertinência do consequente deve ser escalada pelo GC da regra (0.85), resultando em 0.327 e não 0.385 bruto.">
+          Altura = 0.385 (o GC da regra não altera a altura geométrica de corte)
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Na implicação de Mamdani utiliza-se o produto com o GC da regra e o truncamento na altura resultante, nunca a soma.">
+          Altura = 0.385 + 0.85 = 1.000
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: MÉTODOS DE DEFUZZIFICAÇÃO E A MÉDIA DOS MÁXIMOS (MOM) -->
+    <section class="card-theory">
+      <h2>3. Métodos de Defuzzificação e a Média dos Máximos (MOM)</h2>
+      <p>
+        A etapa final converte a superfície fuzzy agregada de volta em um número real <em>crisp</em> acionável por atuadores físicos. Os métodos clássicos são:
+      </p>
+      <ul>
+        <li><strong>Média dos Máximos (Mean of Maxima — MOM):</strong> Média aritmética dos extremos do platô onde a função de pertinência agregada atinge seu ápice absoluto:
+          $$x_{\text{MOM}} = \frac{x_{\min} + x_{\max}}{2}$$
+        </li>
+        <li><strong>Menor dos Máximos (SOM):</strong> O primeiro ponto $x_{\min}$ onde o ápice é atingido.</li>
+        <li><strong>Maior dos Máximos (LOM):</strong> O último ponto $x_{\max}$ onde o ápice termina.</li>
+        <li><strong>Centroide / Centro de Gravidade (COG):</strong> Ponto de equilíbrio geométrico das áreas sob a curva agregada: $\frac{\int x \mu(x) dx}{\int \mu(x) dx}$.</li>
+      </ul>
+      <p>
+        <strong>Dedução da Resolução Oficial (Caso A):</strong> O nível mais alto atingido na agregação foi $y_{\max} = 0.548$ pelo conjunto <em>MÉDIO</em> ($\mu(x) = x/6$ para $x \le 6$ e $(10-x)/4$ para $x > 6$):
+        <br>1. Ramo subindo: $x_1 / 6 = 0.548 \implies x_1 = 3.288$.
+        <br>2. Ramo descendo: $(10 - x_2) / 4 = 0.548 \implies 10 - x_2 = 2.192 \implies x_2 = 7.808$.
+        <br>3. Média dos Máximos:
+        $$x_{\text{MOM}} = \frac{3.288 + 7.808}{2} = 5.548$$
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3: CÁLCULO ANALÍTICO DO MOM -->
+    <section class="card-exercise" id="ex3" data-hint="Some 3.288 + 7.808 = 11.096 e divida por 2 = 5.548. Digite 5.55 ou 5.548.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Cálculo da Média dos Máximos (MOM)</h3>
+      </div>
+      <div class="question-text">
+        No sistema de controle de esforço com entradas $\text{PESO}=240$ e $\text{TAMANHO}=80$, a agregação das regras definiu o platô máximo de altura $0.548$ delimitado horizontalmente pelos pontos de abscissa $x_1 = 3.288$ e $x_2 = 7.808$.<br><br>
+        <strong>Determine a resposta crisp final produzida pelo método da Média dos Máximos (MOM).</strong> (Digite com duas ou três casas decimais, ex: 5.55).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 5.55" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Defuzzificação</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: SIMULADOR INTERATIVO VISUAL DO MAMDANI -->
+    <div class="game-box" id="sim-mamdani">
+      <div class="game-header">
+        <div class="game-title">📐 O Cortador Fuzzy de Mamdani: Visualizador de Defuzzificação</div>
+        <span class="game-badge">Simulador Geométrico Interativo</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        Arraste os limites de ativação das três regras (Pequeno, Médio, Grande) para observar em tempo real o truncamento horizontal dos conjuntos, a linha de teto da agregação e o cálculo dinâmico da <strong>Média dos Máximos (MOM)</strong>!
+      </p>
+
+      <div class="game-canvas-area" style="min-height: 280px; align-items: stretch;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+          <div class="slider-control-group">
+            <div class="slider-label"><span>Ativação Pequeno ($\alpha_P$)</span><strong id="val-cut-p">0.33</strong></div>
+            <input type="range" class="interactive-slider" id="slider-cut-p" min="0" max="1" step="0.02" value="0.33" oninput="MamdaniSimulator.update()">
+          </div>
+          <div class="slider-control-group">
+            <div class="slider-label"><span>Ativação Médio ($\alpha_M$)</span><strong id="val-cut-m">0.55</strong></div>
+            <input type="range" class="interactive-slider" id="slider-cut-m" min="0" max="1" step="0.02" value="0.55" oninput="MamdaniSimulator.update()">
+          </div>
+          <div class="slider-control-group">
+            <div class="slider-label"><span>Ativação Grande ($\alpha_G$)</span><strong id="val-cut-g">0.39</strong></div>
+            <input type="range" class="interactive-slider" id="slider-cut-g" min="0" max="1" step="0.02" value="0.39" oninput="MamdaniSimulator.update()">
+          </div>
+        </div>
+
+        <!-- SVG Gráfico Dinâmico de Mamdani -->
+        <svg id="mamdani-svg" width="100%" height="200" viewBox="0 0 540 200" xmlns="http://www.w3.org/2000/svg" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 6px;">
+          <!-- Linhas de Grade e Eixos -->
+          <line x1="40" y1="160" x2="510" y2="160" stroke="var(--border-subtle)" stroke-width="2"/>
+          <line x1="40" y1="20" x2="40" y2="160" stroke="var(--border-subtle)" stroke-width="2"/>
+
+          <!-- Rótulos Eixo X -->
+          <text x="40" y="180" font-size="11" fill="var(--text-muted)" text-anchor="middle">0</text>
+          <text x="181" y="180" font-size="11" fill="var(--text-muted)" text-anchor="middle">3</text>
+          <text x="322" y="180" font-size="11" fill="var(--text-muted)" text-anchor="middle">6</text>
+          <text x="510" y="180" font-size="11" fill="var(--text-muted)" text-anchor="middle">10</text>
+
+          <!-- Triângulos de Contorno (Originais) -->
+          <!-- Pequeno: (0,0) -> (3,1) -> (10,0) -->
+          <polygon points="40,160 181,20 510,160" fill="none" stroke="#2e7d32" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.4"/>
+          <!-- Médio: (0,0) -> (6,1) -> (10,0) -->
+          <polygon points="40,160 322,20 510,160" fill="none" stroke="#0969da" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.4"/>
+          <!-- Grande: (0,0) -> (10,1) -->
+          <polygon points="40,160 510,20 510,160" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.4"/>
+
+          <!-- Polígonos Truncados Preenchidos -->
+          <polygon id="poly-cut-p" points="" fill="rgba(46, 125, 50, 0.25)" stroke="#2e7d32" stroke-width="1.5"/>
+          <polygon id="poly-cut-m" points="" fill="rgba(9, 105, 218, 0.25)" stroke="#0969da" stroke-width="1.5"/>
+          <polygon id="poly-cut-g" points="" fill="rgba(180, 83, 9, 0.25)" stroke="#b45309" stroke-width="1.5"/>
+
+          <!-- Marcador MOM -->
+          <line id="line-mom" x1="0" y1="20" x2="0" y2="160" stroke="#cf222e" stroke-width="2.5" stroke-dasharray="4,3"/>
+          <circle id="circle-mom" cx="0" cy="160" r="5" fill="#cf222e"/>
+          <text id="text-mom-label" x="0" y="15" font-size="11" font-weight="bold" fill="#cf222e" text-anchor="middle">MOM: 5.55</text>
+        </svg>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-size: 0.85rem;" id="mamdani-readout">
+          <span>Platô Máximo: <strong>Médio (y = 0.55)</strong> &nbsp;|&nbsp; Intervalo: [3.29, 7.81]</span>
+          <span style="color: var(--accent); font-weight: bold;">Saída MOM = 5.55</span>
+        </div>
+      </div>
+
+      <div class="game-status-bar" id="mamdani-status">
+        <span>Experimente elevar a ativação de 'Grande' para 0.80 e veja o MOM migrar para a direita!</span>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 4: CARACTERÍSTICA DO MÉTODO MOM -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Comportamento do Defuzzificador MOM</h3>
+      </div>
+      <div class="question-text">
+        A afirmação: <em>"O método da Média dos Máximos (MOM) leva em conta a área total e a largura geométrica de todos os conjuntos secundários com menor grau de pertinência na defuzzificação final."</em> é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Atenção: Essa é a definição do Centroide (COG), e não do MOM! O MOM avalia exclusivamente o patamar onde se atinge o maior valor pontual de pertinência (máximo absoluto), ignorando a área dos conjuntos menores!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! O MOM considera unicamente os limites superior e inferior do patamar de pertinência máxima absoluta. Quem pondera a área total de todos os conjuntos é o método do Centroide (Centro de Gravidade)!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0013-raciocinio-com-incerteza-fatores-de-certeza-maxmin-soma-produto.html">Lição Anterior: 0013</a>
+      <a href="0015-sistemas-fuzzy-takagi-sugeno-kang-tsk.html">Próxima: 0015 — Sistemas Fuzzy TSK &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    const MamdaniSimulator = {
+      // Mapeamento escala de 0 a 10 no SVG: x_pixel = 40 + (val / 10) * 470
+      toSvgX(val) {
+        return 40 + (val / 10) * 470;
+      },
+      toSvgY(mu) {
+        return 160 - (mu * 140);
+      },
+
+      update() {
+        const ap = parseFloat(document.getElementById("slider-cut-p").value);
+        const am = parseFloat(document.getElementById("slider-cut-m").value);
+        const ag = parseFloat(document.getElementById("slider-cut-g").value);
+
+        document.getElementById("val-cut-p").textContent = ap.toFixed(2);
+        document.getElementById("val-cut-m").textContent = am.toFixed(2);
+        document.getElementById("val-cut-g").textContent = ag.toFixed(2);
+
+        // Geometria Pequeno: x/3 até 3, (10-x)/7 depois
+        // Corte ap: ramo subindo: x1 = 3*ap; ramo descendo: x2 = 10 - 7*ap
+        const x1_p = 3 * ap;
+        const x2_p = 10 - 7 * ap;
+        const pts_p = `${this.toSvgX(0)},${this.toSvgY(0)} ${this.toSvgX(x1_p)},${this.toSvgY(ap)} ${this.toSvgX(x2_p)},${this.toSvgY(ap)} ${this.toSvgX(10)},${this.toSvgY(0)}`;
+        document.getElementById("poly-cut-p").setAttribute("points", pts_p);
+
+        // Geometria Médio: x/6 até 6, (10-x)/4 depois
+        const x1_m = 6 * am;
+        const x2_m = 10 - 4 * am;
+        const pts_m = `${this.toSvgX(0)},${this.toSvgY(0)} ${this.toSvgX(x1_m)},${this.toSvgY(am)} ${this.toSvgX(x2_m)},${this.toSvgY(am)} ${this.toSvgX(10)},${this.toSvgY(0)}`;
+        document.getElementById("poly-cut-m").setAttribute("points", pts_m);
+
+        // Geometria Grande: x/10
+        const x1_g = 10 * ag;
+        const pts_g = `${this.toSvgX(0)},${this.toSvgY(0)} ${this.toSvgX(x1_g)},${this.toSvgY(ag)} ${this.toSvgX(10)},${this.toSvgY(ag)} ${this.toSvgX(10)},${this.toSvgY(0)}`;
+        document.getElementById("poly-cut-g").setAttribute("points", pts_g);
+
+        // Cálculo MOM do conjunto mais alto
+        const maxVal = Math.max(ap, am, ag);
+        let mom = 5.55;
+        let setLabel = "Médio";
+        let x_left = x1_m, x_right = x2_m;
+
+        if (maxVal === am && am >= ap && am >= ag) {
+          setLabel = `Médio (y = ${am.toFixed(2)})`;
+          x_left = x1_m;
+          x_right = x2_m;
+          mom = (x1_m + x2_m) / 2;
+        } else if (maxVal === ag && ag >= ap) {
+          setLabel = `Grande (y = ${ag.toFixed(2)})`;
+          x_left = x1_g;
+          x_right = 10;
+          mom = (x1_g + 10) / 2;
+        } else {
+          setLabel = `Pequeno (y = ${ap.toFixed(2)})`;
+          x_left = x1_p;
+          x_right = x2_p;
+          mom = (x1_p + x2_p) / 2;
+        }
+
+        const momSvgX = this.toSvgX(mom);
+        document.getElementById("line-mom").setAttribute("x1", momSvgX);
+        document.getElementById("line-mom").setAttribute("x2", momSvgX);
+        document.getElementById("circle-mom").setAttribute("cx", momSvgX);
+        document.getElementById("text-mom-label").setAttribute("x", momSvgX);
+        document.getElementById("text-mom-label").textContent = `MOM: ${mom.toFixed(2)}`;
+
+        document.getElementById("mamdani-readout").innerHTML = `
+          <span>Platô Máximo: <strong>${setLabel}</strong> &nbsp;|&nbsp; Intervalo: [${x_left.toFixed(2)}, ${x_right.toFixed(2)}]</span>
+          <span style="color: var(--accent); font-weight: bold;">Saída MOM = ${mom.toFixed(2)}</span>
+        `;
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Fuzzificação pontual (80 - 50)/100 = 0.30
+      initInputExercise("ex1", ["0.30", "0,30", "0.3", "0,3"], "Fuzzificação de Tamanho=80: 30/100 = 0.30");
+
+      // Ex 2: Ativação Mamdani
+      initMultipleChoice("ex2", "Corte Mamdani = min(0.73, 0.385) * 0.85 = 0.327");
+
+      // Ex 3: MOM analítico (5.55 ou 5.548)
+      initInputExercise("ex3", ["5.55", "5,55", "5.548", "5,548", "5.54", "5.5"], "Média dos Máximos: (3.288 + 7.808)/2 = 5.548");
+
+      // Ex 4: Defuzzificação MOM ignora áreas inferiores
+      initTrueFalse("ex4", false, "MOM ignora conjuntos secundários inferiores",
+        "Atenção: Essa é a característica do COG (Centroide). O MOM foca apenas no patamar mais alto!",
+        "Exato! O MOM depende unicamente do patamar superior, enquanto o COG pondera todas as áreas.");
+
+      MamdaniSimulator.update();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0015: Sistemas Fuzzy Takagi-Sugeno-Kang (TSK) — Sistemas Especialistas</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0015</div>
+      <h1>Sistemas Fuzzy Takagi-Sugeno-Kang (TSK) e Funções Lineares</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Consequentes funcionais, modelos de ordem 0 e ordem 1, eliminação da defuzzificação geométrica e agregação por média ponderada em tempo real.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0014-logica-fuzzy-e-sistemas-de-controle-mamdani.html">Lição Anterior: 0014 — Mamdani</a>
+    </div>
+
+    <!-- BLOCO 1: A FILOSOFIA TSK -->
+    <section class="card-theory">
+      <h2>1. A Filosofia TSK: Mamdani vs. Takagi-Sugeno-Kang</h2>
+      <p>
+        No sistema clássico de <strong>Mamdani</strong>, tanto o antecedente quanto o consequente são conjuntos fuzzy linguísticos (ex: <em>"SE pressão é alta ENTÃO válvula é muito_fechada"</em>). Isso exige um processo custoso de truncamento geométrico e integração de área para a defuzzificação.
+      </p>
+      <p>
+        Em 1985, Tomohiro Takagi e Michio Sugeno introduziram o modelo <strong>TSK</strong>:
+      </p>
+      <ul>
+        <li>O <strong>antecedente</strong> continua sendo nebuloso/fuzzy (com funções de pertinência $\mu$).</li>
+        <li>O <strong>consequente</strong> é substituído diretamente por uma <strong>função matemática analítica</strong> das variáveis de entrada $x_1, x_2, \dots$:
+          $$y_k = a_0 + a_1 x_1 + a_2 x_2 + \dots$$
+        </li>
+      </ul>
+      <div class="callout definition">
+        <div class="callout-title">⚡ Classes de Modelos TSK</div>
+        <p style="margin-bottom: 0;">
+          • <strong>TSK de Ordem 0:</strong> Consequente é uma constante escalar pura: $y_k = c_k$ (ex: $y_1 = 50$, $y_2 = 120$).
+          <br>• <strong>TSK de Ordem 1:</strong> Consequente é uma equação linear das entradas: $y_k = a x_1 + b x_2 + c$ (ou funções com limites como $\max, \min$).
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 1: DIFERENÇA MAMDANI VS TSK -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Identificação Arquitetural TSK</h3>
+      </div>
+      <div class="question-text">
+        Qual é a principal vantagem operacional do modelo TSK (Takagi-Sugeno-Kang) sobre o modelo tradicional de Mamdani em sistemas embarcados e controladores industriais de alto desempenho?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Ambos os modelos utilizam funções de pertinência clássicas (triangulares, trapezoidais ou gaussianas) na fuzzificação das entradas.">
+          O modelo TSK dispensa a etapa inicial de fuzzificação das variáveis de entrada.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como o consequente de cada regra TSK já é um valor numérico crisp (função matemática), a defuzzificação se resume a uma média ponderada linear rápida, eliminando o pesado truncamento geométrico e cálculo de áreas de Mamdani!">
+          O consequente numérico permite defuzzificação por simples média ponderada, sem custo de integração ou corte de áreas poligonais.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: O número de regras depende da partição do domínio das variáveis; o modelo TSK não diminui intrinsecamente a quantidade de regras necessárias.">
+          O modelo TSK garante que o número de regras da base seja reduzido a no máximo duas regras ativas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A lógica booleana restringe-se a 0 e 1, enquanto TSK mantém plenamente os graus contínuos [0, 1] no antecedente.">
+          O modelo TSK converte a inferência em lógica proposicional booleana sem graus intermediários de certeza.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: CÁLCULO DOS CONSEQUENTES FUNCIONAIS -->
+    <section class="card-theory">
+      <h2>2. Avaliação dos Consequentes Funcionais</h2>
+      <p>
+        Para cada par de entrada real $(x_1, x_2)$, cada regra da base tem seu consequente crisp $y_k$ avaliado substituindo diretamente os valores numéricos.
+      </p>
+      <p>
+        <strong>Regras da Prova (Exercício 5 da Lista Oficial):</strong> Entradas $\text{PESO} = 240$ e $\text{TAMANHO} = 80$:
+      </p>
+      <ul>
+        <li>$R_1: \text{ESFORÇO} = 0.7 \times \text{PESO} + 1.2 \times \text{TAMANHO} \implies 0.7(240) + 1.2(80) = 168 + 96 = \mathbf{264}$.</li>
+        <li>$R_2: \text{ESFORÇO} = \text{PESO} - 0.5 \times \text{TAMANHO} \implies 240 - 0.5(80) = 240 - 40 = \mathbf{200}$.</li>
+        <li>$R_3: \text{ESFORÇO} = \max(2 \times \text{TAMANHO}, 400) \implies \max(160, 400) = \mathbf{400}$.</li>
+        <li>$R_4: \text{ESFORÇO} = 0.5 \times \text{PESO} + 0.6 \times \text{TAMANHO} \implies 0.5(240) + 0.6(80) = 120 + 48 = \mathbf{168}$.</li>
+        <li>$R_5: \text{ESFORÇO} = \min(2 \times \text{PESO}, 400) \implies \min(480, 400) = \mathbf{400}$.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 2: CONSEQUENTE FUNCIONAL PONTUAL -->
+    <section class="card-exercise" id="ex2" data-hint="Substitua PESO = 130 e TAMANHO = 180 na fórmula R1: 0.7*130 + 1.2*180 = 91 + 216 = 307.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Cálculo Analítico do Consequente TSK</h3>
+      </div>
+      <div class="question-text">
+        Seja a regra $R_1$: <em>"SE PESO não é MÉDIO e TAMANHO é GRANDE ENTÃO $\text{ESFORÇO} = 0.7 \times \text{PESO} + 1.2 \times \text{TAMANHO}$"</em>.<br><br>
+        <strong>Calcule o valor crisp do consequente desta regra para as entradas $\text{PESO} = 130$ e $\text{TAMANHO} = 180$.</strong> (Digite apenas o número inteiro).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 307" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Calcular Consequente</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: GRAU DE DISPARO E MÉDIA PONDERADA TSK -->
+    <section class="card-theory">
+      <h2>3. Grau de Disparo e Média Ponderada TSK</h2>
+      <p>
+        Cada regra $R_k$ possui um grau de certeza intrínseco ($GC_{regra}$). Seu <strong>grau de disparo final</strong> $GC_k$ é dado por:
+      </p>
+      <p style="text-align: center; font-size: 1.1rem; margin: 0.4rem 0;">
+        $$GC_k = GC_{\text{antecedente}_k} \times GC_{\text{regra}_k}$$
+      </p>
+      <p>
+        A <strong>Defuzzificação TSK</strong> é a <em>média ponderada</em> de todos os consequentes pelos seus respectivos graus de disparo:
+      </p>
+      <p style="text-align: center; font-size: 1.25rem; margin: 0.6rem 0;">
+        $$Y = \frac{\sum_{k=1}^{R} GC_k \times y_k}{\sum_{k=1}^{R} GC_k}$$
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📊 Rastreamento Numérico Oficial (Entradas 240 e 80)</div>
+        <p style="margin-bottom: 0;">
+          • $GC_1 = 0.0495$, &nbsp; $y_1 = 264$ &nbsp;$\to 0.0495 \times 264 = 13.068$<br>
+          • $GC_2 = 0.3230$, &nbsp; $y_2 = 200$ &nbsp;$\to 0.323 \times 200 = 64.600$<br>
+          • $GC_3 = 0.3610$, &nbsp; $y_3 = 400$ &nbsp;$\to 0.361 \times 400 = 144.400$<br>
+          • $GC_4 = 0.2025$, &nbsp; $y_4 = 168$ &nbsp;$\to 0.2025 \times 168 = 34.020$<br>
+          • $GC_5 = 0.3080$, &nbsp; $y_5 = 400$ &nbsp;$\to 0.308 \times 400 = 123.200$<br>
+          <strong>Soma Ponderada:</strong> $\sum GC_k \cdot y_k = 379.288$<br>
+          <strong>Soma dos Pesos:</strong> $\sum GC_k = 1.244$<br>
+          $$\text{ESFORÇO}_{\text{TSK}} = \frac{379.288}{1.244} \approx \mathbf{304.89}$$
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 3: CÁLCULO DA MÉDIA PONDERADA TSK -->
+    <section class="card-exercise" id="ex3" data-hint="Divida a soma ponderada 379.288 pela soma dos pesos 1.244. O resultado é aproximadamente 304.89. Digite 304.89.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Defuzzificação por Média Ponderada</h3>
+      </div>
+      <div class="question-text">
+        Um sistema TSK obteve a soma dos produtos peso-consequente $\sum (GC_k \times y_k) = 379.288$ e uma soma de graus de disparo $\sum GC_k = 1.244$.<br><br>
+        <strong>Calcule a saída numérica final produzida pelo controlador TSK.</strong> (Digite com duas casas decimais, ex: 304.89).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 304.89" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar Saída TSK</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: SIMULADOR INTERATIVO TSK EM TEMPO REAL -->
+    <div class="game-box" id="sim-tsk">
+      <div class="game-header">
+        <div class="game-title">🎛️ Controlador Industrial TSK: Atuador de Esforço</div>
+        <span class="game-badge">Simulador Dinâmico com Equações</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        Modifique as entradas analógicas de <strong>PESO</strong> e <strong>TAMANHO</strong>. O simulador reavalia as 5 funções lineares e calcula a média ponderada contínua do esforço sem sobressaltos!
+      </p>
+
+      <div class="game-canvas-area" style="min-height: 260px; align-items: stretch;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
+          <div class="slider-control-group">
+            <div class="slider-label">
+              <span>Entrada: PESO [0, 350]</span>
+              <strong id="val-in-peso">240</strong>
+            </div>
+            <input type="range" class="interactive-slider" id="slider-peso" min="0" max="350" step="5" value="240" oninput="TSKSimulator.update()">
+          </div>
+
+          <div class="slider-control-group">
+            <div class="slider-label">
+              <span>Entrada: TAMANHO [0, 250]</span>
+              <strong id="val-in-tamanho">80</strong>
+            </div>
+            <input type="range" class="interactive-slider" id="slider-tamanho" min="0" max="250" step="5" value="80" oninput="TSKSimulator.update()">
+          </div>
+        </div>
+
+        <table class="rules-matrix" id="table-tsk-rules">
+          <thead>
+            <tr>
+              <th>Regra</th>
+              <th>Equação Consequente ($y_k$)</th>
+              <th>Valor $y_k$</th>
+              <th>Grau $GC_k$</th>
+              <th>Parcela ($GC_k \cdot y_k$)</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-tsk">
+            <!-- Gerado via JS -->
+          </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border-subtle); padding: 0.75rem 1rem; border-radius: 6px; margin-top: 0.5rem;">
+          <span style="font-size: 0.9rem;">Soma dos Pesos: <strong id="out-sum-gc">1.244</strong> &nbsp;|&nbsp; Soma Ponderada: <strong id="out-sum-prod">379.29</strong></span>
+          <span style="font-size: 1.15rem; color: var(--accent); font-weight: bold;" id="out-tsk-final">ESFORÇO = 304.89</span>
+        </div>
+      </div>
+
+      <div class="game-status-bar" id="tsk-status">
+        <span>Arraste os controles para simular diferentes condições de operação da máquina.</span>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 4: CONTINUIDADE DA SAÍDA TSK -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Suavidade da Superfície de Controle</h3>
+      </div>
+      <div class="question-text">
+        A afirmação: <em>"Por utilizar consequentes lineares ponderados continuamente, o sistema TSK produz superfícies de controle suaves, evitando as descontinuidades que ocorrem no método MOM quando múltiplos máximos alternam sua dominância."</em> é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Exato! No método MOM, uma variação mínima na entrada pode fazer com que um platô à direita ultrapasse ligeiramente um platô à esquerda, causando um salto brusco (descontinuidade) no atuador. O modelo TSK realiza interpolação suave contínua através da média ponderada!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Cuidado: A afirmação é verdadeira! O método MOM é conhecido justamente pelo risco de saltos bruscos entre máximos. A média ponderada TSK interpola suavemente os consequentes!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0014-logica-fuzzy-e-sistemas-de-controle-mamdani.html">Lição Anterior: 0014</a>
+      <a href="0016-aprendizado-de-regras-fuzzy-wang-mendel.html">Próxima: 0016 — Aprendizado Wang & Mendel &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    const TSKSimulator = {
+      // Pertinência Peso
+      muPeso(x) {
+        let p = 0, m = 0, g = 0;
+        if (x <= 50) p = x / 50;
+        else if (x <= 100) p = 1;
+        else if (x <= 150) p = (150 - x) / 50;
+        else p = 0;
+
+        if (x <= 200) m = x / 200;
+        else if (x <= 350) m = (350 - x) / 150;
+        else m = 0;
+
+        if (x <= 100) g = 0;
+        else g = (x - 100) / 250;
+
+        return { p: Math.max(0, Math.min(1, p)), m: Math.max(0, Math.min(1, m)), g: Math.max(0, Math.min(1, g)) };
+      },
+
+      // Pertinência Tamanho
+      muTam(x) {
+        let p = 0, m = 0, g = 0;
+        if (x <= 130) p = (130 - x) / 130;
+        else p = 0;
+
+        if (x > 50 && x <= 150) m = (x - 50) / 100;
+        else if (x > 150 && x <= 250) m = (250 - x) / 100;
+        else m = 0;
+
+        if (x <= 70) g = 0;
+        else g = (x - 70) / 180;
+
+        return { p: Math.max(0, Math.min(1, p)), m: Math.max(0, Math.min(1, m)), g: Math.max(0, Math.min(1, g)) };
+      },
+
+      update() {
+        const peso = parseFloat(document.getElementById("slider-peso").value);
+        const tam = parseFloat(document.getElementById("slider-tamanho").value);
+
+        document.getElementById("val-in-peso").textContent = peso;
+        document.getElementById("val-in-tamanho").textContent = tam;
+
+        const wp = this.muPeso(peso);
+        const wt = this.muTam(tam);
+
+        // Regras:
+        // R1: Se PESO não é MÉDIO e TAMANHO é GRANDE -> y = 0.7*PESO + 1.2*TAM, GC_r = 0.90
+        const y1 = 0.7 * peso + 1.2 * tam;
+        const gc1 = Math.min(1 - wp.m, wt.g) * 0.90;
+
+        // R2: Se PESO é MÉDIO ou PEQUENO e TAMANHO é PEQUENO -> y = PESO - 0.5*TAM, GC_r = 0.85
+        const y2 = peso - 0.5 * tam;
+        const gc2 = Math.min(Math.max(wp.m, wp.p), wt.p) * 0.85;
+
+        // R3: Se PESO é GRANDE e TAMANHO não é PEQUENO -> y = max(2*TAM, 400), GC_r = 0.95
+        const y3 = Math.max(2 * tam, 400);
+        const gc3 = Math.min(wp.g, 1 - wt.p) * 0.95;
+
+        // R4: Se PESO não é MÉDIO e TAMANHO é MÉDIO -> y = 0.5*PESO + 0.6*TAM, GC_r = 0.75
+        const y4 = 0.5 * peso + 0.6 * tam;
+        const gc4 = Math.min(1 - wp.m, wt.m) * 0.75;
+
+        // R5: Se PESO não é GRANDE e TAMANHO não é PEQUENO -> y = min(2*PESO, 400), GC_r = 0.70
+        const y5 = Math.min(2 * peso, 400);
+        const gc5 = Math.min(1 - wp.g, 1 - wt.p) * 0.70;
+
+        const rows = [
+          { name: "R1", eq: "0.7·P + 1.2·T", y: y1, gc: gc1 },
+          { name: "R2", eq: "P - 0.5·T", y: y2, gc: gc2 },
+          { name: "R3", eq: "max(2·T, 400)", y: y3, gc: gc3 },
+          { name: "R4", eq: "0.5·P + 0.6·T", y: y4, gc: gc4 },
+          { name: "R5", eq: "min(2·P, 400)", y: y5, gc: gc5 }
+        ];
+
+        let sumWeights = 0;
+        let sumProd = 0;
+
+        const tbody = document.getElementById("tbody-tsk");
+        tbody.innerHTML = "";
+
+        rows.forEach(r => {
+          const prod = r.gc * r.y;
+          sumWeights += r.gc;
+          sumProd += prod;
+
+          const tr = document.createElement("tr");
+          if (r.gc > 0.01) tr.className = "active-row";
+          tr.innerHTML = `
+            <td><strong>${r.name}</strong></td>
+            <td><code>${r.eq}</code></td>
+            <td>${r.y.toFixed(1)}</td>
+            <td>${r.gc.toFixed(4)}</td>
+            <td>${prod.toFixed(2)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        const finalOutput = sumWeights > 0 ? (sumProd / sumWeights) : 0;
+
+        document.getElementById("out-sum-gc").textContent = sumWeights.toFixed(3);
+        document.getElementById("out-sum-prod").textContent = sumProd.toFixed(2);
+        document.getElementById("out-tsk-final").textContent = `ESFORÇO = ${finalOutput.toFixed(2)}`;
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Vantagem arquitetural TSK
+      initMultipleChoice("ex1", "TSK utiliza consequente numérico dispensando defuzzificação geométrica pesada");
+
+      // Ex 2: Consequente pontual (0.7*130 + 1.2*180 = 307)
+      initInputExercise("ex2", ["307"], "Consequente R1: 0.7*130 + 1.2*180 = 307");
+
+      // Ex 3: Média ponderada TSK
+      initInputExercise("ex3", ["304.89", "304,89", "304.9", "304,9"], "Média ponderada TSK: 379.288 / 1.244 = 304.89");
+
+      // Ex 4: Suavidade da superfície TSK
+      initTrueFalse("ex4", true, "TSK produz superfícies de controle suaves sem descontinuidades de MOM",
+        "Exato! A média ponderada TSK interpola continuamente, evitando sobressaltos.",
+        "Atenção: A afirmação é verdadeira! O método MOM é sujeito a saltos discretos.");
+
+      TSKSimulator.update();
+    });
+  </script>
+</body>
+</html>

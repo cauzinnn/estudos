@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0016: Aprendizado de Regras Fuzzy (Wang & Mendel 1992) — Sistemas Especialistas</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0016</div>
+      <h1>Aprendizado de Regras Fuzzy a partir de Dados (Wang & Mendel 1992)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Extração indutiva de conhecimento, particionamento de variáveis contínuas, cálculo do grau de certeza do par dado-regra e resolução de regras conflitantes.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="0015-sistemas-fuzzy-takagi-sugeno-kang-tsk.html">Lição Anterior: 0015 — Sistemas TSK</a>
+    </div>
+
+    <!-- BLOCO 1: O MÉTODO DE WANG & MENDEL -->
+    <section class="card-theory">
+      <h2>1. O Método Clássico de Wang & Mendel (1992)</h2>
+      <p>
+        Um dos maiores gargalos da Inteligência Artificial clássica é a <em>extração manual de conhecimento</em> de especialistas humanos (entrevistas lentas e sujeitas a vieses). Em 1992, Li-Xin Wang e Jerry M. Mendel propuseram um método analítico simples e direto para <strong>gerar bases de regras fuzzy automaticamente a partir de tabelas numéricas de dados observados</strong>.
+      </p>
+      <p>
+        O algoritmo executa 5 passos sistemáticos:
+      </p>
+      <ol>
+        <li><strong>Particionamento dos Domínios:</strong> Divide o universo de discurso de cada variável $x_1, \dots, x_n$ e da saída $y$ em $K$ regiões fuzzy com funções de pertinência (ex: <em>Pequeno</em>, <em>Médio</em>, <em>Grande</em>).</li>
+        <li><strong>Mapeamento das Instâncias:</strong> Para cada linha da base $(x_1^{(i)}, \dots, x_n^{(i)}, y^{(i)})$, calcula a pertinência em cada conjunto e atribui à variável o rótulo que obtiver o <strong>maior valor de pertinência</strong> ($\max \mu$).</li>
+        <li><strong>Formulação da Regra Candidata:</strong> Constrói a regra condicional estruturada:
+          $$\text{SE } x_1 \text{ é } A_1^* \text{ E } \dots \text{ E } x_n \text{ é } A_n^* \text{ ENTÃO } y \text{ é } B^*$$
+        </li>
+        <li><strong>Cálculo do Grau de Certeza ($GC$):</strong> Multiplica as pertinências de todas as variáveis daquela tupla:
+          $$GC_{\text{regra}} = \prod_{j=1}^{n} \mu_{A_j^*}(x_j) \times \mu_{B^*}(y)$$
+        </li>
+        <li><strong>Resolução de Conflitos:</strong> Se múltiplas instâncias produzirem regras com <em>antecedentes idênticos</em> mas <em>consequentes diferentes</em>, preserva-se a regra com o <strong>maior $GC$</strong>, descartando as concorrentes mais fracas.</li>
+      </ol>
+    </section>
+
+    <!-- EXERCÍCIO 1: FLUXO DE EXECUÇÃO -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Princípio da Seleção de Rótulos em Wang & Mendel</h3>
+      </div>
+      <div class="question-text">
+        Ao processar uma linha de dados numéricos pelo método de Wang & Mendel, a variável contínua $x_1 = 35$ obteve graus de pertinência $\mu_{\text{pequeno}}(35) = 0.38$, $\mu_{\text{médio}}(35) = 1.00$ e $\mu_{\text{grande}}(35) = 0.00$. Qual rótulo linguístico é incorporado ao antecedente da regra candidata?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A média aritmética das funções não é utilizada para atribuir o rótulo da cláusula condicional.">
+          A média ponderada entre Pequeno e Médio.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Wang & Mendel estipula que cada variável da instância é representada pelo conjunto fuzzy no qual possui o maior grau de pertinência (max μ). Como μ_médio(35) = 1.00 é o máximo, o rótulo selecionado é MÉDIO!">
+          O conjunto 'Médio', pois obteve o maior grau de pertinência absoluta (μ = 1.00).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Pequeno tem pertinência 0.38, que é estritamente menor do que 1.00 de Médio.">
+          O conjunto 'Pequeno', devido à margem de tolerância inferior.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A regra só gera disjunção se houver empate perfeito de pertinências máximas.">
+          Uma disjunção híbrida (Pequeno OU Grande).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 2: CÁLCULO DO GRAU DE CERTEZA DO PAR DADO-REGRA -->
+    <section class="card-theory">
+      <h2>2. Cálculo do Grau de Certeza do Par Dado-Regra ($GC$)</h2>
+      <p>
+        O grau de certeza $GC$ quantifica a intensidade da associação entre aquela linha específica da base de dados e a regra gerada:
+      </p>
+      <p style="text-align: center; font-size: 1.2rem; margin: 0.5rem 0;">
+        $$GC = \mu_{1}(x_1) \times \mu_{2}(x_2) \times \dots \times \mu_{n}(x_n) \times \mu_{\text{saída}}(y)$$
+      </p>
+      <p>
+        <strong>Exemplo da Lista Oficial (Questão 6):</strong>
+        <br>Linha 1: $\text{Var}_1 = 35$, $\text{Var}_2 = 78$, $\text{Var}_3 = 50$, $\text{Var}_4 = 23$.
+        <br>Rótulos de maior pertinência: $\text{Var}_1$ é $M$ ($\mu = 1.00$), $\text{Var}_2$ é $A$ ($\mu = 0.87$), $\text{Var}_3$ é $M$ ($\mu = 0.83$), $\text{Var}_4$ é $P$ ($\mu = 1.00$).
+        <br>Regra gerada: <em>"SE Var1 é M e Var2 é A e Var3 é M ENTÃO Var4 é P"</em>
+        <br>Grau de certeza:
+        $$GC = 1.00 \times 0.87 \times 0.83 \times 1.00 = \mathbf{0.7221}$$
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 2: CÁLCULO DE GC DE PAR DADO-REGRA -->
+    <section class="card-exercise" id="ex2" data-hint="Multiplique 0.89 * 1.00 * 0.83 * 1.00 = 0.7387. Digite 0.7387 ou 0.74.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Cálculo Numérico do GC da Regra</h3>
+      </div>
+      <div class="question-text">
+        Uma tupla de dados gerou a regra: <em>"SE Var1 é A e Var2 é B e Var3 é P ENTÃO Var4 é G"</em>.<br>
+        Os graus de pertinência máximos dos elementos foram: $\mu_{1}(A) = 0.89$, $\mu_{2}(B) = 1.00$, $\mu_{3}(P) = 0.83$ e $\mu_{4}(G) = 1.00$.<br><br>
+        <strong>Calcule o Grau de Certeza ($GC$) atribuído a esta regra pelo método de Wang & Mendel.</strong> (Digite com duas ou quatro casas decimais, ex: 0.74).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.74" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar GC</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 3: RESOLUÇÃO DE CONFLITOS -->
+    <section class="card-theory">
+      <h2>3. Resolução de Regras Conflitantes</h2>
+      <p>
+        Em problemas reais com dados ruidosos, duas amostras distintas podem ter os mesmos perfis de entrada mas saídas conflitantes:
+      </p>
+      <ul>
+        <li><strong>Instância A:</strong> <em>"SE Var1 é Médio E Var2 é Médio ENTÃO Saída é GRANDE"</em> com $GC_A = 0.833$.</li>
+        <li><strong>Instância B:</strong> <em>"SE Var1 é Médio E Var2 é Médio ENTÃO Saída é MÉDIO"</em> com $GC_B = 0.551$.</li>
+      </ul>
+      <p>
+        Uma base de conhecimento não pode conter regras contraditórias. O critério formal de Wang & Mendel resolve o conflito elegendo estritamente a regra que possuir o <strong>maior Grau de Certeza ($GC$)</strong>:
+      </p>
+      <p style="text-align: center; font-size: 1.15rem; margin: 0.4rem 0;">
+        $$\text{Regra Vencedora} = \arg\max \{GC_A, GC_B\} \implies \text{Instância A } (GC = 0.833)$$
+      </p>
+      <p>
+        A regra menos confiável da Instância B é descartada, garantindo uma base consistente e não contraditória.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3: RESOLUÇÃO DE CONFLITO -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: Arbitragem de Conflito em Wang & Mendel</h3>
+      </div>
+      <div class="question-text">
+        Duas regras extraídas de um banco de dados de crédito bancário possuem premissas idênticas: <em>"SE renda é alta E endividamento é moderado"</em>. A regra $R_x$ conclui <em>"aprovar empréstimo"</em> com $GC = 0.71$. A regra $R_y$ conclui <em>"recusar empréstimo"</em> com $GC = 0.84$. Qual é a ação tomada pelo algoritmo?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A média aritmética das duas ações geraria um estado indecidível que violaria a estrutura clássica de regras IF-THEN.">
+          Fazer a média aritmética dos consequentes e concluir 'aprovar com 50% de limite'.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Quando há conflito com antecedentes idênticos, Wang & Mendel elege a regra com o maior GC. Como 0.84 > 0.71, a regra Ry (recusar empréstimo) é mantida e a regra Rx é eliminada!">
+          Adotar exclusivamente a regra Ry (recusar empréstimo) por apresentar o maior GC (0.84), descartando Rx.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Ambas as regras não podem coexistir simultaneamente pois formariam um paradoxo lógico na base de regras.">
+          Manter ambas as regras ativas na base para disparar as duas em paralelo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: O conflito é resolvido imediatamente pelo critério do maior GC, sem precisar descartar todo o histórico de dados.">
+          Descartar ambas as regras e anular o domínio das variáveis renda e endividamento.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- BLOCO 4: SIMULADOR INTERATIVO WANG & MENDEL -->
+    <div class="game-box" id="sim-wang">
+      <div class="game-header">
+        <div class="game-title">🧩 Minerador de Regras: Wang & Mendel (1992)</div>
+        <span class="game-badge">Extrator Indutivo de Regras</span>
+      </div>
+      <p style="margin: 0; font-size: 0.95rem;">
+        Esta tabela interativa contém as instâncias da lista de exercícios. Clique em <strong>'Extrair Regras e Calcular GCs'</strong> para ver o particionador classificar cada tupla, calcular o produto de certezas e arbitrar o conflito entre regras concorrentes!
+      </p>
+
+      <div class="game-canvas-area" style="min-height: 260px; align-items: stretch;">
+        <table class="rules-matrix" id="table-wang-dataset">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Var 1 (Dado)</th>
+              <th>Var 2 (Dado)</th>
+              <th>Var 3 (Dado)</th>
+              <th>Var 4 (Saída)</th>
+              <th>Regra IF-THEN Aprendida</th>
+              <th>GC da Regra</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-wang">
+            <!-- Gerado via JS -->
+          </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border-subtle); padding: 0.75rem 1rem; border-radius: 6px; margin-top: 0.5rem;" id="wang-summary">
+          <span>Total de Amostras: <strong>7</strong> &nbsp;|&nbsp; Regras Ativas: <strong id="wang-active-rules">0</strong></span>
+          <span style="color: var(--success); font-weight: bold;" id="wang-conflict-status">Aguardando mineração...</span>
+        </div>
+      </div>
+
+      <div class="game-controls">
+        <button class="game-btn success" onclick="WangSimulator.extractRules()">⚡ Extrair Regras e Calcular GCs</button>
+        <button class="game-btn secondary" onclick="WangSimulator.resolveConflicts()">⚖️ Resolver Conflitos de Regras</button>
+        <button class="game-btn secondary" onclick="WangSimulator.reset()">🔄 Reiniciar Tabela</button>
+      </div>
+
+      <div class="game-status-bar" id="wang-status">
+        <span>Clique em 'Extrair Regras e Calcular GCs' para executar os passos 2, 3 e 4 de Wang & Mendel.</span>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 4: FALÁCIA DA COMPLETUDE -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Completude da Base Aprendida</h3>
+      </div>
+      <div class="question-text">
+        A afirmação: <em>"O método de Wang & Mendel garante que todas as combinações possíveis de regiões fuzzy no espaço de entrada terão uma regra correspondente gerada, mesmo que não existam dados amostrados para essas regiões."</em> é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Atenção à falácia clássica: O método de Wang & Mendel é puramente indutivo e orientado a dados (data-driven)! Se nenhuma linha do dataset visitou uma dada combinação de variáveis, nenhuma regra é gerada para aquela região, podendo gerar 'buracos' na base se o dataset for esparso!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! Wang & Mendel só produz regras para as regiões efetivamente cobertas pelas amostras de treino. Regiões do espaço de estados sem dados numéricos correspondentes ficam sem regras (lacunas na base), exigindo complementação por especialista ou interpolação!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0015-sistemas-fuzzy-takagi-sugeno-kang-tsk.html">Lição Anterior: 0015</a>
+      <a href="simulado-sistemas-especialistas.html">Próximo: Simulado de Sistemas Especialistas &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    const WangSimulator = {
+      dataset: [
+        { id: 1, v1: 35, v2: 78, v3: 50, v4: 23, rule: "SE V1 é M e V2 é A e V3 é M ENTÃO V4 é P", gc: 0.7221, conflictWith: null, status: "raw" },
+        { id: 2, v1: 20, v2: 61, v3: 66, v4: 65, rule: "SE V1 é B e V2 é M e V3 é M ENTÃO V4 é G", gc: 0.8330, conflictWith: 5, status: "raw" },
+        { id: 3, v1: 68, v2: 3, v3: 8, v4: 90, rule: "SE V1 é A e V2 é B e V3 é P ENTÃO V4 é G", gc: 0.7387, conflictWith: null, status: "raw" },
+        { id: 4, v1: 87, v2: 34, v3: 71, v4: 2, rule: "SE V1 é A e V2 é B e V3 é M ENTÃO V4 é P", gc: 0.7300, conflictWith: null, status: "raw" },
+        { id: 5, v1: 12, v2: 56, v3: 47, v4: 38, rule: "SE V1 é B e V2 é M e V3 é M ENTÃO V4 é M", gc: 0.5513, conflictWith: 2, status: "raw" },
+        { id: 6, v1: 95, v2: 89, v3: 12, v4: 79, rule: "SE V1 é A e V2 é A e V3 é P ENTÃO V4 é G", gc: 0.3920, conflictWith: null, status: "raw" },
+        { id: 7, v1: 45, v2: 21, v3: 98, v4: 39, rule: "SE V1 é M e V2 é B e V3 é G ENTÃO V4 é M", gc: 0.6573, conflictWith: null, status: "raw" }
+      ],
+
+      render() {
+        const tbody = document.getElementById("tbody-wang");
+        tbody.innerHTML = "";
+
+        let activeCount = 0;
+
+        this.dataset.forEach(d => {
+          const tr = document.createElement("tr");
+          let badge = "";
+
+          if (d.status === "extracted") {
+            tr.className = d.conflictWith ? "active-row" : "";
+            badge = d.conflictWith ? `<span class="game-badge" style="background:var(--warning-bg);color:var(--warning);">Conflito c/ #${d.conflictWith}</span>` : `<span class="game-badge" style="background:var(--success-bg);color:var(--success);">Válida</span>`;
+            activeCount++;
+          } else if (d.status === "resolved") {
+            if (d.id === 5) {
+              tr.style.opacity = "0.45";
+              tr.style.textDecoration = "line-through";
+              badge = `<span class="game-badge" style="background:var(--error-bg);color:var(--error);">Descartada (Menor GC)</span>`;
+            } else if (d.id === 2) {
+              tr.className = "active-row";
+              badge = `<span class="game-badge" style="background:var(--success-bg);color:var(--success);">Vencedora (0.833 > 0.551)</span>`;
+              activeCount++;
+            } else {
+              badge = `<span class="game-badge" style="background:var(--success-bg);color:var(--success);">Preservada</span>`;
+              activeCount++;
+            }
+          } else {
+            badge = `<span style="color:var(--text-muted); font-size:0.8rem;">Pendente</span>`;
+          }
+
+          tr.innerHTML = `
+            <td>#${d.id}</td>
+            <td>${d.v1}</td>
+            <td>${d.v2}</td>
+            <td>${d.v3}</td>
+            <td><strong>${d.v4}</strong></td>
+            <td>${d.status === "raw" ? "<em>(clique em extrair)</em>" : `<code>${d.rule}</code>`}</td>
+            <td>${d.status === "raw" ? "-" : d.gc.toFixed(4)}</td>
+            <td>${badge}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById("wang-active-rules").textContent = activeCount;
+      },
+
+      extractRules() {
+        this.dataset.forEach(d => d.status = "extracted");
+        this.render();
+        document.getElementById("wang-conflict-status").innerHTML = `<span style="color:var(--warning);">⚠️ Conflito detectado entre Amostra #2 e #5 (mesmo antecedente, consequentes G vs M)!</span>`;
+        document.getElementById("wang-status").className = "game-status-bar";
+        document.getElementById("wang-status").innerHTML = `<span>7 regras extraídas. Note que as amostras #2 e #5 possuem premissas idênticas (V1=B, V2=M, V3=M) mas saídas contraditórias. Clique em 'Resolver Conflitos'.</span>`;
+      },
+
+      resolveConflicts() {
+        this.dataset.forEach(d => d.status = "resolved");
+        this.render();
+        document.getElementById("wang-conflict-status").innerHTML = `<span style="color:var(--success);">✓ Conflitos resolvidos: 6 regras ativas consolidadas na base final!</span>`;
+        document.getElementById("wang-status").className = "game-status-bar success";
+        document.getElementById("wang-status").innerHTML = `<span>🎉 Conflito arbitrado! A regra #2 (GC = 0.833) venceu a regra #5 (GC = 0.5513). A base final possui 6 regras consistentes!</span>`;
+      },
+
+      reset() {
+        this.dataset.forEach(d => d.status = "raw");
+        this.render();
+        document.getElementById("wang-conflict-status").innerHTML = `<span>Aguardando mineração...</span>`;
+        document.getElementById("wang-status").className = "game-status-bar";
+        document.getElementById("wang-status").innerHTML = `<span>Tabela reiniciada. Clique em 'Extrair Regras e Calcular GCs'.</span>`;
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Seleção de rótulo máximo
+      initMultipleChoice("ex1", "Rótulo atribuído pelo maior grau de pertinência max mu");
+
+      // Ex 2: Cálculo de GC (0.7387 ou 0.74)
+      initInputExercise("ex2", ["0.7387", "0,7387", "0.74", "0,74"], "GC = 0.89 * 1.0 * 0.83 * 1.0 = 0.7387");
+
+      // Ex 3: Resolução de conflito
+      initMultipleChoice("ex3", "Wang & Mendel escolhe a regra com maior GC descartando a mais fraca");
+
+      // Ex 4: Falácia da completude
+      initTrueFalse("ex4", false, "Wang & Mendel só produz regras para regiões onde há dados amostrados",
+        "Atenção: A afirmação é falsa. Wang & Mendel é orientado a dados e pode deixar lacunas no espaço de estados!",
+        "Exato! Regiões sem dados não geram regras; o método não garante completude sem dados.");
+
+      WangSimulator.reset();
+    });
+  </script>
+</body>
+</html>
