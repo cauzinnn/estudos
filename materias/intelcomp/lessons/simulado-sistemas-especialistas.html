@@ -130,10 +130,10 @@
       </div>
       <div class="question-text">
         Na Base B com fatos iniciais $BF = \{\sim a, l, g\}$ e meta $q \vee c$:<br><br>
-        <strong>A meta disjuntiva $q \vee c$ é satisfatoriamente provada após a execução do encadeamento progressivo?</strong> (Digite <code>sim</code> ou <code>nao</code>).
+        <strong>A meta disjuntiva $q \vee c$ é satisfatoriamente provada após a execução do encadeamento progressivo?</strong>
       </div>
       <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: sim" autocomplete="off" spellcheck="false">
+        <input type="text" class="text-input" placeholder="Ex: sim" data-original-placeholder="Ex: sim" autocomplete="off" spellcheck="false">
         <button class="action-btn">Confirmar Meta</button>
       </div>
       <div class="feedback-box"></div>
@@ -147,10 +147,10 @@
       <div class="question-text">
         Dada a regra $R_1: f_1 \wedge f_2 \vee \sim f_3 \to \text{doente}$ com $GC_{regra} = 0.80$.<br>
         Fatos: $GC(f_1) = 0.50$, $GC(f_2) = 0.50$, $GC(f_3) = 0.20$.<br><br>
-        <strong>Calcule o grau de certeza final da conclusão 'doente' produzida por R1 no modelo Max-Min.</strong> (Digite com duas casas decimais, ex: 0.64).
+        <strong>Calcule o grau de certeza final da conclusão 'doente' produzida por R1 no modelo Max-Min.</strong>
       </div>
       <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: 0.64" autocomplete="off" spellcheck="false">
+        <input type="text" class="text-input" placeholder="Ex: 0.50" autocomplete="off" spellcheck="false">
         <button class="action-btn">Verificar GC</button>
       </div>
       <div class="feedback-box"></div>
@@ -188,10 +188,10 @@
       </div>
       <div class="question-text">
         Considerando as certezas brutas $GC(\text{doente}) = 0.64$ e $GC(\text{saudável}) = 0.72$:<br><br>
-        <strong>Qual é o percentual normalizado arredondado (\%) da hipótese vencedora 'Saudável'?</strong> (Digite o valor inteiro com porcentagem, ex: <code>53%</code>).
+        <strong>Qual é o percentual normalizado arredondado (\%) da hipótese vencedora 'Saudável'?</strong>
       </div>
       <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: 53%" autocomplete="off" spellcheck="false">
+        <input type="text" class="text-input" placeholder="Ex: 25%" autocomplete="off" spellcheck="false">
         <button class="action-btn">Verificar Porcentagem</button>
       </div>
       <div class="feedback-box"></div>
@@ -204,10 +204,10 @@
       </div>
       <div class="question-text">
         No modelo Soma-Produto ($\Sigma-\Pi$), duas regras distintas concluíram 'doente' com certezas parciais $GC_1 = 0.68$ e $GC_2 = 0.54$.<br><br>
-        <strong>Calcule o grau de certeza agrupado resultante pela soma probabilística ($a + b - ab$).</strong> (Digite com duas casas decimais, ex: 0.85).
+        <strong>Calcule o grau de certeza agrupado resultante pela soma probabilística ($a + b - ab$).</strong>
       </div>
       <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: 0.85" autocomplete="off" spellcheck="false">
+        <input type="text" class="text-input" placeholder="Ex: 0.50" autocomplete="off" spellcheck="false">
         <button class="action-btn">Calcular Agrupamento</button>
       </div>
       <div class="feedback-box"></div>
@@ -246,10 +246,10 @@
       <div class="question-text">
         Dada a função de pertinência do conjunto <em>Médio</em> na variável $\text{PESO} \in [0, 350]$:
         $$\mu_{\text{médio}}(x) = \begin{cases} \frac{x}{200}, & x \le 200 \\ \frac{350 - x}{150}, & x > 200 \end{cases}$$
-        <strong>Calcule o grau de pertinência $\mu_{\text{médio}}(240)$ para o valor de entrada $x = 240$.</strong> (Digite com duas casas decimais, ex: 0.73).
+        <strong>Calcule o grau de pertinência $\mu_{\text{médio}}(240)$ para o valor de entrada $x = 240$.</strong>
       </div>
       <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: 0.73" autocomplete="off" spellcheck="false">
+        <input type="text" class="text-input" placeholder="Ex: 0.50" autocomplete="off" spellcheck="false">
         <button class="action-btn">Verificar Pertinência</button>
       </div>
       <div class="feedback-box"></div>
@@ -262,10 +262,10 @@
       </div>
       <div class="question-text">
         A regra $R_4$ de um sistema Mamdani possui $GC_{\text{regra}} = 0.75$. Seu antecedente disjuntivo atingiu ativação $\max(\mu_M(\text{PESO}), \mu_M(\text{TAMANHO})) = 0.73$.<br><br>
-        <strong>Qual é a altura de truncamento horizontal aplicada à função de pertinência da conclusão (ESFORÇO MÉDIO)?</strong> (Digite com duas casas decimais, ex: 0.55).
+        <strong>Qual é a altura de truncamento horizontal aplicada à função de pertinência da conclusão (ESFORÇO MÉDIO)?</strong>
       </div>
       <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: 0.55" autocomplete="off" spellcheck="false">
+        <input type="text" class="text-input" placeholder="Ex: 0.50" autocomplete="off" spellcheck="false">
         <button class="action-btn">Verificar Truncamento</button>
       </div>
       <div class="feedback-box"></div>
@@ -278,10 +278,10 @@
       </div>
       <div class="question-text">
         Na agregação das conclusões pelo método de Mamdani, o patamar máximo de pertinência foi delimitado pelas abscissas $x_1 = 3.288$ e $x_2 = 7.808$.<br><br>
-        <strong>Determine a resposta crisp final obtida pela Média dos Máximos (MOM).</strong> (Digite com duas ou três casas decimais, ex: 5.55).
+        <strong>Determine a resposta crisp final obtida pela Média dos Máximos (MOM).</strong>
       </div>
       <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: 5.55" autocomplete="off" spellcheck="false">
+        <input type="text" class="text-input" placeholder="Ex: 4.20" autocomplete="off" spellcheck="false">
         <button class="action-btn">Calcular MOM</button>
       </div>
       <div class="feedback-box"></div>
@@ -294,10 +294,10 @@
       </div>
       <div class="question-text">
         No sistema fuzzy TSK, a regra $R_1$ possui consequente linear: $\text{ESFORÇO} = 0.7 \times \text{PESO} + 1.2 \times \text{TAMANHO}$.<br><br>
-        <strong>Calcule o valor crisp do consequente para as entradas $\text{PESO} = 240$ e $\text{TAMANHO} = 80$.</strong> (Digite apenas o número inteiro).
+        <strong>Calcule o valor crisp do consequente para as entradas $\text{PESO} = 240$ e $\text{TAMANHO} = 80$.</strong>
       </div>
       <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: 264" autocomplete="off" spellcheck="false">
+        <input type="text" class="text-input" placeholder="Ex: 150" autocomplete="off" spellcheck="false">
         <button class="action-btn">Calcular Consequente</button>
       </div>
       <div class="feedback-box"></div>
@@ -310,10 +310,10 @@
       </div>
       <div class="question-text">
         Após a inferência de todas as regras TSK, obteve-se $\sum (GC_k \times y_k) = 379.288$ e $\sum GC_k = 1.244$.<br><br>
-        <strong>Determine a resposta analítica final produzida pelo modelo TSK.</strong> (Digite com duas casas decimais, ex: 304.89).
+        <strong>Determine a resposta analítica final produzida pelo modelo TSK.</strong>
       </div>
       <div class="input-row">
-        <input type="text" class="text-input" placeholder="Ex: 304.89" autocomplete="off" spellcheck="false">
+        <input type="text" class="text-input" placeholder="Ex: 150.25" autocomplete="off" spellcheck="false">
         <button class="action-btn">Verificar Resposta TSK</button>
       </div>
       <div class="feedback-box"></div>
