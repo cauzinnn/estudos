@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulado Módulo 3: Otimização Combinatória e NLP — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Avaliação Diagnóstica • Módulo 3</div>
+      <h1>Simulado Integrado: Otimização Combinatória, MIP e NLP</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        12 questões práticas avançadas cobrindo Big-M, lógica booleana, TSP, Branch & Bound, planos de corte e algoritmos de descida não lineares.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0003-combinatoria-mip-e-nlp.html">Ficha: MIP & NLP</a>
+      <a href="0022-algoritmos-nlp-gradiente-e-newton.html">← Lição 0022</a>
+    </div>
+
+    <!-- HUD INTERATIVO DE DESEMPENHO AO VIVO -->
+    <div class="interactive-widget" id="exam-hud-m3" style="position: sticky; top: 1rem; z-index: 99; margin: 1rem 0; box-shadow: 0 6px 20px rgba(0,0,0,0.08);">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>📊 Painel de Desempenho do Exame (Módulo 3)</span>
+        </div>
+        <span class="widget-badge" id="hud-m3-badge">0 / 12 Respondidas (0%)</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div class="bar-track" style="height: 18px;">
+          <div class="bar-fill success" id="hud-m3-bar" style="width: 0%;"></div>
+        </div>
+
+        <div class="chips-container" style="justify-content: center;">
+          <a href="#q1" class="chip" id="chip-q1">Q1</a>
+          <a href="#q2" class="chip" id="chip-q2">Q2</a>
+          <a href="#q3" class="chip" id="chip-q3">Q3</a>
+          <a href="#q4" class="chip" id="chip-q4">Q4</a>
+          <a href="#q5" class="chip" id="chip-q5">Q5</a>
+          <a href="#q6" class="chip" id="chip-q6">Q6</a>
+          <a href="#q7" class="chip" id="chip-q7">Q7</a>
+          <a href="#q8" class="chip" id="chip-q8">Q8</a>
+          <a href="#q9" class="chip" id="chip-q9">Q9</a>
+          <a href="#q10" class="chip" id="chip-q10">Q10</a>
+          <a href="#q11" class="chip" id="chip-q11">Q11</a>
+          <a href="#q12" class="chip" id="chip-q12">Q12</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTÃO 1: GAP DE INTEGRIDADE -->
+    <section class="card-exercise" id="q1" data-hint="O gap de integridade é a diferença entre o limitante superior relaxado e o ótimo inteiro: Gap = 312.4 - 295.0 = 17.4.">
+      <div class="exercise-header">
+        <h3>Questão 1: Active Recall Numérico — Integrality Gap em Maximização</h3>
+      </div>
+      <div class="question-text">
+        Em um problema de planejamento de produção inteiro, o relaxamento linear fornece $z_{\text{relax}} = 312.40$.<br>
+        O solver de Branch & Bound finalizou a busca e comprovou que o ótimo inteiro estrito é $z_{\text{int}}^* = 295.00$.<br><br>
+        Qual é o <strong>valor numérico do gap de integridade</strong> ($z_{\text{relax}} - z_{\text{int}}^*$)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o gap de integridade (ex: 17.4)" autocomplete="off">
+        <button class="action-btn">Verificar Gap</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 2: CÁLCULO DO BIG-M -->
+    <section class="card-exercise" id="q2" data-hint="A máquina opera até 240 horas por mês e cada lote consome 8 horas. O maior lote fisicamente possível é 240 / 8 = 30. O valor justo de M é 30.">
+      <div class="exercise-header">
+        <h3>Questão 2: Active Recall Numérico — Dimensionamento de Big-M</h3>
+      </div>
+      <div class="question-text">
+        Uma máquina possui $240 \text{ horas}$ de capacidade mensal. Cada unidade do produto $x$ consome $8 \text{ horas}$.<br>
+        Deseja-se modelar o custo fixo de setup através da restrição linear $x \le M \cdot z$, com $z \in \{0, 1\}$.<br><br>
+        Qual é o <strong>menor valor numérico inteiro válido para $M$</strong> que não corta nenhuma produção fisicamente factível?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o menor M justo (ex: 30)" autocomplete="off">
+        <button class="action-btn">Verificar Big-M</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 3: RESTRIÇÕES DISJUNTIVAS -->
+    <section class="card-exercise" id="q3">
+      <div class="exercise-header">
+        <h3>Questão 3: Modelagem de Restrições Disjuntivas (Um ou Outro)</h3>
+      </div>
+      <div class="question-text">
+        Deseja-se impor que um processo atenda à restrição $A$ ($3x_1 + 2x_2 \le 18$) <strong>OU</strong> à restrição $B$ ($x_1 + 4x_2 \le 16$), onde ao menos uma delas deve ser estritamente satisfeita.<br><br>
+        Utilizando uma variável binária $z \in \{0, 1\}$ e uma constante $M$ adequada, qual par de inequações modela com exatidão essa disjunção?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Se z = 0, a primeira restrição fica 3x1 + 2x2 ≤ 18 (ativa) e a segunda fica frouxa (+ M). Se z = 1, a primeira fica frouxa (+ M) e a segunda fica x1 + 4x2 ≤ 16 (ativa). Garante que pelo menos uma é satisfeita!">
+          3x₁ + 2x₂ ≤ 18 + M·z  e  x₁ + 4x₂ ≤ 16 + M·(1 - z)
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: somar M em ambas simultaneamente permite que ambas sejam violadas quando z = 1.">
+          3x₁ + 2x₂ ≤ 18 + M·z  e  x₁ + 4x₂ ≤ 16 + M·z
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: subtrair M cria uma restrição impossível e contraditória para variáveis positivas.">
+          3x₁ + 2x₂ ≤ 18 - M·z  e  x₁ + 4x₂ ≤ 16 - M·(1 - z)
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: somar as duas inequações elimina a disjunção e permite que uma seja violada se a outra tiver muita folga.">
+          4x₁ + 6x₂ ≤ 34 + M·z
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 4: IMPLICAÇÃO BOOLEANA -->
+    <section class="card-exercise" id="q4">
+      <div class="exercise-header">
+        <h3>Questão 4: Condicional Se-Então em Otimização de Redes</h3>
+      </div>
+      <div class="question-text">
+        Se o armazém $A$ for construído ($y_A = 1$), o centro de distribuição $B$ deve ser obrigatoriamente construído ($y_B = 1$). Se $A$ não for construído ($y_A = 0$), $B$ pode ou não ser construído.<br><br>
+        Qual restrição linear expressa essa regra com $y_A, y_B \in \{0, 1\}$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Se yA = 1, 1 ≤ yB força yB = 1. Se yA = 0, 0 ≤ yB é satisfeita para qualquer valor binário de yB.">
+          y_A - y_B ≤ 0
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: yA + yB ≤ 1 impede que ambos sejam construídos juntos, violando a regra de coexistência.">
+          y_A + y_B ≤ 1
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: yA + yB ≥ 1 força que pelo menos um sempre seja construído, impedindo que ambos sejam zero.">
+          y_A + y_B ≥ 1
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: yB - yA ≤ 0 modelaria o sentido inverso (se B for construído, A deve ser construído).">
+          y_B - y_A ≤ 0
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 5: SET COVER -->
+    <section class="card-exercise" id="q5">
+      <div class="exercise-header">
+        <h3>Questão 5: Estrutura da Matriz no Set Covering</h3>
+      </div>
+      <div class="question-text">
+        Em um problema de Set Covering com $m$ elementos a serem cobertos por $k$ subconjuntos, qual é o sentido universal das desigualdades de restrição estruturais $\sum A_{ij} x_j$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como cada elemento i precisa ser coberto por pelo menos um subconjunto, a soma dos subconjuntos escolhidos que contêm o elemento i deve ser maior ou igual a 1 (≥ 1).">
+          Desigualdades do tipo maior ou igual a um (≥ 1) para cada elemento i.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: ≤ 1 é a formulação de Set Packing (empacotamento de conjuntos, onde cada elemento pode ser coberto no máximo uma vez).">
+          Desigualdades do tipo menor ou igual a um (≤ 1) para cada elemento i.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: igualdades estritas (= 1) definem o problema de Set Partitioning (partição exata), muito mais restritivo que o Set Covering.">
+          Equações de igualdade estrita (= 1) para cada elemento i.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o lado direito é unitário (ao menos uma cobertura), não a capacidade total k.">
+          Desigualdades do tipo maior ou igual a k (≥ k).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 6: SUBCICLOS NO TSP -->
+    <section class="card-exercise" id="q6">
+      <div class="exercise-header">
+        <h3>Questão 6: Comparativo MTZ vs. DFJ no Caixeiro Viajante</h3>
+      </div>
+      <div class="question-text">
+        Por que a formulação DFJ (corte de subconjuntos) é preferida em solvers industriais modernos (como Gurobi e CPLEX) em relação à formulação MTZ, apesar de conter um número exponencial de restrições ($2^n$)?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! O relaxamento contínuo dos cortes DFJ fornece um limitante dual muito mais apertado (próximo do inteiro), e os cortes não precisam ser inseridos todos de uma vez: são gerados dinamicamente apenas quando violados (Branch and Cut)!">
+          A relaxação linear do DFJ é muito mais justa (bound superior), sendo gerada dinamicamente via Branch & Cut.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a formulação MTZ possui tamanho polinomial compacto O(n²), mas sua relaxação linear é fraca e frouxa, gerando árvores gigantescas.">
+          A formulação MTZ possui mais restrições que o DFJ para qualquer número de cidades n ≥ 10.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o DFJ utiliza variáveis binárias e pertence à classe NP-difícil, não sendo resolvido em tempo linear.">
+          A formulação DFJ transforma o TSP em um problema de tempo linear O(n).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: MTZ pode ser resolvido por qualquer solver MIP padrão, não exigindo métodos não convexos contínuos.">
+          A formulação MTZ não pode ser executada em computadores digitais.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 7: REGRAS DE PODA B&B -->
+    <section class="card-exercise" id="q7">
+      <div class="exercise-header">
+        <h3>Questão 7: Poda por Integralidade em Branch and Bound</h3>
+      </div>
+      <div class="question-text">
+        Durante a exploração de um nó em uma árvore de Branch & Bound para maximização, o solver resolve a relaxação LP e obtém $z_{\text{relax}} = 85.0$, com $x_1 = 3.0$ e $x_2 = 5.0$ (ambas as variáveis assumiram valores perfeitamente inteiros!). A incumbente atual era de $70.0$.<br><br>
+        Quais são as duas ações imediatas do algoritmo?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como o nó encontrou uma solução inteira válida com lucro superior (85 > 70), ele atualiza a incumbente para 85 e é podado imediatamente por integralidade (não há frações para ramificar).">
+          Atualizar a incumbente para 85.0 e podar o nó por integralidade (interromper a descida desse ramo).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o nó não possui nenhuma variável fracionária, tornando impossível criar ramos filhos x1 ≤ 2 ou x1 ≥ 4.">
+          Ramificar em x₁ ≤ 2 e x₁ ≥ 4 para buscar inteiros maiores.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o nó atingiu 85 > 70, sendo uma melhoria; podar por bound só ocorreria se o valor fosse menor ou igual a 70.">
+          Podar o nó por limitante (bound) e manter a incumbente em 70.0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a solução é perfeitamente viável e inteira, não havendo infactibilidade.">
+          Podar o nó por inviabilidade e descartar o valor 85.0.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 8: CORTES DE GOMORY -->
+    <section class="card-exercise" id="q8">
+      <div class="exercise-header">
+        <h3>Questão 8: Propriedade Fundamental dos Planos de Corte</h3>
+      </div>
+      <div class="question-text">
+        Qual é a propriedade matemática indispensável de um <strong>Plano de Corte Válido (Corte de Gomory)</strong> adicionado à relaxação linear de um MIP?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Um corte só é válido se eliminar (cortar) a solução fracionária atual da relaxação contínua sem cortar NENHUM ponto inteiro factível da região viável discreta!">
+          Deve cortar a solução fracionária da relaxação contínua sem eliminar nenhum ponto inteiro factível.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: se o corte eliminasse soluções inteiras viáveis, o ótimo discreto poderia ser perdido para sempre.">
+          Deve cortar pelo menos 50% dos pontos inteiros factíveis para acelerar a busca.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: cortes de Gomory são restrições puramente lineares derivadas da tabela simplex, e não funções quadráticas.">
+          Deve ser uma função quadrática positiva definida baseada na matriz Hessiana.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o corte não altera a função objetivo, apenas restringe o poliedro factível.">
+          Deve inverter o sinal do vetor de custos da função objetivo.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 9: QAP COMPLEXIDADE -->
+    <section class="card-exercise" id="q9">
+      <div class="exercise-header">
+        <h3>Questão 9: Natureza Não Linear do QAP</h3>
+      </div>
+      <div class="question-text">
+        Por que o Problema de Atribuição Quadrática (QAP) é incomparavelmente mais difícil de resolver que o Problema de Atribuição Linear clássico (resolvido em tempo polinomial pelo Simplex de Redes)?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! No QAP, o custo depende da interação combinada entre pares de alocações (produto x_{ik} x_{jl}), destruindo a total unimodularidade da matriz de transporte e tornando o problema NP-difícil.">
+          A função objetivo contém o produto de pares de variáveis de decisão (x_{ik} · x_{jl}), destruindo a unimodularidade.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o QAP possui exatamente as mesmas restrições de atribuição do problema linear; a complexidade reside no custo quadrático.">
+          O QAP possui restrições não convexas de desigualdade trigonométrica.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o número de variáveis é n² em ambos os problemas; a diferença está no grau quadrático do objetivo.">
+          O número de variáveis no QAP cresce exponencialmente com 2ⁿ.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o problema linear de transporte é resolvido em frações de segundo, enquanto o QAP é intratável para n grande.">
+          Ambos possuem exatamente a mesma complexidade e são resolvidos pelo algoritmo de Dijkstra.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 10: NLP MULTIMODAL -->
+    <section class="card-exercise" id="q10">
+      <div class="exercise-header">
+        <h3>Questão 10: Limitações do Gradiente em Superfícies Multimodais</h3>
+      </div>
+      <div class="question-text">
+        Ao aplicar o algoritmo de Gradiente Descendente com busca de Armijo em uma função não convexa contínua com 5 mínimos locais, o que podemos garantir sobre o ponto de convergência final $x^*$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! O gradiente descendente é um algoritmo local; ele apenas garante convergir para um ponto estacionário (gradiente nulo) ou mínimo local dentro da bacia de atração do ponto de partida x0. Não há garantia de que seja o mínimo global!">
+          Converge garantidamente para um ponto estacionário ou mínimo local, mas sem garantia de ser o mínimo global.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: em funções não convexas, o gradiente não consegue escapar de bacias de atração locais sem mecanismos de perturbação estocástica.">
+          Converge com certeza para o mínimo global independente de onde foi iniciado.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: a condição de Armijo assegura que a função decresça a cada passo, impedindo divergência para infinito se o conjunto de nível for compacto.">
+          Diverge necessariamente para o infinito devido à presença de múltiplos poços.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o gradiente é um método de descida, buscando diminuir a função, não convergir para máximos locais.">
+          Converge invariavelmente para o ponto de maior máximo local.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 11: TAXA DE CONVERGÊNCIA DE NEWTON -->
+    <section class="card-exercise" id="q11">
+      <div class="exercise-header">
+        <h3>Questão 11: Taxa de Convergência do Método de Newton</h3>
+      </div>
+      <div class="question-text">
+        Próximo ao ponto ótimo de uma função suave estritamente convexa ($\nabla^2 f(x^*) \succ 0$), qual é a taxa assintótica de convergência do Método de Newton?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O Método de Newton possui convergência QUADRÁTICA: o erro na iteração k+1 é proporcional ao quadrado do erro na iteração k (||x_{k+1} - x*|| ≤ M ||x_k - x*||²). Isso significa que o número de dígitos corretos de precisão DUPLICA a cada passo!">
+          Convergência Quadrática (o número de casas decimais exatas dobra a cada iteração).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: convergência linear é a taxa do Gradiente Descendente padrão, muito mais lenta que Newton.">
+          Convergência Linear (o erro diminui por uma razão geométrica constante).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: convergência sublinear ocorre em métodos sem derivadas ou com passo fixo desfavorável.">
+          Convergência Sublinear (escala inversamente com a raiz quadrada das iterações).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: métodos de ponto interior e Newton possuem convergência super rápida, não exponencial lenta.">
+          Convergência Exponencial Lenta com pior caso de Klee-Minty.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 12: PASSO DE NEWTON 1D -->
+    <section class="card-exercise" id="q12" data-hint="A função é f(x) = x^3 - 6x^2 + 15. A primeira derivada é f'(x) = 3x^2 - 12x. Em x0 = 1, f'(1) = 3(1) - 12(1) = -9. A segunda derivada é f''(x) = 6x - 12. Em x0 = 1, f''(1) = 6(1) - 12 = -6. O passo de Newton é delta_x = - f'(x0) / f''(x0) = - (-9) / (-6) = - 1.5. O próximo ponto é x1 = x0 + delta_x = 1 - 1.5 = -0.5.">
+      <div class="exercise-header">
+        <h3>Questão 12: Active Recall Numérico — Próximo Ponto no Método de Newton</h3>
+      </div>
+      <div class="question-text">
+        Dada a função escalar $f(x) = x^3 - 6x^2 + 15$. O ponto inicial é $x_0 = 1.0$.<br>
+        O primeiro e o segundo derivados em $x_0 = 1.0$ são $f'(1) = -9.0$ e $f''(1) = -6.0$.<br><br>
+        Utilizando o <strong>passo puro do Método de Newton</strong> ($x_1 = x_0 - \frac{f'(x_0)}{f''(x_0)}$), calcule o <strong>valor numérico do próximo ponto $x_1$</strong>:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de x1 (ex: -0.5)" autocomplete="off">
+        <button class="action-btn">Calcular Ponto x1</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0022-algoritmos-nlp-gradiente-e-newton.html">← Lição 0022: Algoritmos NLP</a>
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0003-combinatoria-mip-e-nlp.html">Ficha de Consulta Rápida Módulo 3 &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Estado do Exame
+      const examState = {
+        q1: null, q2: null, q3: null, q4: null,
+        q5: null, q6: null, q7: null, q8: null,
+        q9: null, q10: null, q11: null, q12: null
+      };
+
+      function updateHUD() {
+        let answered = 0;
+        let correct = 0;
+        Object.keys(examState).forEach(k => {
+          const val = examState[k];
+          const chip = document.getElementById("chip-" + k);
+          if (val === true) {
+            answered++;
+            correct++;
+            if (chip) chip.className = "chip fired";
+          } else if (val === false) {
+            answered++;
+            if (chip) chip.className = "chip pending";
+          }
+        });
+
+        const percent = Math.round((answered / 12) * 100);
+        const scoreBadge = document.getElementById("hud-m3-badge");
+        const barFill = document.getElementById("hud-m3-bar");
+
+        if (scoreBadge) {
+          scoreBadge.textContent = `${answered} / 12 Respondidas (${correct} Acertos)`;
+        }
+        if (barFill) {
+          barFill.style.width = `${percent}%`;
+        }
+      }
+
+      // Q1: Gap = 17.4
+      initInputExercise("q1", ["17.4", "17,4"], "Gap de integridade: 312.40 - 295.00 = 17.40", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 17.4) < 0.01;
+        examState.q1 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q2: M = 30
+      initInputExercise("q2", ["30"], "Menor M justo: 240 / 8 = 30", (raw, clean) => {
+        const ok = clean.trim() === "30";
+        examState.q2 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q3: Disjunção Big-M
+      initMultipleChoice("q3", "Modelagem de disjunção utilizando M·z e M·(1-z)");
+      document.querySelector("#q3 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q3 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q4: Implicação yA <= yB
+      initMultipleChoice("q4", "Implicação lógica é modelada por yA - yB <= 0");
+      document.querySelector("#q4 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q4 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q5: Set Covering >= 1
+      initMultipleChoice("q5", "Set covering impõe soma >= 1 para cada elemento coberto");
+      document.querySelector("#q5 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q5 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q6: DFJ vs MTZ
+      initMultipleChoice("q6", "DFJ possui bound mais apertado gerado via cortes dinâmicos");
+      document.querySelector("#q6 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q6 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q7: Poda por integralidade
+      initMultipleChoice("q7", "Nó inteiro atualiza incumbente e é podado por integralidade");
+      document.querySelector("#q7 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q7 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q8: Cortes de Gomory
+      initMultipleChoice("q8", "Plano de corte corta vértice fracionário sem eliminar inteiros");
+      document.querySelector("#q8 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q8 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q9: QAP produto quadrático
+      initMultipleChoice("q9", "Produto x_ik * x_jl na função objetivo destrói a unimodularidade no QAP");
+      document.querySelector("#q9 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q9 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q10: Gradiente convergência local
+      initMultipleChoice("q10", "Gradiente converge apenas para ponto estacionário na bacia de atração");
+      document.querySelector("#q10 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q10 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q11: Newton quadrática
+      initMultipleChoice("q11", "Método de Newton possui convergência quadrática próxima ao ótimo");
+      document.querySelector("#q11 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q11 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q12: Passo de Newton x1 = -0.5
+      initInputExercise("q12", ["-0.5", "-0,5"], "Passo de Newton: 1 - (-9)/(-6) = 1 - 1.5 = -0.5", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - (-0.5)) < 0.01;
+        examState.q12 = ok;
+        updateHUD();
+        return ok;
+      });
+    });
+  </script>
+</body>
+</html>

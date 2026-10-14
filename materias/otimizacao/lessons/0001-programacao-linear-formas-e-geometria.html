@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0001: Programação Linear, Formas e Geometria dos Vértices — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 1 • Lição 0001 (Slide 3)</div>
+      <h1>Programação Linear, Formas e Geometria dos Vértices</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Hiperplanos e poliedros, os 3 regimes de solução, truques de conversão para a forma padrão e resolução em vértices.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-programacao-linear-e-dualidade.html">Ficha: PL & Dualidade</a>
+      <a href="0002-otimizacao-minimax-e-variavel-epigrafe.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: TEORIA GEOMÉTRICA -->
+    <section class="card-theory">
+      <h2>1. Geometria da Otimização: Hiperplanos, Semiespaços e Poliedros</h2>
+      <p>
+        Um modelo de <strong>Programação Linear (PL)</strong> opera sobre conjuntos definidos por equações e inequações afins:
+      </p>
+      <ul>
+        <li><strong>Hiperplano:</strong> $\{x \in \mathbb{R}^n \mid a^T x = b\}$. O vetor $a$ é o gradiente normal perpendicular à superfície; $b$ define o deslocamento da origem.</li>
+        <li><strong>Semiespaço (Halfspace):</strong> $\{x \in \mathbb{R}^n \mid a^T x \le b\}$. Região convexa fechada de um dos lados do hiperplano delimitador.</li>
+        <li><strong>Poliedro:</strong> Interseção finita de semiespaços $\{x \in \mathbb{R}^n \mid A x \le b\}$. Se for limitado, chama-se <em>Politopo</em>.</li>
+      </ul>
+      <p>
+        Uma combinação $w = \alpha x + (1-\alpha)y$ é <strong>afim</strong> para qualquer $\alpha \in \mathbb{R}$ (traça a reta inteira que passa por $x$ e $y$). É uma combinação <strong>convexa</strong> se e somente se $0 \le \alpha \le 1$ (o segmento fechado entre eles).
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Diagnóstico de Combinações Afins vs. Convexas</h3>
+      </div>
+      <div class="question-text">
+        Considere dois pontos factíveis distintos $x, y \in \mathcal{P}$, onde $\mathcal{P} = \{x \in \mathbb{R}^n \mid Ax \le b\}$.<br>
+        Seja o ponto $z = 1.6 \, x - 0.6 \, y$.<br><br>
+        Qual é a classificação geométrica correta do ponto $z$ em relação ao poliedro $\mathcal{P}$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: para ser uma combinação convexa, todos os coeficientes devem ser não negativos ($0 \le \alpha \le 1$). Como o coeficiente de y é -0.6, o ponto z está fora do segmento que une x e y.">
+          É garantidamente uma combinação convexa de x e y e, portanto, pertence com certeza ao interior de P.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como os pesos somam 1 (1.6 - 0.6 = 1.0), z é uma combinação afim (situa-se na reta que passa por x e y). Porém, por ter coeficiente negativo, ele extrapola o segmento fechado e pode cair fora de P.">
+          É uma combinação afim de x e y, mas não é uma combinação convexa; portanto, pode violar Ax ≤ b.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: uma combinação linear genérica não exige que a soma dos coeficientes seja igual a 1. Aqui, 1.6 + (-0.6) = 1.0, o que atende estritamente à definição de combinação afim.">
+          Não é afim nem convexa, pois a soma dos módulos dos coeficientes |1.6| + |-0.6| = 2.2 excede a unidade.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: poliedros convexos garantem a inclusão de combinações convexas, mas geralmente NÃO contêm a reta afim inteira a menos que sejam cones ou subespaços não limitados.">
+          Por ser P um poliedro convexo, qualquer combinação afim de seus pontos permanece contida no conjunto.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO 2D: EXPLORADOR DE POLIEDROS E RETAS DE NÍVEL -->
+    <div class="interactive-widget" id="polytope-simulator">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⚡ Simulador Interativo: Top Brass Polyhedron & Level Curves</span>
+        </div>
+        <span class="widget-badge">Laboratório Gráfico Vivo</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Explore o modelo real <em>Top Brass</em>: $\max \; c_1 f + c_2 s$ sujeito a $4f + 2s \le 32$ (Carpintaria), $f + s \le 10$ (Acabamento), $f \le 7$ e $s \le 6$. 
+        <strong>Clique nos vértices</strong> do gráfico para inspecioná-los ou <strong>arraste os sliders</strong> para ver a reta de nível do lucro varrer a região factível!
+      </p>
+
+      <div class="widget-canvas" style="padding: 1rem; min-height: 380px;">
+        <svg id="poly-svg" width="100%" height="340" viewBox="0 0 540 340" xmlns="http://www.w3.org/2000/svg" style="max-width: 540px; touch-action: none;">
+          <defs>
+            <marker id="arrow-c" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#f0883e"/>
+            </marker>
+          </defs>
+
+          <!-- Grid e Eixos Coordenados: X=f (0 a 10), Y=s (0 a 10). Scale: X: 60 + f*42; Y: 300 - s*26 -->
+          <!-- Eixo F -->
+          <line x1="60" y1="300" x2="500" y2="300" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="505" y="304" fill="#8b949e" font-size="12" font-family="monospace">f (Futebol)</text>
+          <!-- Eixo S -->
+          <line x1="60" y1="300" x2="60" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="50" y="18" fill="#8b949e" font-size="12" font-family="monospace">s (Sinuca)</text>
+
+          <!-- Ticks dos eixos -->
+          <!-- f = 2, 4, 6, 8, 10 -->
+          <text x="144" y="318" fill="#8b949e" font-size="10" text-anchor="middle">2</text>
+          <text x="228" y="318" fill="#8b949e" font-size="10" text-anchor="middle">4</text>
+          <text x="312" y="318" fill="#8b949e" font-size="10" text-anchor="middle">6</text>
+          <text x="396" y="318" fill="#8b949e" font-size="10" text-anchor="middle">8</text>
+          <text x="480" y="318" fill="#8b949e" font-size="10" text-anchor="middle">10</text>
+          <!-- s = 2, 4, 6, 8, 10 -->
+          <text x="48" y="252" fill="#8b949e" font-size="10" text-anchor="middle">2</text>
+          <text x="48" y="200" fill="#8b949e" font-size="10" text-anchor="middle">4</text>
+          <text x="48" y="148" fill="#8b949e" font-size="10" text-anchor="middle">6</text>
+          <text x="48" y="96" fill="#8b949e" font-size="10" text-anchor="middle">8</text>
+          <text x="48" y="44" fill="#8b949e" font-size="10" text-anchor="middle">10</text>
+
+          <!-- Linhas de Restrições -->
+          <!-- 1. f <= 7 -> f=7 (x = 60 + 7*42 = 354) -->
+          <line x1="354" y1="300" x2="354" y2="30" stroke="#d20f39" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <text x="358" y="45" fill="#d20f39" font-size="10">f ≤ 7</text>
+
+          <!-- 2. s <= 6 -> s=6 (y = 300 - 6*26 = 144) -->
+          <line x1="60" y1="144" x2="480" y2="144" stroke="#8839ef" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <text x="440" y="140" fill="#8839ef" font-size="10">s ≤ 6</text>
+
+          <!-- 3. f + s <= 10 -> (0,10) a (10,0) -> (60, 40) a (480, 300) -->
+          <line x1="60" y1="40" x2="480" y2="300" stroke="#0969da" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <text x="410" y="245" fill="#0969da" font-size="10">f + s ≤ 10</text>
+
+          <!-- 4. 4f + 2s <= 32 -> s = 16 - 2f -> (4,8) a (8,0) -> (228, 92) a (396, 300) -->
+          <line x1="186" y1="40" x2="396" y2="300" stroke="#2ea043" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <text x="210" y="80" fill="#2ea043" font-size="10">4f + 2s ≤ 32</text>
+
+          <!-- Polígono Factível Top Brass -->
+          <!-- V0:(0,0)->(60,300), V1:(7,0)->(354,300), V2:(7,2)->(354,248), V3:(6,4)->(312,196), V4:(4,6)->(228,144), V5:(0,6)->(60,144) -->
+          <polygon id="poly-body" points="60,300 354,300 354,248 312,196 228,144 60,144" 
+                   fill="rgba(31, 111, 235, 0.18)" stroke="#58a6ff" stroke-width="2.5"/>
+
+          <!-- Linha de Nível do Lucro (c1*f + c2*s = z) -->
+          <line id="level-line" x1="60" y1="300" x2="480" y2="100" stroke="#f0883e" stroke-width="2" stroke-dasharray="6,4"/>
+          <!-- Vetor de Gradiente c -->
+          <line id="grad-line" x1="60" y1="300" x2="160" y2="210" stroke="#f0883e" stroke-width="2.5" marker-end="url(#arrow-c)"/>
+          <text id="grad-text" x="165" y="205" fill="#f0883e" font-size="11" font-weight="bold">c=(12, 9)</text>
+
+          <!-- Anel de Destaque Pulsante do Vértice Selecionado -->
+          <circle id="vertex-halo" cx="312" cy="196" r="14" fill="none" stroke="#f0883e" stroke-width="2.5" stroke-dasharray="3,3"/>
+
+          <!-- Vértices Clicáveis -->
+          <g style="cursor: pointer;">
+            <circle class="poly-v" data-f="0" data-s="0" data-id="V0" cx="60" cy="300" r="7" fill="#58a6ff" stroke="#fff" stroke-width="2"/>
+            <text x="45" y="318" fill="var(--text-main)" font-size="11" font-weight="bold">V₀</text>
+
+            <circle class="poly-v" data-f="7" data-s="0" data-id="V1" cx="354" cy="300" r="7" fill="#58a6ff" stroke="#fff" stroke-width="2"/>
+            <text x="360" y="318" fill="var(--text-main)" font-size="11" font-weight="bold">V₁</text>
+
+            <circle class="poly-v" data-f="7" data-s="2" data-id="V2" cx="354" cy="248" r="7" fill="#58a6ff" stroke="#fff" stroke-width="2"/>
+            <text x="368" y="252" fill="var(--text-main)" font-size="11" font-weight="bold">V₂</text>
+
+            <circle class="poly-v" data-f="6" data-s="4" data-id="V3" cx="312" cy="196" r="8" fill="#3fb950" stroke="#fff" stroke-width="2.5"/>
+            <text x="325" y="195" fill="#3fb950" font-size="12" font-weight="bold">V₃*</text>
+
+            <circle class="poly-v" data-f="4" data-s="6" data-id="V4" cx="228" cy="144" r="7" fill="#58a6ff" stroke="#fff" stroke-width="2"/>
+            <text x="220" y="132" fill="var(--text-main)" font-size="11" font-weight="bold">V₄</text>
+
+            <circle class="poly-v" data-f="0" data-s="6" data-id="V5" cx="60" cy="144" r="7" fill="#58a6ff" stroke="#fff" stroke-width="2"/>
+            <text x="42" y="148" fill="var(--text-main)" font-size="11" font-weight="bold">V₅</text>
+          </g>
+        </svg>
+
+        <!-- Status Bar do Vértice Clicado -->
+        <div class="widget-status-bar" id="poly-status" style="margin-top: 0.5rem;">
+          <span style="font-weight: bold; color: var(--accent);">Vértice Selecionado: V₃ (f = 6, s = 4)</span> — Lucro: $108.00 (Ótimo Global). Carpintaria e Acabamento ATIVAS.
+        </div>
+      </div>
+
+      <!-- Controles dos Sliders -->
+      <div class="game-controls" style="width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+        <div class="slider-control-group">
+          <div class="slider-label">
+            <span>Preço Troféu Futebol ($c_1$)</span>
+            <span id="c1-val" style="color: var(--accent); font-weight: bold;">$12</span>
+          </div>
+          <input type="range" class="interactive-slider" id="c1-slider" min="0" max="30" value="12" step="1">
+        </div>
+
+        <div class="slider-control-group">
+          <div class="slider-label">
+            <span>Preço Troféu Sinuca ($c_2$)</span>
+            <span id="c2-val" style="color: var(--accent); font-weight: bold;">$9</span>
+          </div>
+          <input type="range" class="interactive-slider" id="c2-slider" min="0" max="30" value="9" step="1">
+        </div>
+
+        <div class="slider-control-group">
+          <div class="slider-label">
+            <span>Lucro da Reta de Nível ($z$)</span>
+            <span id="z-val" style="color: #f0883e; font-weight: bold;">108</span>
+          </div>
+          <input type="range" class="interactive-slider" id="z-slider" min="0" max="180" value="108" step="1">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button class="widget-btn secondary" id="btn-snap-opt">🎯 Encaixar no Vértice Ótimo</button>
+        <button class="widget-btn secondary" id="btn-reset-poly">🔄 Redefinir Parâmetros</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: OS 3 REGIMES DE SOLUÇÃO -->
+    <section class="card-theory">
+      <h2>2. Os Três Regimes de Solução de um LP</h2>
+      <p>
+        Todo problema de Programação Linear cai obrigatoriamente em exatamente <strong>um</strong> destes três estados mutuamente exclusivos:
+      </p>
+      <ol>
+        <li><strong>Inviável (Infeasible):</strong> Não existe nenhum vetor $x$ que satisfaça simultaneamente todas as restrições ($\mathcal{P} = \emptyset$).</li>
+        <li><strong>Ilimitado (Unbounded):</strong> Existe uma direção factível $d$ ao longo da qual a função objetivo cresce indefinidamente ($c^T d > 0$ com $A d \le 0$), logo $\sup c^Tx = +\infty$.</li>
+        <li><strong>Solúvel (Solvable com Ótimo Finito):</strong> O conjunto factível é não vazio e limitado na direção do gradiente.</li>
+      </ol>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Teorema Fundamental da Programação Linear</div>
+        <p style="margin-bottom: 0;">
+          Se um problema de programação linear possui solução viável ótima finita, então <strong>pelo menos um vértice (ponto extremo / solução básica factível) é ótimo</strong>. Se múltiplos vértices forem ótimos, toda a face ou aresta poligonal formada pela combinação convexa desses vértices também será ótima.
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Pegadinha de Prova — Ilimitabilidade vs. Conjunto Ilimitado</h3>
+      </div>
+      <div class="question-text">
+        Analise a seguinte afirmação com atenção crítica:<br>
+        <em>"Se a região factível $\mathcal{P} = \{x \ge 0 \mid Ax \le b\}$ de um problema de programação linear for um conjunto geométrico ilimitado (não compacto, estendendo-se ao infinito), então o modelo de maximização $\max c^T x$ será obrigatoriamente ilimitado."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Atenção à armadilha conceitual! O conjunto factível pode ser geometricamente aberto ao infinito (ex: x1 ≥ 0, x2 ≥ 0), mas se a função objetivo apontar contra as fronteiras limitadas (ex: max -x1 - x2), a solução ótima finita existirá e estará perfeitamente situada em (0,0)!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Correto! O poliedro pode ser geometricamente ilimitado, mas se o vetor de custos c não possuir projeção positiva em nenhuma direção de recessão (raio factível de subida), o problema terá solução ótima finita bem comportada em um vértice.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3: DESAFIO ATIVO COM O SIMULADOR -->
+    <section class="card-exercise" id="ex3" data-hint="Use o simulador acima! Altere o preço do troféu de futebol para c1 = 20 e mantenha c2 = 9. Clique em 'Encaixar no Vértice Ótimo' ou inspecione V2=(7,2) vs V3=(6,4). Para V2: 20(7) + 9(2) = 140 + 18 = 158. Para V3: 20(6) + 9(4) = 120 + 36 = 156.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Diagnóstico Ativo via Simulador — Inversão de Vértice Ótimo</h3>
+      </div>
+      <div class="question-text">
+        Utilizando o simulador acima, aumente o preço do troféu de futebol para <strong>$c_1 = 20$</strong> mantendo o troféu de sinuca em <strong>$c_2 = 9$</strong>.<br><br>
+        Qual é o novo <strong>vértice ótimo</strong> ($V_0$ a $V_5$) e o respectivo <strong>lucro máximo</strong> obtido?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! Como o troféu de futebol tornou-se muito mais rentável (c1 = 20), a inclinação da reta de nível mudou (-20/9 ≈ -2.22), tornando ótimo produzir o máximo de futebol até bater na restrição limitante de mercado f = 7 no vértice V2=(7,2), gerando lucro de 20(7) + 9(2) = 158!">
+          Vértice V₂ (f = 7, s = 2) com lucro máximo de $158.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: no vértice V3=(6,4), o lucro passa a ser 20(6) + 9(4) = 120 + 36 = 156, que é rigorosamente menor que o lucro de 158 obtido em V2.">
+          Vértice V₃ (f = 6, s = 4) com lucro máximo de $156.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o vértice V1=(7,0) gera lucro de 20(7) + 0 = 140. Como ainda há 4 horas de carpintaria e acabamento sobrando em V1, é possível produzir 2 troféus de sinuca (indo para V2) com mais $18 de lucro.">
+          Vértice V₁ (f = 7, s = 0) com lucro máximo de $140.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o vértice V4=(4,6) prioriza sinuca (s = 6). Com a alta do futebol para 20, seu lucro fica em apenas 20(4) + 9(6) = 134.">
+          Vértice V₄ (f = 4, s = 6) com lucro máximo de $134.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 3: TRUQUES DE TRANSFORMAÇÃO -->
+    <section class="card-theory">
+      <h2>3. Álgebra de Transformação para a Forma Canônica / Padrão</h2>
+      <p>
+        Para aplicar algoritmos como o Simplex, qualquer formulação geral de PL é convertida por regras de equivalência exatas:
+      </p>
+      <ul>
+        <li><strong>Inversão de Objetivo:</strong> $\min c^T x \Longleftrightarrow \max (-c)^T x$. O valor ótimo final inverte o sinal: $\min = -(\max)$.</li>
+        <li><strong>Sentido de Desigualdade:</strong> $a_i^T x \ge b_i \Longleftrightarrow -a_i^T x \le -b_i$.</li>
+        <li><strong>Igualdade Afim:</strong> $a_i^T x = b_i \Longleftrightarrow (a_i^T x \le b_i) \land (-a_i^T x \le -b_i)$.</li>
+        <li><strong>Variável Livre ($x_j \in \mathbb{R}$):</strong> Substitui-se $x_j = u_j - v_j$, com $u_j \ge 0$ e $v_j \ge 0$. Em qualquer base ótima, pelo menos uma das duas será nula.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Desdobramento Algébrico de Variáveis Livres</h3>
+      </div>
+      <div class="question-text">
+        Deseja-se converter um modelo com uma variável irrestrita $w \in \mathbb{R}$ na restrição $3w \le 15$ e função objetivo $\max 4w$ para a forma padrão com variáveis estritamente não negativas $u \ge 0$ e $v \ge 0$.<br><br>
+        Qual é a representação correta após a substituição canônica $w = u - v$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! Substituindo w por (u - v), a função objetivo passa a ser 4u - 4v e a restrição transforma-se em 3u - 3v ≤ 15, com as exigências de sinal u ≥ 0 e v ≥ 0.">
+          Maximizar 4u - 4v sujeito a 3u - 3v ≤ 15, com u ≥ 0 e v ≥ 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado com os sinais: se w = u - v, multiplicar por 4 resulta em 4(u - v) = 4u - 4v. Além disso, a restrição 3w torna-se 3u - 3v, e não 3u + 3v.">
+          Maximizar 4u + 4v sujeito a 3u + 3v ≤ 15, com u ≥ 0 e v ≥ 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: u e v são grandezas não negativas (u, v ≥ 0) cuja diferença reconstitui o domínio real completo de w. Definir v ≤ 0 anula a finalidade da transformação padrão.">
+          Maximizar 4u - 4v sujeito a 3u - 3v ≤ 15, com u ≥ 0 e v ≤ 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: variáveis livres não podem ser simplesmente elevadas ao quadrado ou substituídas por seus valores absolutos, pois isso destrói a linearidade do problema.">
+          Maximizar 4u² sujeito a 3u ≤ 15, eliminando a componente negativa v.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Diagnóstico de Fronteiras — Linearidade vs. Convexidade</h3>
+      </div>
+      <div class="question-text">
+        Qual das seguintes restrições <strong>NÃO pode</strong> ser convertida em restrições de Programação Linear, pois descreve um conjunto não convexo?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Esta restrição é linearizável: |x1| + |x2| ≤ 1 equivale a 4 inequações lineares simultâneas (x1 + x2 ≤ 1, x1 - x2 ≤ 1, -x1 + x2 ≤ 1, -x1 - x2 ≤ 1), gerando um quadrado convexo rotacionado (octaedro em 2D).">
+          A restrição em norma L1: |x₁| + |x₂| ≤ 1.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! A inequação x1² + x2² ≥ 4 descreve o exterior de um círculo (um disco perfurado). O segmento entre (0, 2) e (0, -2) passa por (0,0), que viola a restrição! Conjuntos com buracos ou exteriores não convexos não podem ser representados por PL.">
+          A restrição externa complementar: x₁² + x₂² ≥ 4.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Esta restrição é equivalente ao sistema linear x1 - 5 ≤ x2 e 5 - x1 ≤ x2, ambos semiespaços cuja interseção é perfeitamente convexa e compatível com PL.">
+          A restrição em valor absoluto convexo: |x₁ - 5| ≤ x₂.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="A restrição minimax max(2x1, 3x2) ≤ 10 desdobra-se simplesmente em duas restrições lineares conjuntas: 2x1 ≤ 10 e 3x2 ≤ 10, perfeitamente lineares e convexas.">
+          A restrição do maior de dois termos: max(2x₁, 3x₂) ≤ 10.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-programacao-linear-e-dualidade.html">Ficha: PL & Dualidade</a>
+      <a href="0002-otimizacao-minimax-e-variavel-epigrafe.html">Próxima: Lição 0002 (Minimax & Epígrafe) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Combinações afins vs convexas
+      initMultipleChoice("ex1", "Combinação afim com pesos negativos extrapola o segmento convexo");
+
+      // Ex 2: Conjunto ilimitado vs modelo ilimitado
+      initTrueFalse("ex2", false, "Poliedro geometricamente aberto não implica obrigatoriamente função objetivo ilimitada",
+        "Atenção: A direção do vetor c pode apontar contra as paredes fechadas, garantindo um ótimo finito!",
+        "Correto! Se o vetor objetivo apontar contra as restrições ativas, o ótimo existe e é finito.");
+
+      // Ex 3: Diagnóstico via simulador
+      initMultipleChoice("ex3", "Aumento de c1 para 20 move o ótimo para o vértice V2=(7,2) com lucro de 158");
+
+      // Ex 4: Variável livre w = u - v
+      initMultipleChoice("ex4", "Conversão canônica de variável livre w = u - v com u, v ≥ 0");
+
+      // Ex 5: Não convexidade x1^2 + x2^2 >= 4
+      initMultipleChoice("ex5", "Inequações do tipo exterior criam regiões não convexas não representáveis por PL");
+
+      // ==========================================
+      // MOTOR DO SIMULADOR TOP BRASS
+      // ==========================================
+      const vertices = [
+        { id: "V0", f: 0, s: 0, cx: 60, cy: 300, name: "V₀ (Origem)" },
+        { id: "V1", f: 7, s: 0, cx: 354, cy: 300, name: "V₁ (Limite Mercado F)" },
+        { id: "V2", f: 7, s: 2, cx: 354, cy: 248, name: "V₂ (Carpintaria + Mercado F)" },
+        { id: "V3", f: 6, s: 4, cx: 312, cy: 196, name: "V₃ (Carpintaria + Acabamento)" },
+        { id: "V4", f: 4, s: 6, cx: 228, cy: 144, name: "V₄ (Acabamento + Limite S)" },
+        { id: "V5", f: 0, s: 6, cx: 60, cy: 144, name: "V₅ (Limite Mercado S)" }
+      ];
+
+      const c1Slider = document.getElementById("c1-slider");
+      const c2Slider = document.getElementById("c2-slider");
+      const zSlider = document.getElementById("z-slider");
+      const c1Val = document.getElementById("c1-val");
+      const c2Val = document.getElementById("c2-val");
+      const zVal = document.getElementById("z-val");
+      const polyStatus = document.getElementById("poly-status");
+      const levelLine = document.getElementById("level-line");
+      const gradLine = document.getElementById("grad-line");
+      const gradText = document.getElementById("grad-text");
+      const halo = document.getElementById("vertex-halo");
+      const vCircles = document.querySelectorAll(".poly-v");
+
+      let currentC1 = 12;
+      let currentC2 = 9;
+      let currentZ = 108;
+      let selectedV = vertices[3]; // V3 default
+
+      function toSvgCoord(f, s) {
+        return { x: 60 + f * 42, y: 300 - s * 26 };
+      }
+
+      function updateSimulator() {
+        c1Val.textContent = `$${currentC1}`;
+        c2Val.textContent = `$${currentC2}`;
+        zVal.textContent = `$${currentZ}`;
+
+        // Atualizar gradiente c
+        const gradLen = Math.sqrt(currentC1 * currentC1 + currentC2 * currentC2);
+        const normC1 = gradLen > 0 ? (currentC1 / gradLen) * 90 : 0;
+        const normC2 = gradLen > 0 ? (currentC2 / gradLen) * 90 : 0;
+        gradLine.setAttribute("x2", 60 + normC1);
+        gradLine.setAttribute("y2", 300 - normC2);
+        gradText.setAttribute("x", 65 + normC1);
+        gradText.setAttribute("y", 295 - normC2);
+        gradText.textContent = `c=(${currentC1}, ${currentC2})`;
+
+        // Atualizar reta de nível: c1*f + c2*s = z
+        // Corta eixo f em f = z/c1 (se c1>0); corta eixo s em s = z/c2 (se c2>0)
+        let p1, p2;
+        if (currentC2 > 0) {
+          const sAtF0 = currentZ / currentC2;
+          const sAtF10 = (currentZ - currentC1 * 10) / currentC2;
+          p1 = toSvgCoord(0, sAtF0);
+          p2 = toSvgCoord(10, sAtF10);
+        } else if (currentC1 > 0) {
+          const fAtS0 = currentZ / currentC1;
+          p1 = toSvgCoord(fAtS0, -2);
+          p2 = toSvgCoord(fAtS0, 12);
+        } else {
+          p1 = { x: 60, y: 300 };
+          p2 = { x: 500, y: 300 };
+        }
+        levelLine.setAttribute("x1", p1.x);
+        levelLine.setAttribute("y1", p1.y);
+        levelLine.setAttribute("x2", p2.x);
+        levelLine.setAttribute("y2", p2.y);
+
+        // Achar vértice ótimo atual
+        let bestZ = -Infinity;
+        let optV = vertices[0];
+        vertices.forEach(v => {
+          const zv = currentC1 * v.f + currentC2 * v.s;
+          if (zv > bestZ) {
+            bestZ = zv;
+            optV = v;
+          }
+        });
+
+        // Atualizar cores dos vértices
+        vCircles.forEach(circ => {
+          const vid = circ.getAttribute("data-id");
+          if (vid === optV.id) {
+            circ.setAttribute("fill", "#3fb950");
+            circ.setAttribute("r", "9");
+          } else {
+            circ.setAttribute("fill", "#58a6ff");
+            circ.setAttribute("r", "7");
+          }
+        });
+
+        // Atualizar anel halo
+        halo.setAttribute("cx", selectedV.cx);
+        halo.setAttribute("cy", selectedV.cy);
+
+        // Status
+        const selZ = currentC1 * selectedV.f + currentC2 * selectedV.s;
+        const isOpt = selectedV.id === optV.id;
+        const carp = 4 * selectedV.f + 2 * selectedV.s;
+        const acab = selectedV.f + selectedV.s;
+        
+        let infoRestricoes = [];
+        if (carp === 32) infoRestricoes.push("Carpintaria Ativa (32/32)");
+        if (acab === 10) infoRestricoes.push("Acabamento Ativo (10/10)");
+        if (selectedV.f === 7) infoRestricoes.push("Mercado F Ativo (7/7)");
+        if (selectedV.s === 6) infoRestricoes.push("Mercado S Ativo (6/6)");
+        if (infoRestricoes.length === 0) infoRestricoes.push("Todas as restrições com folga");
+
+        polyStatus.className = "widget-status-bar" + (isOpt ? " success" : "");
+        polyStatus.innerHTML = `<span><strong>${selectedV.name} (f = ${selectedV.f}, s = ${selectedV.s}):</strong> Lucro = <strong>$${selZ}</strong> ${isOpt ? "🏆 [VÉRTICE ÓTIMO]" : ""} | ${infoRestricoes.join(" • ")}</span>`;
+      }
+
+      // Event Listeners dos Sliders
+      c1Slider.addEventListener("input", (e) => {
+        currentC1 = parseInt(e.target.value);
+        updateSimulator();
+      });
+
+      c2Slider.addEventListener("input", (e) => {
+        currentC2 = parseInt(e.target.value);
+        updateSimulator();
+      });
+
+      zSlider.addEventListener("input", (e) => {
+        currentZ = parseInt(e.target.value);
+        updateSimulator();
+      });
+
+      // Clique nos Vértices
+      vCircles.forEach(circ => {
+        circ.addEventListener("click", () => {
+          const vid = circ.getAttribute("data-id");
+          selectedV = vertices.find(v => v.id === vid) || vertices[0];
+          currentZ = currentC1 * selectedV.f + currentC2 * selectedV.s;
+          zSlider.value = currentZ;
+          updateSimulator();
+        });
+      });
+
+      // Botão Encaixar no Ótimo
+      document.getElementById("btn-snap-opt").addEventListener("click", () => {
+        let bestZ = -Infinity;
+        let optV = vertices[0];
+        vertices.forEach(v => {
+          const zv = currentC1 * v.f + currentC2 * v.s;
+          if (zv > bestZ) {
+            bestZ = zv;
+            optV = v;
+          }
+        });
+        selectedV = optV;
+        currentZ = bestZ;
+        zSlider.value = currentZ;
+        updateSimulator();
+      });
+
+      // Botão Redefinir
+      document.getElementById("btn-reset-poly").addEventListener("click", () => {
+        currentC1 = 12;
+        currentC2 = 9;
+        currentZ = 108;
+        selectedV = vertices[3];
+        c1Slider.value = 12;
+        c2Slider.value = 9;
+        zSlider.value = 108;
+        updateSimulator();
+      });
+
+      updateSimulator();
+    });
+  </script>
+</body>
+</html>

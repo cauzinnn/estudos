@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0012: Programação Convexa Geral e Hessiana — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 2 • Lição 0012 (Slide 14)</div>
+      <h1>Programação Convexa Geral, Jensen e a Matriz Hessiana</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Condições de primeira e segunda ordem ($\nabla^2 f \succeq 0$), desigualdade de Jensen, conjuntos de nível e programação geométrica.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0011-cones-socp-e-programacao-semidefinida-sdp.html">← Lição Anterior</a>
+      <a href="0013-dualidade-lagrangeana-slater-e-kkt.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: CONVEXIDADE E JENSEN -->
+    <section class="card-theory">
+      <h2>1. Definições Fundamentais e a Desigualdade de Jensen</h2>
+      <p>
+        Uma função $f: \mathcal{C} \to \mathbb{R}$ definida sobre um conjunto convexo $\mathcal{C}$ é <strong>convexa</strong> se o segmento de reta secante que une quaisquer dois pontos do gráfico permanece sempre acima (ou sobre) a curva da função:
+      </p>
+      $$f(\alpha x + (1-\alpha)y) \le \alpha f(x) + (1-\alpha) f(y), \quad \forall x, y \in \mathcal{C}, \quad 0 \le \alpha \le 1$$
+      <div class="callout definition">
+        <div class="callout-title">📌 A Vantagem Suprema da Convexidade</div>
+        <p style="margin-bottom: 0;">
+          Em qualquer problema de otimização convexo, <strong>TODO MÍNIMO LOCAL É RIGOROSAMENTE UM MÍNIMO GLOBAL</strong>! Não existem armadilhas de poços falsos ou múltiplos vales com barreiras intransponíveis.
+        </p>
+      </div>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: VERIFICADOR DE JENSEN E SECANTES -->
+    <div class="interactive-widget" id="jensen-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>📉 Simulador Interativo: Desigualdade de Jensen & Corda Secante</span>
+        </div>
+        <span class="widget-badge">Laboratório de Convexidade</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Arraste os pontos $x_1$ e $x_2$. A linha tracejada laranja representa a <strong>corda secante</strong> $\alpha f(x_1) + (1-\alpha)f(x_2)$. 
+        Alterne entre a função convexa e a função não convexa com poços locais para testemunhar a violação geométrica de Jensen!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 300px; padding: 1rem;">
+        <svg id="jensen-svg" width="100%" height="260" viewBox="0 0 500 260" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- Eixo horizontal X -->
+          <line x1="40" y1="210" x2="460" y2="210" stroke="#8b949e" stroke-width="1.5"/>
+          <line x1="250" y1="230" x2="250" y2="30" stroke="#8b949e" stroke-width="1.5"/>
+
+          <!-- Curva da Função (desenhada dinamicamente) -->
+          <path id="curve-path" d="" fill="none" stroke="#58a6ff" stroke-width="2.5"/>
+
+          <!-- Corda Secante entre x1 e x2 -->
+          <line id="secant-line" x1="100" y1="100" x2="380" y2="100" stroke="#f0883e" stroke-width="2" stroke-dasharray="4,4"/>
+
+          <!-- Ponto Médio da Corda Secante (Lado Direito de Jensen) -->
+          <circle id="secant-mid" cx="240" cy="100" r="6" fill="#f0883e" stroke="#fff" stroke-width="1.5"/>
+
+          <!-- Ponto Médio na Função (Lado Esquerdo de Jensen) -->
+          <circle id="curve-mid" cx="240" cy="150" r="6" fill="#3fb950" stroke="#fff" stroke-width="1.5"/>
+
+          <!-- Pontos Extremos x1 e x2 -->
+          <circle id="dot-x1" cx="100" cy="100" r="6" fill="#8839ef" stroke="#fff" stroke-width="1.5"/>
+          <circle id="dot-x2" cx="380" cy="100" r="6" fill="#8839ef" stroke="#fff" stroke-width="1.5"/>
+        </svg>
+
+        <div class="widget-status-bar success" id="jensen-status">
+          <span>🏆 <strong>Função Convexa:</strong> A corda secante permanece rigorosamente acima da curva em todo o domínio!</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: flex; gap: 1rem; justify-content: space-between; flex-wrap: wrap;">
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="widget-btn" id="btn-fn-convex">Função Convexa: f(x) = 0.4 x² + 1</button>
+          <button class="widget-btn secondary" id="btn-fn-nonconvex">Não Convexa: f(x) = x⁴ - 3x² + 3</button>
+        </div>
+
+        <div class="slider-control-group" style="min-width: 140px; flex: 1;">
+          <div class="slider-label"><span>Ponto $x_1$</span><span id="v-x1" style="color: #8839ef; font-weight: bold;">-2.0</span></div>
+          <input type="range" class="interactive-slider" id="sl-x1" min="-3.0" max="0.0" value="-2.0" step="0.1">
+        </div>
+
+        <div class="slider-control-group" style="min-width: 140px; flex: 1;">
+          <div class="slider-label"><span>Ponto $x_2$</span><span id="v-x2" style="color: #8839ef; font-weight: bold;">+2.0</span></div>
+          <input type="range" class="interactive-slider" id="sl-x2" min="0.0" max="3.0" value="2.0" step="0.1">
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: TESTES DE PRIMEIRA E SEGUNDA ORDEM -->
+    <section class="card-theory">
+      <h2>2. Condições Diferenciais de Convexidade (Gradiente e Hessiana)</h2>
+      <p>
+        Para funções duas vezes continuamente diferenciáveis $f: \mathbb{R}^n \to \mathbb{R}$:
+      </p>
+      <ul>
+        <li><strong>Condição de 1ª Ordem (Subtangente Global):</strong> O hiperplano tangente é um limitante inferior global em todo o domínio:
+          $$f(y) \ge f(x) + \nabla f(x)^T (y - x), \quad \forall x, y$$
+        </li>
+        <li><strong>Condição de 2ª Ordem (Matriz Hessiana):</strong> A matriz de derivadas de segunda ordem $\nabla^2 f(x)$ deve ser <strong>positiva semidefinida</strong> em todos os pontos:
+          $$\nabla^2 f(x) \succeq 0, \quad \forall x \in \text{dom}(f)$$
+        </li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="A Hessiana de f(x, y) = x^4 + k*y^2 é uma matriz diagonal com 12x^2 e 2k. Para ser positiva semidefinida em todo (x, y), precisamos de 12x^2 >= 0 (sempre verdade) e 2k >= 0 -> k >= 0. O menor valor é 0.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Parâmetro Crítico da Hessiana</h3>
+      </div>
+      <div class="question-text">
+        Seja a função bidimensional $f(x, y) = x^4 + k \cdot y^2 + 3x - 5y$.<br><br>
+        Qual é o <strong>menor valor numérico de $k$</strong> para o qual a função $f(x, y)$ é comprovadamente convexa em todo o plano $\mathbb{R}^2$?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o menor valor de k (ex: 0)" autocomplete="off">
+        <button class="action-btn">Verificar Convexidade</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Pegadinha Clássica — Conjuntos de Nível vs. Função Convexa</h3>
+      </div>
+      <div class="question-text">
+        Analise a seguinte afirmação conceitual de exame:<br>
+        <em>"Se todos os conjuntos de subnível $\mathcal{S}_\alpha = \{x \mid f(x) \le \alpha\}$ de uma função forem conjuntos convexos para qualquer $\alpha \in \mathbb{R}$, então a função $f(x)$ é garantidamente uma função convexa."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa clássica armadilha! Ter conjuntos de subnível convexos é a definição de função QUASICONVEXA, que é uma classe mais fraca que função convexa! Contraexemplo: f(x) = √|x| ou a função degrau têm subníveis convexos (intervalos), mas violam totalmente a desigualdade de Jensen.">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! Subníveis convexos definem funções quasiconvexas, não convexas (ex: f(x) = log(x) é côncava, mas seus subníveis são convexos; f(x) = x³ em x ≥ 0 tem subníveis convexos mas não é côncava nem convexa global).">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0011-cones-socp-e-programacao-semidefinida-sdp.html">← Lição Anterior: 0011 (Cones & SDP)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0013-dualidade-lagrangeana-slater-e-kkt.html">Próxima: Lição 0013 (Dualidade & KKT) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Menor k = 0
+      initInputExercise("ex1", ["0", "0.0", "0,0"], "Menor k para Hessiana PSD: 2k >= 0 -> k = 0", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num) < 0.01;
+      });
+
+      // Ex 2: Falsa (quasiconvexa)
+      initTrueFalse("ex2", false, "Subníveis convexos caracterizam quasiconvexidade, não convexidade estrita",
+        "Atenção: A recíproca é falsa! Subníveis convexos definem funções quasiconvexas.",
+        "Correto! Quasiconvexidade não garante convexidade (ex: f(x) = log(x) ou degraus).");
+
+      // ==========================================
+      // SIMULADOR DE JENSEN
+      // ==========================================
+      const btnConvex = document.getElementById("btn-fn-convex");
+      const btnNonconvex = document.getElementById("btn-fn-nonconvex");
+      const slX1 = document.getElementById("sl-x1");
+      const slX2 = document.getElementById("sl-x2");
+      const vX1 = document.getElementById("v-x1");
+      const vX2 = document.getElementById("v-x2");
+
+      const curvePath = document.getElementById("curve-path");
+      const secantLine = document.getElementById("secant-line");
+      const secantMid = document.getElementById("secant-mid");
+      const curveMid = document.getElementById("curve-mid");
+      const dotX1 = document.getElementById("dot-x1");
+      const dotX2 = document.getElementById("dot-x2");
+      const jStatus = document.getElementById("jensen-status");
+
+      let mode = "convex"; // "convex" ou "nonconvex"
+
+      function f(x) {
+        if (mode === "convex") {
+          return 0.4 * x * x + 1.0;
+        } else {
+          // x^4 - 3x^2 + 3
+          return Math.pow(x, 4) - 3 * Math.pow(x, 2) + 3;
+        }
+      }
+
+      function toSvg(x, y) {
+        // x in [-3, 3] -> svg X in [50, 450] (scale: 250 + x*66.6)
+        // y in [0, 6] -> svg Y in [210, 30] (scale: 210 - y*30)
+        return {
+          cx: 250 + x * 66.6,
+          cy: 210 - y * 30
+        };
+      }
+
+      function updateJensen() {
+        const x1 = parseFloat(slX1.value);
+        const x2 = parseFloat(slX2.value);
+        vX1.textContent = x1.toFixed(1);
+        vX2.textContent = x2.toFixed(1);
+
+        // Traçar curva completa
+        let d = "";
+        for (let x = -3.0; x <= 3.01; x += 0.1) {
+          const p = toSvg(x, f(x));
+          d += (x === -3.0 ? `M ${p.cx},${p.cy}` : ` L ${p.cx},${p.cy}`);
+        }
+        curvePath.setAttribute("d", d);
+
+        const p1 = toSvg(x1, f(x1));
+        const p2 = toSvg(x2, f(x2));
+
+        dotX1.setAttribute("cx", p1.cx);
+        dotX1.setAttribute("cy", p1.cy);
+
+        dotX2.setAttribute("cx", p2.cx);
+        dotX2.setAttribute("cy", p2.cy);
+
+        secantLine.setAttribute("x1", p1.cx);
+        secantLine.setAttribute("y1", p1.cy);
+        secantLine.setAttribute("x2", p2.cx);
+        secantLine.setAttribute("y2", p2.cy);
+
+        // Ponto médio da secante (alpha = 0.5)
+        const xMid = 0.5 * (x1 + x2);
+        const ySecMid = 0.5 * (f(x1) + f(x2));
+        const yCurvMid = f(xMid);
+
+        const pSecMid = toSvg(xMid, ySecMid);
+        const pCurvMid = toSvg(xMid, yCurvMid);
+
+        secantMid.setAttribute("cx", pSecMid.cx);
+        secantMid.setAttribute("cy", pSecMid.cy);
+
+        curveMid.setAttribute("cx", pCurvMid.cx);
+        curveMid.setAttribute("cy", pCurvMid.cy);
+
+        const jensenDiff = ySecMid - yCurvMid; // deve ser >= 0 para convexo
+
+        if (jensenDiff >= -0.01) {
+          jStatus.className = "widget-status-bar success";
+          jStatus.innerHTML = `<span>🏆 <strong>Desigualdade Satisfeita:</strong> Corda Secante (${ySecMid.toFixed(2)}) ≥ Curva (${yCurvMid.toFixed(2)}). Folga de Jensen = +${jensenDiff.toFixed(2)}!</span>`;
+        } else {
+          jStatus.className = "widget-status-bar error";
+          jStatus.innerHTML = `<span>⚠️ <strong>Violação de Jensen!</strong> A corda secante (${ySecMid.toFixed(2)}) afundou abaixo da curva (${yCurvMid.toFixed(2)})! Função não convexa com múltiplos poços.</span>`;
+        }
+      }
+
+      btnConvex.addEventListener("click", () => {
+        mode = "convex";
+        btnConvex.className = "widget-btn";
+        btnNonconvex.className = "widget-btn secondary";
+        updateJensen();
+      });
+
+      btnNonconvex.addEventListener("click", () => {
+        mode = "nonconvex";
+        btnNonconvex.className = "widget-btn";
+        btnConvex.className = "widget-btn secondary";
+        updateJensen();
+      });
+
+      slX1.addEventListener("input", updateJensen);
+      slX2.addEventListener("input", updateJensen);
+
+      updateJensen();
+    });
+  </script>
+</body>
+</html>

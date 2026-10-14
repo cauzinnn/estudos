@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0006: Mínimos Quadrados e Projeção Ortogonal — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 2 • Lição 0006 (Slide 8)</div>
+      <h1>Mínimos Quadrados, Equações Normais e Projeção</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Sistemas sobredeterminados, equações normais, pseudo-inversa de Moore-Penrose e a ortogonalidade fundamental do resíduo.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-programacao-convexa-e-kkt.html">Ficha: Convexa & KKT</a>
+      <a href="0007-restricoes-de-igualdade-e-tradeoffs.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: O PROBLEMA DE MÍNIMOS QUADRADOS -->
+    <section class="card-theory">
+      <h2>1. Sistemas Sobredeterminados e Equações Normais</h2>
+      <p>
+        Em problemas reais de engenharia e ciência de dados, o número de observações $m$ supera o número de parâmetros $n$ ($m > n$, matriz $A$ alta). Como $b \notin \mathcal{R}(A)$, o sistema $Ax = b$ não possui solução exata.
+      </p>
+      <p>
+        O método dos <strong>Mínimos Quadrados (Least Squares)</strong> busca o vetor $x$ que minimiza o erro euclidiano quadrático total:
+      </p>
+      $$f(x) = \|Ax - b\|_2^2 = (Ax - b)^T (Ax - b) = x^T A^T A x - 2 b^T A x + b^T b$$
+      <p>
+        Derivando e igualando o gradiente a zero ($\nabla f(x) = 2 A^T A x - 2 A^T b = \mathbf{0}$), obtemos as clássicas <strong>Equações Normais</strong>:
+      </p>
+      $$A^T A x = A^T b \implies \hat{x} = (A^T A)^{-1} A^T b$$
+      <p>
+        A matriz $A^\dagger = (A^T A)^{-1} A^T$ é a <strong>pseudo-inversa à esquerda de Moore-Penrose</strong>.
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: AJUSTE DE REGRESSÃO E RESÍDUOS ORTOGONAIS -->
+    <div class="interactive-widget" id="least-squares-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>📉 Simulador Interativo: Ajuste de Mínimos Quadrados & Resíduos</span>
+        </div>
+        <span class="widget-badge">Laboratório Gráfico</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Ajuste a reta $y = m x + c$ aos $5$ pontos de dados. 
+        As linhas verticais vermelhas indicam os <strong>resíduos individuais $r_i = y_i - (m x_i + c)$</strong>. 
+        Mova a inclinação $m$ e o intercepto $c$ para minimizar a soma dos quadrados dos erros $\sum r_i^2$, ou clique no botão para aplicar as Equações Normais!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1rem;">
+        <svg id="ls-svg" width="100%" height="280" viewBox="0 0 520 280" xmlns="http://www.w3.org/2000/svg" style="max-width: 520px;">
+          <!-- Eixos: X em [0, 6], Y em [0, 8]. Scale X: 60 + x*70; Scale Y: 250 - y*28 -->
+          <line x1="50" y1="250" x2="480" y2="250" stroke="#8b949e" stroke-width="1.5"/>
+          <line x1="60" y1="260" x2="60" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="485" y="254" fill="#8b949e" font-size="11" font-family="monospace">x</text>
+          <text x="50" y="20" fill="#8b949e" font-size="11" font-family="monospace">y</text>
+
+          <!-- Ticks X: 1, 2, 3, 4, 5 -->
+          <text x="130" y="268" fill="#8b949e" font-size="10" text-anchor="middle">1</text>
+          <text x="200" y="268" fill="#8b949e" font-size="10" text-anchor="middle">2</text>
+          <text x="270" y="268" fill="#8b949e" font-size="10" text-anchor="middle">3</text>
+          <text x="340" y="268" fill="#8b949e" font-size="10" text-anchor="middle">4</text>
+          <text x="410" y="268" fill="#8b949e" font-size="10" text-anchor="middle">5</text>
+
+          <!-- Reta de Regressão y = m*x + c -->
+          <line id="ls-line" x1="60" y1="222" x2="460" y2="54" stroke="#58a6ff" stroke-width="2.5"/>
+
+          <!-- Linhas de Resíduos verticais (injetadas via JS) -->
+          <g id="ls-residuals"></g>
+
+          <!-- Pontos de dados reais (1, 1.5), (2, 2.5), (3, 2.8), (4, 4.2), (5, 5.0) -->
+          <circle cx="130" cy="208" r="6" fill="#f0883e" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="200" cy="180" r="6" fill="#f0883e" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="270" cy="171.6" r="6" fill="#f0883e" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="340" cy="132.4" r="6" fill="#f0883e" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="410" cy="110" r="6" fill="#f0883e" stroke="#fff" stroke-width="1.5"/>
+        </svg>
+
+        <div class="widget-status-bar" id="ls-status">
+          <span>Erro Quadrático Total: <strong>J = 0.850</strong>. Incline e ajuste para minimizar o erro!</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%;">
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Inclinação ($m$)</span><span id="ls-m-val" style="color: var(--accent); font-weight: bold;">0.85</span></div>
+          <input type="range" class="interactive-slider" id="sl-ls-m" min="0" max="2.0" value="0.85" step="0.02">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Intercepto ($c$)</span><span id="ls-c-val" style="color: var(--accent); font-weight: bold;">0.60</span></div>
+          <input type="range" class="interactive-slider" id="sl-ls-c" min="-1.0" max="3.0" value="0.60" step="0.05">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button class="widget-btn secondary" id="btn-snap-ls">🎯 Aplicar Solução Ótima (Equações Normais)</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="O vetor de resíduo r = b - Ax* é ortogonal a todas as colunas de A. O produto interno de qualquer coluna ai de A com o resíduo r é identicamente zero: A^T r = 0.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Ortogonalidade Fundamental do Resíduo</h3>
+      </div>
+      <div class="question-text">
+        Seja $\hat{x}$ a solução ótima do problema de mínimos quadrados sobredeterminado $\min_x \|Ax - b\|_2^2$, e defina o vetor resíduo ótimo por $r = b - A\hat{x}$.<br><br>
+        Qual é o valor numérico exato do produto matricial $A^T r$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Como as equações normais impõem A^T A x̂ = A^T b, rearranjando temos A^T (b - A x̂) = A^T r = 0. O vetor resíduo é perfeitamente perpendicular a todo o subespaço gerado pelas colunas de A!">
+          É rigorosamente o vetor nulo (Aᵀ r = 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a norma ao quadrado do resíduo ||r||² é um escalar positivo (a soma dos erros), mas o produto Aᵀ r é um vetor e zera perfeitamente pela condição de primeira ordem.">
+          É um vetor com norma igual à soma de todos os erros ao quadrado.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: Aᵀ r só seria igual a b se x̂ fosse identicamente nulo, o que não ocorre na solução de mínimos quadrados.">
+          É identicamente igual ao vetor de dados original b.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a condição de primeira ordem ∇f(x̂) = 0 elimina qualquer dependência dos autovalores na ortogonalidade estrita de Aᵀ r.">
+          É proporcional ao maior autovalor da matriz de covariância Aᵀ A.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 2: INTERPRETAÇÃO GEOMÉTRICA DE PROJEÇÃO -->
+    <section class="card-theory">
+      <h2>2. A Matriz de Projeção Ortogonal</h2>
+      <p>
+        O ponto factível mais próximo de $b$ no espaço coluna $\mathcal{R}(A)$ é a <strong>projeção ortogonal</strong> $\hat{b} = A \hat{x}$:
+      </p>
+      $$\hat{b} = A (A^T A)^{-1} A^T b = P b$$
+      <p>
+        A matriz $P = A(A^T A)^{-1} A^T$ é a <strong>matriz de projeção (ou matriz chapéu $H$)</strong>. Ela possui duas propriedades universais fundamentais:
+      </p>
+      <ul>
+        <li><strong>Simetria:</strong> $P^T = P$.</li>
+        <li><strong>Idempotência:</strong> $P^2 = P$ (projetar duas vezes sobre o mesmo subespaço não altera o resultado).</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2" data-hint="Se P projeta sobre o subespaço das colunas de A (de dimensão k), os autovalores de P são todos 1 (k vezes) e 0 (n - k vezes). O traço tr(P) é a soma dos autovalores, que é igual ao posto rank(A).">
+      <div class="exercise-header">
+        <h3>Exercício 2: Active Recall Numérico — Traço da Matriz de Projeção</h3>
+      </div>
+      <div class="question-text">
+        Uma matriz $A \in \mathbb{R}^{20 \times 4}$ possui $4$ colunas linearmente independentes ($\text{posto}(A) = 4$).<br>
+        Seja $P = A(A^TA)^{-1}A^T \in \mathbb{R}^{20 \times 20}$ a matriz de projeção sobre o subespaço coluna $\mathcal{R}(A)$.<br><br>
+        Qual é o <strong>valor numérico do traço</strong> da matriz $P$ ($\text{tr}(P) = \sum_{i=1}^{20} P_{ii}$)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o traço de P (ex: 4)" autocomplete="off">
+        <button class="action-btn">Verificar Traço</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 3: LINEARIDADE NOS PARÂMETROS -->
+    <section class="card-theory">
+      <h2>3. O Que Significa ser "Linear" em Mínimos Quadrados?</h2>
+      <p>
+        Um erro conceitual comum é supor que Mínimos Quadrados Lineares aplica-se apenas a retas $y = m x + c$.
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Princípio da Linearidade nos Parâmetros</div>
+        <p style="margin-bottom: 0;">
+          O modelo precisa ser linear <strong>apenas nos parâmetros a estimar</strong> ($p, q, r$), e <u>NÃO</u> nas variáveis independentes $x$! Funções complexas como:
+          $$y_i \approx p \cdot e^{x_i} + q \cdot \cos(x_i) + r \cdot \sqrt{x_i}$$
+          são <strong>100% solúveis exatamente por equações normais</strong>, bastando pré-calcular a matriz de dados $A_{ij} = \phi_j(x_i)$.
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: Diagnóstico de Modelos Ajustáveis por Mínimos Quadrados</h3>
+      </div>
+      <div class="question-text">
+        Qual dos seguintes modelos de regressão <strong>NÃO pode</strong> ser formulado diretamente como um problema de mínimos quadrados linear clássico?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Este modelo é perfeitamente linear nos parâmetros p e q (a não linearidade do seno e do cubo atua apenas nos dados x, que são constantes numéricas conhecidas).">
+          y = p · sen(x) + q · x³
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O parâmetro b está no expoente da função exponencial (e^{b x}). O modelo é NÃO linear nos parâmetros e não admite solução direta via equações normais (exige otimização não linear, como Levenberg-Marquardt).">
+          y = a · e^(b · x)
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Polinômios de qualquer grau são funções lineares nos coeficientes p, q, r, perfeitamente compatíveis com mínimos quadrados através da matriz de Vandermonde.">
+          y = p · x² + q · x + r
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Combinações de logaritmos e potências com parâmetros multiplicativos são lineares nos parâmetros e totalmente resolvíveis por equações normais.">
+          y = p · ln(x) + q / x
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-programacao-convexa-e-kkt.html">Ficha: Convexa & KKT</a>
+      <a href="0007-restricoes-de-igualdade-e-tradeoffs.html">Próxima: Lição 0007 (Restrições de Igualdade) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Ortogonalidade
+      initMultipleChoice("ex1", "O resíduo é ortogonal a todo o espaço coluna: Aᵀ r = 0");
+
+      // Ex 2: Traço da projeção = posto = 4
+      initInputExercise("ex2", ["4"], "Traço da matriz de projeção tr(P) = posto(A) = 4", (raw, clean) => {
+        return clean.trim() === "4";
+      });
+
+      // Ex 3: Modelo não linear no expoente
+      initMultipleChoice("ex3", "y = a e^(bx) é não linear no parâmetro b e exige métodos não lineares");
+
+      // ==========================================
+      // SIMULADOR LEAST SQUARES REGRESSION
+      // ==========================================
+      const pts = [
+        { x: 1, y: 1.5 },
+        { x: 2, y: 2.5 },
+        { x: 3, y: 2.8 },
+        { x: 4, y: 4.2 },
+        { x: 5, y: 5.0 }
+      ];
+
+      const slM = document.getElementById("sl-ls-m");
+      const slC = document.getElementById("sl-ls-c");
+      const vM = document.getElementById("ls-m-val");
+      const vC = document.getElementById("ls-c-val");
+      const lsLine = document.getElementById("ls-line");
+      const residualsG = document.getElementById("ls-residuals");
+      const lsStatus = document.getElementById("ls-status");
+
+      function toSvg(x, y) {
+        return { cx: 60 + x * 70, cy: 250 - y * 28 };
+      }
+
+      function updateLS() {
+        const m = parseFloat(slM.value);
+        const c = parseFloat(slC.value);
+
+        vM.textContent = m.toFixed(2);
+        vC.textContent = c.toFixed(2);
+
+        // Atualizar reta: de x=0 a x=5.5
+        const p0 = toSvg(0, c);
+        const p55 = toSvg(5.5, m * 5.5 + c);
+        lsLine.setAttribute("x1", p0.cx);
+        lsLine.setAttribute("y1", p0.cy);
+        lsLine.setAttribute("x2", p55.cx);
+        lsLine.setAttribute("y2", p55.cy);
+
+        // Calcular resíduos
+        let totalJ = 0;
+        let resHtml = "";
+
+        pts.forEach(p => {
+          const yHat = m * p.x + c;
+          const r = p.y - yHat;
+          totalJ += r * r;
+
+          const pSvg = toSvg(p.x, p.y);
+          const hatSvg = toSvg(p.x, yHat);
+
+          resHtml += `<line x1="${pSvg.cx}" y1="${pSvg.cy}" x2="${hatSvg.cx}" y2="${hatSvg.cy}" stroke="#d20f39" stroke-width="2" stroke-dasharray="3,3"/>`;
+        });
+        residualsG.innerHTML = resHtml;
+
+        // Ótimo analítico para os pontos:
+        // x = [1,2,3,4,5], y = [1.5, 2.5, 2.8, 4.2, 5.0]
+        // sum(x) = 15, x_bar = 3. sum(y) = 16.0, y_bar = 3.2
+        // sum((x-x_bar)^2) = 10
+        // sum((x-x_bar)*(y-y_bar)) = (-2)*(-1.7) + (-1)*(-0.7) + 0 + 1*(1.0) + 2*(1.8) = 3.4 + 0.7 + 1.0 + 3.6 = 8.7
+        // m* = 8.7 / 10 = 0.87. c* = 3.2 - 0.87*3 = 0.59
+        const isOpt = Math.abs(m - 0.87) < 0.03 && Math.abs(c - 0.59) < 0.05;
+
+        if (isOpt) {
+          lsStatus.className = "widget-status-bar success";
+          lsStatus.innerHTML = `<span>🏆 <strong>Ajuste Ótimo de Mínimos Quadrados!</strong> m* = 0.87, c* = 0.59. Erro Mínimo: <strong>J* = 0.131</strong>. Vetor resíduo ortogonal às colunas!</span>`;
+        } else {
+          lsStatus.className = "widget-status-bar";
+          lsStatus.innerHTML = `<span>y = ${m.toFixed(2)}x + ${c.toFixed(2)} • Soma dos Quadrados dos Erros: <strong>J = ${totalJ.toFixed(3)}</strong></span>`;
+        }
+      }
+
+      slM.addEventListener("input", updateLS);
+      slC.addEventListener("input", updateLS);
+
+      document.getElementById("btn-snap-ls").addEventListener("click", () => {
+        slM.value = 0.87;
+        slC.value = 0.59;
+        updateLS();
+      });
+
+      updateLS();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1679 @@
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@300;400;500;600&family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@200;300;400;500;600&family=Lexend:wght@200;300;400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+/* ==========================================================================
+   PALETAS DE CORES & TEMAS (5 CLAROS + 10 ESCUROS)
+   ========================================================================== */
+
+/* 1. TUFTE PAPER (Padrão — Fundo marfim suave, estética editorial e leitura límpida) */
+:root, [data-theme="tufte"] {
+  --bg-main: #fbfbf8;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f4f3ec;
+  --border-subtle: #e2dfd4;
+  --border-focus: #9b2c2c;
+  --text-main: #252422;
+  --text-heading: #141312;
+  --text-muted: #6b675e;
+  --accent: #9b2c2c;
+  --accent-muted: rgba(155, 44, 44, 0.08);
+  --success: #2e7d32;
+  --success-bg: rgba(46, 125, 50, 0.1);
+  --error: #c62828;
+  --error-bg: rgba(198, 40, 40, 0.1);
+  --warning: #b45309;
+  --warning-bg: rgba(180, 83, 9, 0.1);
+  --purple: #6b21a8;
+  --purple-bg: rgba(107, 33, 168, 0.1);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(0, 0, 0, 0.05);
+  --code-color: #822020;
+  --btn-text: #ffffff;
+}
+
+/* 2. GITHUB LIGHT (Design limpo, neutro e moderno) */
+[data-theme="github-light"] {
+  --bg-main: #f6f8fa;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f3f4f6;
+  --border-subtle: #d0d7de;
+  --border-focus: #0969da;
+  --text-main: #1f2328;
+  --text-heading: #1f2328;
+  --text-muted: #656d76;
+  --accent: #0969da;
+  --accent-muted: rgba(9, 105, 218, 0.1);
+  --success: #1a7f37;
+  --success-bg: rgba(26, 127, 55, 0.1);
+  --error: #cf222e;
+  --error-bg: rgba(207, 34, 46, 0.1);
+  --warning: #9a6700;
+  --warning-bg: rgba(154, 103, 0, 0.1);
+  --purple: #8250df;
+  --purple-bg: rgba(130, 80, 223, 0.1);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(175, 184, 193, 0.2);
+  --code-color: #0969da;
+  --btn-text: #ffffff;
+}
+
+/* 3. CATPPUCCIN LATTE (Pastel suave relaxante sobre base clara macia) */
+[data-theme="catppuccin-latte"] {
+  --bg-main: #eff1f5;
+  --bg-card: #ffffff;
+  --bg-card-hover: #e6e9ef;
+  --border-subtle: #ccd0da;
+  --border-focus: #8839ef;
+  --text-main: #4c4f69;
+  --text-heading: #202027;
+  --text-muted: #7c7f93;
+  --accent: #8839ef;
+  --accent-muted: rgba(136, 57, 239, 0.12);
+  --success: #40a02b;
+  --success-bg: rgba(64, 160, 43, 0.12);
+  --error: #d20f39;
+  --error-bg: rgba(210, 15, 57, 0.12);
+  --warning: #df8e1d;
+  --warning-bg: rgba(223, 142, 29, 0.12);
+  --purple: #ea76cb;
+  --purple-bg: rgba(234, 118, 203, 0.12);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(136, 57, 239, 0.08);
+  --code-color: #8839ef;
+  --btn-text: #ffffff;
+}
+
+/* 4. SOLARIZED LIGHT (Amarelado acadêmico clássico para foco prolongado) */
+[data-theme="solarized-light"] {
+  --bg-main: #fdf6e3;
+  --bg-card: #f5eed8;
+  --bg-card-hover: #eee8d5;
+  --border-subtle: #ded8c3;
+  --border-focus: #268bd2;
+  --text-main: #586e75;
+  --text-heading: #073642;
+  --text-muted: #839496;
+  --accent: #2aa198;
+  --accent-muted: rgba(42, 161, 152, 0.12);
+  --success: #859900;
+  --success-bg: rgba(133, 153, 0, 0.12);
+  --error: #dc322f;
+  --error-bg: rgba(220, 50, 47, 0.12);
+  --warning: #b58900;
+  --warning-bg: rgba(181, 137, 0, 0.12);
+  --purple: #6c71c4;
+  --purple-bg: rgba(108, 113, 196, 0.12);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(42, 161, 152, 0.1);
+  --code-color: #2aa198;
+  --btn-text: #ffffff;
+}
+
+/* 5. NORD SNOW (Ártico claro e sereno, paleta Snow Storm) */
+[data-theme="nord-snow"] {
+  --bg-main: #eceff4;
+  --bg-card: #ffffff;
+  --bg-card-hover: #e5e9f0;
+  --border-subtle: #d8dee9;
+  --border-focus: #5e81ac;
+  --text-main: #2e3440;
+  --text-heading: #2e3440;
+  --text-muted: #4c566a;
+  --accent: #5e81ac;
+  --accent-muted: rgba(94, 129, 172, 0.12);
+  --success: #a3be8c;
+  --success-bg: rgba(163, 190, 140, 0.15);
+  --error: #bf616a;
+  --error-bg: rgba(191, 97, 106, 0.15);
+  --warning: #ebcb8b;
+  --warning-bg: rgba(235, 203, 139, 0.15);
+  --purple: #b48ead;
+  --purple-bg: rgba(180, 142, 173, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(94, 129, 172, 0.1);
+  --code-color: #5e81ac;
+  --btn-text: #ffffff;
+}
+
+/* 6. SLATE SOFT (Azul-petróleo profundo) */
+[data-theme="slate"] {
+  --bg-main: #12151c;
+  --bg-card: #181d26;
+  --bg-card-hover: #1f2532;
+  --border-subtle: #29303d;
+  --border-focus: #58a6ff;
+  --text-main: #c9d1d9;
+  --text-heading: #e6edf3;
+  --text-muted: #8b949e;
+  --accent: #58a6ff;
+  --accent-muted: rgba(88, 166, 255, 0.12);
+  --success: #3fb950;
+  --success-bg: rgba(63, 185, 80, 0.12);
+  --error: #f85149;
+  --error-bg: rgba(248, 81, 73, 0.12);
+  --warning: #d29922;
+  --warning-bg: rgba(210, 153, 34, 0.12);
+  --purple: #bc8cff;
+  --purple-bg: rgba(188, 140, 255, 0.12);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(110, 118, 129, 0.2);
+  --code-color: #79c0ff;
+  --btn-text: #0d1117;
+}
+
+/* 7. NORD FROST (Tons polares escuros, azul ártico) */
+[data-theme="nord"] {
+  --bg-main: #242933;
+  --bg-card: #2e3440;
+  --bg-card-hover: #3b4252;
+  --border-subtle: #434c5e;
+  --border-focus: #88c0d0;
+  --text-main: #d8dee9;
+  --text-heading: #eceff4;
+  --text-muted: #9aa5b8;
+  --accent: #88c0d0;
+  --accent-muted: rgba(136, 192, 208, 0.15);
+  --success: #a3be8c;
+  --success-bg: rgba(163, 190, 140, 0.15);
+  --error: #bf616a;
+  --error-bg: rgba(191, 97, 106, 0.15);
+  --warning: #ebcb8b;
+  --warning-bg: rgba(235, 203, 139, 0.15);
+  --purple: #b48ead;
+  --purple-bg: rgba(180, 142, 173, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(136, 192, 208, 0.12);
+  --code-color: #88c0d0;
+  --btn-text: #242933;
+}
+
+/* 8. CATPPUCCIN MOCHA (Aveludado escuro, lavanda e tons pastel relaxantes) */
+[data-theme="catppuccin"] {
+  --bg-main: #181825;
+  --bg-card: #1e1e2e;
+  --bg-card-hover: #262639;
+  --border-subtle: #313244;
+  --border-focus: #cba6f7;
+  --text-main: #cdd6f4;
+  --text-heading: #f5e0dc;
+  --text-muted: #a6adc8;
+  --accent: #cba6f7;
+  --accent-muted: rgba(203, 166, 247, 0.15);
+  --success: #a6e3a1;
+  --success-bg: rgba(166, 227, 161, 0.15);
+  --error: #f38ba8;
+  --error-bg: rgba(243, 139, 168, 0.15);
+  --warning: #f9e2af;
+  --warning-bg: rgba(249, 226, 175, 0.15);
+  --purple: #f5c2e7;
+  --purple-bg: rgba(245, 194, 231, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(203, 166, 247, 0.12);
+  --code-color: #cba6f7;
+  --btn-text: #181825;
+}
+
+/* 9. DRACULA SOFT (Fundo grafite escuro, ciano suave e rosa) */
+[data-theme="dracula"] {
+  --bg-main: #1d1e26;
+  --bg-card: #242633;
+  --bg-card-hover: #2e3040;
+  --border-subtle: #3a3d52;
+  --border-focus: #bd93f9;
+  --text-main: #e2e4ef;
+  --text-heading: #f8f8f2;
+  --text-muted: #9598b0;
+  --accent: #8be9fd;
+  --accent-muted: rgba(139, 233, 253, 0.15);
+  --success: #50fa7b;
+  --success-bg: rgba(80, 250, 123, 0.15);
+  --error: #ff5555;
+  --error-bg: rgba(255, 85, 85, 0.15);
+  --warning: #f1fa8c;
+  --warning-bg: rgba(241, 250, 140, 0.15);
+  --purple: #bd93f9;
+  --purple-bg: rgba(189, 147, 249, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(139, 233, 253, 0.12);
+  --code-color: #8be9fd;
+  --btn-text: #1d1e26;
+}
+
+/* 10. TOKYO NIGHT (Azul noite moderno com acentos ciano e azul céu) */
+[data-theme="tokyo-night"] {
+  --bg-main: #161622;
+  --bg-card: #1f2030;
+  --bg-card-hover: #26283d;
+  --border-subtle: #33364f;
+  --border-focus: #7aa2f7;
+  --text-main: #a9b1d6;
+  --text-heading: #c0caf5;
+  --text-muted: #787f9d;
+  --accent: #7aa2f7;
+  --accent-muted: rgba(122, 162, 247, 0.15);
+  --success: #9ece6a;
+  --success-bg: rgba(158, 206, 106, 0.15);
+  --error: #f7768e;
+  --error-bg: rgba(247, 118, 142, 0.15);
+  --warning: #e0af68;
+  --warning-bg: rgba(224, 175, 104, 0.15);
+  --purple: #bb9af7;
+  --purple-bg: rgba(187, 154, 247, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(122, 162, 247, 0.12);
+  --code-color: #7aa2f7;
+  --btn-text: #161622;
+}
+
+/* 11. SOLARIZED DARK (Clássico acadêmico, verde-azulado profundo) */
+[data-theme="solarized"] {
+  --bg-main: #00232b;
+  --bg-card: #002b36;
+  --bg-card-hover: #073642;
+  --border-subtle: #0f4a56;
+  --border-focus: #268bd2;
+  --text-main: #93a1a1;
+  --text-heading: #eee8d5;
+  --text-muted: #657b83;
+  --accent: #2aa198;
+  --accent-muted: rgba(42, 161, 152, 0.15);
+  --success: #859900;
+  --success-bg: rgba(133, 153, 0, 0.15);
+  --error: #dc322f;
+  --error-bg: rgba(220, 50, 47, 0.15);
+  --warning: #b58900;
+  --warning-bg: rgba(181, 137, 0, 0.15);
+  --purple: #6c71c4;
+  --purple-bg: rgba(108, 113, 196, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(42, 161, 152, 0.15);
+  --code-color: #2aa198;
+  --btn-text: #00232b;
+}
+
+/* 12. WARM SEPIA (Papel escuro aquecido, aconchegante para longas leituras) */
+[data-theme="sepia"] {
+  --bg-main: #1b1916;
+  --bg-card: #23201c;
+  --bg-card-hover: #2c2823;
+  --border-subtle: #3c362f;
+  --border-focus: #d49b59;
+  --text-main: #d3c7b8;
+  --text-heading: #f0e6d6;
+  --text-muted: #9b8f80;
+  --accent: #d49b59;
+  --accent-muted: rgba(212, 155, 89, 0.15);
+  --success: #8ba870;
+  --success-bg: rgba(139, 168, 112, 0.15);
+  --error: #cc6b64;
+  --error-bg: rgba(204, 107, 100, 0.15);
+  --warning: #dfab58;
+  --warning-bg: rgba(223, 171, 88, 0.15);
+  --purple: #bfa075;
+  --purple-bg: rgba(191, 160, 117, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(212, 155, 89, 0.15);
+  --code-color: #d49b59;
+  --btn-text: #1b1916;
+}
+
+/* 13. GRUVBOX MATERIAL (Estética retrô aconchegante, contraste ultra amigável aos olhos) */
+[data-theme="gruvbox"] {
+  --bg-main: #282828;
+  --bg-card: #32302f;
+  --bg-card-hover: #3c3836;
+  --border-subtle: #504945;
+  --border-focus: #d79921;
+  --text-main: #d4be98;
+  --text-heading: #ebdbb2;
+  --text-muted: #928374;
+  --accent: #d79921;
+  --accent-muted: rgba(215, 153, 33, 0.15);
+  --success: #a9b665;
+  --success-bg: rgba(169, 182, 101, 0.15);
+  --error: #ea6962;
+  --error-bg: rgba(234, 105, 98, 0.15);
+  --warning: #e78a4e;
+  --warning-bg: rgba(231, 138, 78, 0.15);
+  --purple: #d3869b;
+  --purple-bg: rgba(211, 134, 155, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(215, 153, 33, 0.15);
+  --code-color: #d79921;
+  --btn-text: #282828;
+}
+
+/* 14. MONOKAI PRO WARM (Carvão aquecido com acentos em âmbar e menta) */
+[data-theme="monokai"] {
+  --bg-main: #221f22;
+  --bg-card: #2d2a2e;
+  --bg-card-hover: #373438;
+  --border-subtle: #49464b;
+  --border-focus: #ffd866;
+  --text-main: #c1c0c0;
+  --text-heading: #fcfcfa;
+  --text-muted: #727072;
+  --accent: #ffd866;
+  --accent-muted: rgba(255, 216, 102, 0.15);
+  --success: #a9dc76;
+  --success-bg: rgba(169, 220, 118, 0.15);
+  --error: #ff6188;
+  --error-bg: rgba(255, 97, 136, 0.15);
+  --warning: #fc9867;
+  --warning-bg: rgba(252, 152, 103, 0.15);
+  --purple: #ab9df2;
+  --purple-bg: rgba(171, 157, 242, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(255, 216, 102, 0.15);
+  --code-color: #ffd866;
+  --btn-text: #221f22;
+}
+
+/* 15. E-INK MINIMALIST B&W (Foco acadêmico máximo, escala de cinza pura) */
+[data-theme="e-ink"] {
+  --bg-main: #141414;
+  --bg-card: #1c1c1c;
+  --bg-card-hover: #262626;
+  --border-subtle: #383838;
+  --border-focus: #e0e0e0;
+  --text-main: #cfcfcf;
+  --text-heading: #f5f5f5;
+  --text-muted: #7d7d7d;
+  --accent: #e0e0e0;
+  --accent-muted: rgba(224, 224, 224, 0.12);
+  --success: #a8a8a8;
+  --success-bg: rgba(168, 168, 168, 0.15);
+  --error: #ffffff;
+  --error-bg: rgba(255, 255, 255, 0.15);
+  --warning: #b0b0b0;
+  --warning-bg: rgba(176, 176, 176, 0.15);
+  --purple: #d5d5d5;
+  --purple-bg: rgba(213, 213, 213, 0.15);
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --code-bg: rgba(224, 224, 224, 0.12);
+  --code-color: #e0e0e0;
+  --btn-text: #141414;
+}
+
+/* ==========================================================================
+   TIPOGRAFIA, PESOS, TAMANHOS E ESPAÇAMENTOS DINÂMICOS
+   ========================================================================== */
+
+[data-font="clean"] {
+  --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+[data-font="jakarta"] {
+  --font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+[data-font="atkinson"] {
+  --font-family: "Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-font="lexend"] {
+  --font-family: "Lexend", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-font="serif"] {
+  --font-family: "Merriweather", Georgia, Cambria, serif;
+}
+[data-font="spectral"] {
+  --font-family: "Spectral", Georgia, Cambria, serif;
+}
+[data-font="lora"] {
+  --font-family: "Lora", Georgia, Cambria, serif;
+}
+[data-font="mono"] {
+  --font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+[data-font="fira"] {
+  --font-family: "Fira Code", ui-monospace, monospace;
+}
+[data-font="space"] {
+  --font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Pesos de Fonte Granulares */
+[data-weight="extra-light"] {
+  --font-weight-body: 200;
+  --font-weight-bold: 400;
+  --font-weight-heading: 350;
+}
+[data-weight="light"] {
+  --font-weight-body: 300;
+  --font-weight-bold: 500;
+  --font-weight-heading: 450;
+}
+[data-weight="regular"] {
+  --font-weight-body: 400;
+  --font-weight-bold: 600;
+  --font-weight-heading: 600;
+}
+[data-weight="medium"] {
+  --font-weight-body: 500;
+  --font-weight-bold: 700;
+  --font-weight-heading: 700;
+}
+
+/* Tamanhos de Fonte Granulares (13px até 21px) */
+[data-size="13px"] { --base-font-size: 13px; }
+[data-size="small"], [data-size="14px"] { --base-font-size: 14px; }
+[data-size="15px"] { --base-font-size: 15px; }
+[data-size="normal"], [data-size="15.5px"] { --base-font-size: 15.5px; }
+[data-size="16.5px"] { --base-font-size: 16.5px; }
+[data-size="large"], [data-size="17.5px"] { --base-font-size: 17.5px; }
+[data-size="xlarge"], [data-size="19px"] { --base-font-size: 19px; }
+[data-size="21px"] { --base-font-size: 21px; }
+
+/* Densidade Alternável */
+[data-density="compact"] .container {
+  gap: 1.15rem;
+}
+[data-density="compact"] .card-theory,
+[data-density="compact"] .card-exercise {
+  padding: 1rem 1.15rem;
+  gap: 0.75rem;
+}
+[data-density="relaxed"] .container {
+  gap: 2.25rem;
+}
+[data-density="relaxed"] .card-theory,
+[data-density="relaxed"] .card-exercise {
+  padding: 1.75rem 2rem;
+  gap: 1.25rem;
+}
+
+/* Barra Superior de Utilidades e Painel Discreto de Aparência */
+.top-nav-bar, .top-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  padding: 0.25rem 0 0 0;
+  margin-bottom: -0.5rem;
+}
+
+.theme-switcher-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-toggle-btn {
+  background-color: var(--bg-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+  line-height: 1.3;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--text-main);
+  border-color: var(--border-focus);
+}
+
+.theme-settings-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 1200;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  padding: 0.85rem;
+  width: 250px;
+  max-width: calc(100vw - 2rem);
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.theme-settings-panel.show {
+  display: flex;
+}
+
+.theme-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.theme-panel-header strong {
+  font-size: 0.85rem;
+  color: var(--text-heading);
+}
+
+.theme-panel-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+
+.theme-panel-close:hover {
+  color: var(--text-main);
+}
+
+.theme-panel-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.theme-panel-row label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.theme-pill-select {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  width: 100%;
+  transition: all 0.15s ease;
+}
+
+.theme-pill-select:hover, .theme-pill-select:focus {
+  border-color: var(--border-focus);
+}
+
+/* ==========================================================================
+   DIAGRAMA / GRAFO FIXO FLUTUANTE (PINNED GRAPH)
+   ========================================================================== */
+.pinned-graph-btn {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  z-index: 100;
+  transition: all 0.15s ease;
+}
+
+.pinned-graph-btn:hover {
+  border-color: var(--border-focus);
+  background-color: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.pinned-graph-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.pinned-graph-modal.show {
+  display: flex;
+}
+
+.pinned-graph-box {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  max-width: 1180px;
+  width: 95vw;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.pinned-graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.6rem;
+}
+
+.pinned-graph-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+.pinned-graph-close:hover {
+  color: var(--text-heading);
+}
+
+.pinned-graph-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+  padding: 1rem 0;
+  width: 100%;
+}
+
+.pinned-graph-body svg {
+  width: 100%;
+  max-width: 1080px;
+  height: auto;
+  min-height: 320px;
+  display: block;
+}
+
+/* ==========================================================================
+   ESTILOS GERAIS DA PÁGINA
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  overflow-x: hidden;
+  box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  font-size: var(--base-font-size, 15.5px);
+  font-weight: var(--font-weight-body, 350);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0.75rem 1rem 3rem 1rem;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+strong, b {
+  font-weight: var(--font-weight-bold, 550);
+}
+
+.container {
+  width: 100%;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Cabeçalho e Metadados */
+header {
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 1.25rem;
+}
+
+.lesson-meta {
+  font-size: 0.825rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.nav-links a {
+  color: var(--accent);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  background-color: var(--accent-muted);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.15s ease;
+}
+
+.nav-links a:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-focus);
+}
+
+h1 {
+  font-size: 1.85rem;
+  font-weight: var(--font-weight-heading, 550);
+  color: var(--text-heading);
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+h2 {
+  font-size: 1.3rem;
+  font-weight: var(--font-weight-heading, 550);
+  color: var(--text-heading);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: var(--font-weight-heading, 550);
+  color: var(--text-heading);
+  margin-bottom: 0.5rem;
+}
+
+p, ul, ol {
+  color: var(--text-main);
+  margin-bottom: 0.85rem;
+}
+
+ul, ol {
+  padding-left: 1.4rem;
+}
+
+li {
+  margin-bottom: 0.4rem;
+}
+
+code {
+  font-family: var(--font-mono);
+  background-color: var(--code-bg, rgba(110, 118, 129, 0.15));
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.88em;
+  color: var(--code-color, var(--accent));
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+pre {
+  background-color: #030712;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  margin: 0.75rem 0;
+  box-sizing: border-box;
+}
+
+pre code {
+  word-break: normal;
+  overflow-wrap: normal;
+  white-space: pre;
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* Callouts / Avisos Pedagógicos */
+.callout {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-left: 2.5px solid var(--accent);
+  border-radius: 6px;
+  padding: 1.1rem 1.25rem;
+  margin: 1rem 0;
+}
+
+.callout-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.callout.exam-tip {
+  border-left-color: var(--warning);
+  background-color: var(--warning-bg);
+}
+
+.callout.exam-tip .callout-title {
+  color: var(--warning);
+}
+
+.callout.definition {
+  border-left-color: var(--purple);
+  background-color: var(--purple-bg);
+}
+
+.callout.definition .callout-title {
+  color: var(--purple);
+}
+
+.callout.pitfall {
+  border-left-color: var(--error);
+  background-color: var(--error-bg);
+}
+
+.callout.pitfall .callout-title {
+  color: var(--error);
+}
+
+/* Diagramas e Blocos de Código */
+.graph-diagram, .code-block {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 1.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-main);
+  overflow-x: auto;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.graph-caption {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.6rem;
+  font-family: var(--font-family);
+  text-align: center;
+}
+
+/* ==========================================================================
+   ESTILIZAÇÃO SEMÂNTICA DE GRAFOS SVG (ADAPTAÇÃO AUTOMÁTICA A TEMAS)
+   ========================================================================== */
+
+.graph-diagram svg,
+.pinned-graph-body svg {
+  color-scheme: normal;
+}
+
+/* 1. Nós Iniciais (Start Node - S, A, R1) */
+.graph-diagram svg circle[fill="#1f6feb"],
+.pinned-graph-body svg circle[fill="#1f6feb"] {
+  fill: var(--accent) !important;
+  stroke: var(--accent) !important;
+}
+
+/* 2. Nós Objetivos / Metas (Goal Node - G, F, R6) */
+.graph-diagram svg circle[fill="#238636"],
+.pinned-graph-body svg circle[fill="#238636"] {
+  fill: var(--success) !important;
+  stroke: var(--success) !important;
+}
+
+.graph-diagram svg circle[stroke="#3fb950"],
+.pinned-graph-body svg circle[stroke="#3fb950"] {
+  stroke: var(--success) !important;
+}
+
+/* 3. Nós Intermediários Padrão (adaptados para a paleta ativa) */
+.graph-diagram svg circle[fill="#161b22"],
+.graph-diagram svg circle[fill="#21262d"],
+.graph-diagram svg circle[fill="#191f2a"],
+.graph-diagram svg circle[fill="#241a20"],
+.graph-diagram svg circle[fill="#1a2e22"],
+.graph-diagram svg circle[fill="#1b2a4a"],
+.pinned-graph-body svg circle[fill="#161b22"],
+.pinned-graph-body svg circle[fill="#21262d"],
+.pinned-graph-body svg circle[fill="#191f2a"],
+.pinned-graph-body svg circle[fill="#241a20"],
+.pinned-graph-body svg circle[fill="#1a2e22"],
+.pinned-graph-body svg circle[fill="#1b2a4a"] {
+  fill: var(--bg-card-hover) !important;
+  stroke: var(--accent) !important;
+}
+
+/* 4. Tipografia dos Nós Intermediários (alto contraste em temas claros e escuros) */
+.graph-diagram svg text[fill="#f0f6fc"],
+.graph-diagram svg text[fill="#c9d1d9"],
+.pinned-graph-body svg text[fill="#f0f6fc"],
+.pinned-graph-body svg text[fill="#c9d1d9"] {
+  fill: var(--text-heading) !important;
+}
+
+/* 5. Tipografia dos Nós Iniciais e Finais (branco puro sobre preenchimento forte) */
+.graph-diagram svg text[fill="#fff"],
+.pinned-graph-body svg text[fill="#fff"] {
+  fill: #ffffff !important;
+  font-weight: bold;
+}
+
+/* 6. Arestas / Linhas de Conexão */
+.graph-diagram svg line[stroke="#30363d"],
+.graph-diagram svg line[stroke="#484f58"],
+.graph-diagram svg line[stroke="#2d3340"],
+.graph-diagram svg path[stroke="#30363d"],
+.graph-diagram svg path[stroke="#484f58"],
+.pinned-graph-body svg line[stroke="#30363d"],
+.pinned-graph-body svg line[stroke="#484f58"],
+.pinned-graph-body svg line[stroke="#2d3340"],
+.pinned-graph-body svg path[stroke="#30363d"],
+.pinned-graph-body svg path[stroke="#484f58"] {
+  stroke: var(--text-muted) !important;
+}
+
+/* 7. Marcadores de Ponta de Flecha */
+.graph-diagram svg marker path,
+.pinned-graph-body svg marker path {
+  fill: var(--text-muted) !important;
+}
+
+/* 8. Rótulos / Badges de Pesos de Arestas e Heurísticas */
+.graph-diagram svg rect[fill="#161b22"],
+.graph-diagram svg rect[fill="#21262d"],
+.pinned-graph-body svg rect[fill="#161b22"],
+.pinned-graph-body svg rect[fill="#21262d"] {
+  fill: var(--bg-card) !important;
+  stroke: var(--border-subtle) !important;
+}
+
+.graph-diagram svg text[fill="#79c0ff"],
+.pinned-graph-body svg text[fill="#79c0ff"] {
+  fill: var(--accent) !important;
+  font-weight: 600;
+}
+
+/* 9. Rótulos e Metadados Secundários */
+.graph-diagram svg text[fill="#8b949e"],
+.graph-diagram svg text[fill="#6e7681"],
+.pinned-graph-body svg text[fill="#8b949e"],
+.pinned-graph-body svg text[fill="#6e7681"] {
+  fill: var(--text-muted) !important;
+}
+
+/* 10. Destaques de Erro e Enlaces Cortados */
+.graph-diagram svg line[stroke="#f85149"],
+.pinned-graph-body svg line[stroke="#f85149"],
+.graph-diagram svg rect[stroke="#f85149"],
+.pinned-graph-body svg rect[stroke="#f85149"] {
+  stroke: var(--error) !important;
+}
+
+.graph-diagram svg text[fill="#ff7b72"],
+.pinned-graph-body svg text[fill="#ff7b72"] {
+  fill: var(--error) !important;
+}
+
+/* Tabelas de Rastreamento */
+.trace-table-container {
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background-color: var(--bg-card);
+}
+
+.trace-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.trace-table th {
+  background-color: var(--bg-card-hover);
+  color: var(--accent);
+  font-weight: 600;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+.trace-table td {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.trace-table tr:last-child td {
+  border-bottom: none;
+}
+
+.trace-table tbody tr:nth-child(even) td {
+  background-color: rgba(128, 128, 128, 0.04);
+}
+
+.trace-table tr:hover td {
+  background-color: rgba(128, 128, 128, 0.08);
+}
+
+.trace-table tr.highlight-step td {
+  background-color: var(--success-bg) !important;
+}
+
+/* Cards Teóricos */
+.card-theory {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 1.35rem 1.5rem;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* ==========================================================================
+   CARDS DE EXERCÍCIOS E ELEMENTOS INTERATIVOS
+   ========================================================================== */
+
+.card-exercise {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.exercise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+}
+
+.exercise-header .exercise-tag {
+  display: none !important;
+}
+
+.exercise-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background-color: var(--accent-muted);
+  color: var(--accent);
+}
+
+.exercise-tag.diagnostic {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+}
+
+.exercise-tag.recall {
+  background-color: var(--purple-bg);
+  color: var(--purple);
+}
+
+.question-text {
+  font-size: 1.02rem;
+  font-weight: 500;
+  color: var(--text-main);
+  line-height: 1.5;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.option-btn {
+  background-color: var(--bg-card-hover);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.05s ease;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.option-btn:hover:not(:disabled) {
+  border-color: var(--border-focus);
+  background-color: var(--bg-card-hover);
+}
+
+.option-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.option-btn.selected-error {
+  border-color: var(--error) !important;
+  background-color: var(--error-bg) !important;
+  color: var(--error) !important;
+}
+
+.option-btn.selected-success {
+  border-color: var(--success) !important;
+  background-color: var(--success-bg) !important;
+  color: var(--success) !important;
+  font-weight: 600;
+}
+
+.input-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.text-input {
+  flex: 1;
+  min-width: 200px;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-family: var(--font-mono);
+  min-height: 44px;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+
+.action-btn {
+  background-color: var(--accent);
+  color: var(--btn-text, #ffffff);
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  min-height: 44px;
+  transition: opacity 0.15s ease;
+}
+
+.action-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.feedback-box {
+  border-radius: 6px;
+  padding: 0.9rem 1.1rem;
+  font-size: 0.92rem;
+  display: none;
+  animation: fadeIn 0.2s ease-in-out;
+  line-height: 1.5;
+}
+
+.feedback-box.show {
+  display: block;
+}
+
+.feedback-box.error {
+  background-color: var(--error-bg);
+  border: 1px solid var(--error);
+  color: var(--error);
+}
+
+.feedback-box.success {
+  background-color: var(--success-bg);
+  border: 1px solid var(--success);
+  color: var(--success);
+}
+
+.feedback-box.hint {
+  background-color: var(--warning-bg);
+  border: 1px solid var(--warning);
+  color: var(--warning);
+}
+
+/* Rodapé de Navegação */
+.lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 1rem;
+}
+
+.lesson-nav a, .lesson-nav span {
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--accent);
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.lesson-nav span.disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.lesson-nav a:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-focus);
+}
+
+/* KaTeX responsivo */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 0.4rem 0.65rem 2.5rem 0.65rem;
+  }
+  .container {
+    gap: 1.15rem;
+    margin-top: 0 !important;
+  }
+  .top-nav-bar, .top-bar {
+    padding: 0.2rem 0;
+    margin-bottom: -0.25rem;
+  }
+  .theme-toggle-btn {
+    padding: 0.2rem 0.55rem;
+    font-size: 0.72rem;
+  }
+  h1 {
+    font-size: 1.4rem;
+  }
+  h2 {
+    font-size: 1.15rem;
+  }
+  .card-exercise, .card-theory {
+    padding: 0.9rem 0.8rem;
+  }
+  .lesson-nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .lesson-nav a, .lesson-nav span {
+    justify-content: center;
+  }
+  .text-input {
+    min-width: 100%;
+  }
+  .options-list[style*="flex-direction: row"] {
+    flex-direction: column !important;
+  }
+  .pinned-graph-btn {
+    bottom: 1rem;
+    right: 1rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* ==========================================================================
+   ESTILOS PARA WIDGETS INTERATIVOS, SIMULADORES E MINI-JOGOS
+   ========================================================================== */
+.game-box, .interactive-widget {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin: 1.25rem 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.game-header, .widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.75rem;
+}
+
+.game-title, .widget-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.game-badge, .widget-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background-color: var(--accent-muted);
+  color: var(--accent);
+}
+
+.game-canvas-area, .widget-canvas {
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.game-controls, .widget-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-btn, .widget-btn {
+  background-color: var(--accent);
+  color: var(--btn-text, #ffffff);
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.15rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+  min-height: 38px;
+}
+
+.game-btn:hover:not(:disabled), .widget-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.game-btn.secondary, .widget-btn.secondary {
+  background-color: var(--bg-card-hover);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+}
+
+.game-btn.danger {
+  background-color: var(--error);
+  color: #ffffff;
+}
+
+.game-btn.success {
+  background-color: var(--success);
+  color: #ffffff;
+}
+
+.game-status-bar, .widget-status-bar {
+  border-radius: 6px;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background-color: var(--bg-card-hover);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  width: 100%;
+}
+
+.game-status-bar.success {
+  background-color: var(--success-bg);
+  border-color: var(--success);
+  color: var(--success);
+  font-weight: 600;
+}
+
+.game-status-bar.error {
+  background-color: var(--error-bg);
+  border-color: var(--error);
+  color: var(--error);
+}
+
+/* Chips interativos e listas de fatos */
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  background-color: var(--bg-card-hover);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+}
+
+.chip.active {
+  background-color: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.chip.fired {
+  background-color: var(--success);
+  color: #ffffff;
+  border-color: var(--success);
+  font-weight: 600;
+}
+
+.chip.pending {
+  background-color: var(--warning-bg);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+/* Sliders e Controles de Entrada Numérica */
+.slider-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 200px;
+  flex: 1;
+}
+
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.interactive-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Gráficos de Barras e Visualizadores de GC */
+.bar-chart-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+}
+
+.bar-label {
+  min-width: 110px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.bar-track {
+  flex: 1;
+  height: 22px;
+  background-color: var(--bg-card-hover);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border-subtle);
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.bar-fill.accent { background-color: var(--accent); }
+.bar-fill.success { background-color: var(--success); }
+.bar-fill.warning { background-color: var(--warning); }
+.bar-fill.purple { background-color: var(--purple); }
+
+/* Tabela de Regras e Fatos */
+.rules-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 0.75rem 0;
+}
+
+.rules-matrix th, .rules-matrix td {
+  border: 1px solid var(--border-subtle);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.rules-matrix th {
+  background-color: var(--bg-card-hover);
+  color: var(--text-heading);
+}
+
+.rules-matrix tr.active-row {
+  background-color: var(--success-bg);
+  font-weight: 600;
+}

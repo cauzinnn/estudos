@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0017: Lógica Booleana e Condicionais em MIP — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0017 (Slide 20)</div>
+      <h1>Restrições Lógicas Se-Então e Linearização Booleana</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Condicionais lógicas, operadores booleanos (AND, OR, NOT, Implicação) e restrições disjuntivas via variáveis binárias.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0016-custos-fixos-e-big-m.html">← Lição Anterior</a>
+      <a href="0018-set-cover-e-o-caixeiro-viajante-tsp.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: CONDICIONAIS SE-ENTÃO -->
+    <section class="card-theory">
+      <h2>1. Modelagem de Cláusulas Se-Então (If-Then)</h2>
+      <p>
+        Frequentemente uma restrição física só é exigida quando uma condição lógica preliminar é satisfeita:
+      </p>
+      $$\text{Se } z = 1 \implies a^T x \le b$$
+      <p>
+        Para linearizar essa condicional, utilizamos o limitante superior Big-M ($M \ge \sup (a^Tx - b)$):
+      </p>
+      $$a^T x \le b + M(1 - z)$$
+      <ul>
+        <li>Se $z = 1 \implies a^T x \le b + 0 = b$ (a restrição física torna-se <strong>ativa e obrigatória</strong>).</li>
+        <li>Se $z = 0 \implies a^T x \le b + M$ (a restrição torna-se <strong>frouxa e inofensiva</strong>, redundante).</li>
+      </ul>
+      <p>
+        Para a condicional oposta ($\text{Se } a^T x \le b \implies z = 1$), aplica-se a equivalência contrapositiva ($\text{Se } z = 0 \implies a^T x > b \iff a^T x \ge b + \epsilon$).
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: COMPILADOR LÓGICO BOOLEANO PARA MIP -->
+    <div class="interactive-widget" id="bool-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🧠 Compilador Interativo: Portas Lógicas em Inequações Lineares</span>
+        </div>
+        <span class="widget-badge">Lógica Binária MIP</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Alterne o estado das variáveis binárias de entrada $y_1, y_2 \in \{0, 1\}$. 
+        Veja as inequações lineares forçarem a variável de saída $z$ a assumir o valor lógico correto da porta selecionada!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 240px; padding: 1.25rem;">
+        <div style="display: flex; gap: 2rem; align-items: center; justify-content: center; width: 100%; flex-wrap: wrap;">
+          <!-- Entradas -->
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+            <div style="font-weight: bold; font-size: 0.9rem;">Entrada y₁</div>
+            <button class="widget-btn" id="btn-toggle-y1" style="min-width: 80px;">y₁ = 1</button>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+            <div style="font-weight: bold; font-size: 0.9rem;">Entrada y₂</div>
+            <button class="widget-btn" id="btn-toggle-y2" style="min-width: 80px;">y₂ = 0</button>
+          </div>
+
+          <!-- Operador Selecionado -->
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+            <div style="font-weight: bold; font-size: 0.9rem;">Operador</div>
+            <span id="gate-name" style="font-size: 1.2rem; font-weight: bold; color: var(--accent);">AND (E)</span>
+          </div>
+
+          <!-- Saída Calculada -->
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+            <div style="font-weight: bold; font-size: 0.9rem;">Saída Linear z</div>
+            <div id="gate-output" style="width: 50px; height: 50px; border-radius: 50%; background-color: var(--error); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: bold;">
+              0
+            </div>
+          </div>
+        </div>
+
+        <div class="widget-status-bar" id="bool-status" style="margin-top: 1rem;">
+          <span>Inequações Ativas: z ≤ 1, z ≤ 0, z ≥ 1+0-1=0 → Força <strong>z = 0</strong>!</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="justify-content: center; gap: 0.5rem;">
+        <button class="widget-btn" id="btn-gate-and">Porta AND (E)</button>
+        <button class="widget-btn secondary" id="btn-gate-or">Porta OR (OU)</button>
+        <button class="widget-btn secondary" id="btn-gate-imp">Implicação (y₁ ⇒ y₂)</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: OPERADORES BOOLEANOS EM MIP -->
+    <section class="card-theory">
+      <h2>2. Linearização das Portas Lógicas Fundamentais</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Operação Lógica</th>
+              <th>Tabela Verdade</th>
+              <th>Sistema de Inequações Lineares Obrigatórias</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>AND ($z = y_1 \land y_2$)</strong></td>
+              <td>1 apenas se $y_1=1$ e $y_2=1$</td>
+              <td>$$z \le y_1, \quad z \le y_2, \quad z \ge y_1 + y_2 - 1$$</td>
+            </tr>
+            <tr>
+              <td><strong>OR ($z = y_1 \lor y_2$)</strong></td>
+              <td>1 se pelo menos uma for 1</td>
+              <td>$$z \ge y_1, \quad z \ge y_2, \quad z \le y_1 + y_2$$</td>
+            </tr>
+            <tr>
+              <td><strong>Implicação ($y_1 \implies y_2$)</strong></td>
+              <td>Se $y_1=1$, obriga $y_2=1$</td>
+              <td>$$y_1 \le y_2 \iff y_1 - y_2 \le 0$$</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Modelagem de Implicação Lógica</h3>
+      </div>
+      <div class="question-text">
+        Em um processo industrial, se o reator químico 1 for ligado ($y_1 = 1$), o sistema de resfriamento de emergência 2 deve ser obrigatoriamente ligado ($y_2 = 1$). Se o reator 1 estiver desligado ($y_1 = 0$), o resfriamento pode estar ligado ou desligado.<br><br>
+        Qual inequação linear única modela com exatidão essa regra de segurança para $y_1, y_2 \in \{0, 1\}$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Se y1 = 1, a inequação 1 ≤ y2 força y2 = 1. Se y1 = 0, a inequação 0 ≤ y2 é trivialmente satisfeita para y2 ∈ {0, 1}, conferindo total liberdade.">
+          y₁ - y₂ ≤ 0  (isto é, y₁ ≤ y₂)
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: y1 + y2 ≤ 1 impede que ambos sejam ligados simultaneamente (exclusão mútua), violando a exigência de que o resfriamento ligue junto com o reator.">
+          y₁ + y₂ ≤ 1
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: y1 + y2 ≥ 1 obriga que pelo menos um esteja sempre ligado, impedindo que ambos fiquem desligados (y1=0, y2=0).">
+          y₁ + y₂ ≥ 1
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: y1 = y2 forçaria que o resfriamento desligasse obrigatoriamente sempre que o reator desligasse, o que a regra não exige.">
+          y₁ - y₂ = 0
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0016-custos-fixos-e-big-m.html">← Lição Anterior: 0016 (Custos Fixos)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0018-set-cover-e-o-caixeiro-viajante-tsp.html">Próxima: Lição 0018 (Set Cover & TSP) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Implicação y1 <= y2
+      initMultipleChoice("ex1", "Implicação lógica y1 => y2 é modelada linearmente por y1 - y2 <= 0");
+
+      // ==========================================
+      // SIMULADOR DE PORTAS LÓGICAS EM MIP
+      // ==========================================
+      let y1 = 1;
+      let y2 = 0;
+      let gate = "AND";
+
+      const btnY1 = document.getElementById("btn-toggle-y1");
+      const btnY2 = document.getElementById("btn-toggle-y2");
+      const gateName = document.getElementById("gate-name");
+      const gateOut = document.getElementById("gate-output");
+      const bStatus = document.getElementById("bool-status");
+
+      const btnAnd = document.getElementById("btn-gate-and");
+      const btnOr = document.getElementById("btn-gate-or");
+      const btnImp = document.getElementById("btn-gate-imp");
+
+      function updateLogic() {
+        btnY1.textContent = `y₁ = ${y1}`;
+        btnY1.className = `widget-btn ${y1 ? "" : "secondary"}`;
+
+        btnY2.textContent = `y₂ = ${y2}`;
+        btnY2.className = `widget-btn ${y2 ? "" : "secondary"}`;
+
+        let z = 0;
+        let desc = "";
+
+        if (gate === "AND") {
+          gateName.textContent = "AND (E: y₁ ∧ y₂)";
+          z = (y1 === 1 && y2 === 1) ? 1 : 0;
+          desc = `Inequações: z ≤ ${y1}, z ≤ ${y2}, z ≥ ${y1}+${y2}-1 (${y1+y2-1}) → Força <strong>z = ${z}</strong>`;
+        } else if (gate === "OR") {
+          gateName.textContent = "OR (OU: y₁ ∨ y₂)";
+          z = (y1 === 1 || y2 === 1) ? 1 : 0;
+          desc = `Inequações: z ≥ ${y1}, z ≥ ${y2}, z ≤ ${y1}+${y2} (${y1+y2}) → Força <strong>z = ${z}</strong>`;
+        } else {
+          gateName.textContent = "Implicação (y₁ ⇒ y₂)";
+          const valid = (y1 === 0 || y2 === 1);
+          z = valid ? 1 : 0;
+          desc = `Inequação: ${y1} - ${y2} = ${y1-y2} ≤ 0 ${valid ? "✓ (Válida)" : "⚠️ (VIOLADA! Exige resfriamento ligado)"}`;
+        }
+
+        gateOut.textContent = z;
+        gateOut.style.backgroundColor = z ? "#3fb950" : "#c62828";
+
+        bStatus.className = "widget-status-bar" + (z ? " success" : "");
+        bStatus.innerHTML = `<span>${desc}</span>`;
+      }
+
+      btnY1.addEventListener("click", () => { y1 = y1 ? 0 : 1; updateLogic(); });
+      btnY2.addEventListener("click", () => { y2 = y2 ? 0 : 1; updateLogic(); });
+
+      btnAnd.addEventListener("click", () => {
+        gate = "AND";
+        btnAnd.className = "widget-btn"; btnOr.className = "widget-btn secondary"; btnImp.className = "widget-btn secondary";
+        updateLogic();
+      });
+
+      btnOr.addEventListener("click", () => {
+        gate = "OR";
+        btnOr.className = "widget-btn"; btnAnd.className = "widget-btn secondary"; btnImp.className = "widget-btn secondary";
+        updateLogic();
+      });
+
+      btnImp.addEventListener("click", () => {
+        gate = "IMP";
+        btnImp.className = "widget-btn"; btnAnd.className = "widget-btn secondary"; btnOr.className = "widget-btn secondary";
+        updateLogic();
+      });
+
+      updateLogic();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulado Módulo 1: Programação Linear — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Avaliação Diagnóstica • Módulo 1</div>
+      <h1>Simulado Integrado: Programação Linear & Dualidade</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        12 questões práticas avançadas com HUD interativo ao vivo, geometria de poliedros, epígrafe, redes, dualidade forte, folgas complementares e simplex.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0001-programacao-linear-e-dualidade.html">Ficha: PL & Dualidade</a>
+      <a href="0005-simplex-tableau-e-fluxos-duais.html">← Lição 0005</a>
+    </div>
+
+    <!-- HUD INTERATIVO DE DESEMPENHO AO VIVO -->
+    <div class="interactive-widget" id="exam-hud" style="position: sticky; top: 1rem; z-index: 99; margin: 1rem 0; box-shadow: 0 6px 20px rgba(0,0,0,0.08);">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>📊 Painel de Desempenho do Exame</span>
+        </div>
+        <span class="widget-badge" id="hud-score-badge">0 / 12 Respondidas (0%)</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <!-- Barra de Progresso e Aproveitamento -->
+        <div class="bar-track" style="height: 18px;">
+          <div class="bar-fill success" id="hud-bar-fill" style="width: 0%;"></div>
+        </div>
+
+        <!-- Grade de Chips de Navegação Direta -->
+        <div class="chips-container" style="justify-content: center;">
+          <a href="#q1" class="chip" id="chip-q1">Q1</a>
+          <a href="#q2" class="chip" id="chip-q2">Q2</a>
+          <a href="#q3" class="chip" id="chip-q3">Q3</a>
+          <a href="#q4" class="chip" id="chip-q4">Q4</a>
+          <a href="#q5" class="chip" id="chip-q5">Q5</a>
+          <a href="#q6" class="chip" id="chip-q6">Q6</a>
+          <a href="#q7" class="chip" id="chip-q7">Q7</a>
+          <a href="#q8" class="chip" id="chip-q8">Q8</a>
+          <a href="#q9" class="chip" id="chip-q9">Q9</a>
+          <a href="#q10" class="chip" id="chip-q10">Q10</a>
+          <a href="#q11" class="chip" id="chip-q11">Q11</a>
+          <a href="#q12" class="chip" id="chip-q12">Q12</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTÃO 1: RESOLUÇÃO EM VÉRTICES COM DIAGRAMA SVG -->
+    <section class="card-exercise" id="q1" data-hint="Resolva o sistema linear das duas retas ativas: x1 + 2x2 = 16 e 3x1 + x2 = 18. Multiplicando a segunda por 2: 6x1 + 2x2 = 36. Subtraindo a primeira: 5x1 = 20 -> x1 = 4, x2 = 6. Calcule z = 5(4) + 4(6).">
+      <div class="exercise-header">
+        <h3>Questão 1: Resolução em Ponto Extremo de Poliedro</h3>
+      </div>
+      <div class="question-text">
+        Considere o problema de programação linear primal:
+        $$\max_{x_1, x_2 \ge 0} \quad 5 x_1 + 4 x_2$$
+        sujeito a:
+        $$x_1 + 2 x_2 \le 16 \quad \text{e} \quad 3 x_1 + x_2 \le 18$$
+        
+        <div class="graph-diagram" style="margin: 0.8rem 0;">
+          <svg width="100%" height="200" viewBox="0 0 460 200" xmlns="http://www.w3.org/2000/svg">
+            <line x1="50" y1="170" x2="420" y2="170" stroke="#8b949e" stroke-width="1.5"/>
+            <line x1="60" y1="180" x2="60" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+            <!-- Polígono Factível: (0,0)->(6,0)->(4,6)->(0,8) -->
+            <!-- Scale X: 60 + x1*30; Scale Y: 170 - x2*16 -->
+            <polygon points="60,170 240,170 180,74 60,42" fill="rgba(31, 111, 235, 0.2)" stroke="#58a6ff" stroke-width="2"/>
+            <circle cx="180" cy="74" r="6" fill="#3fb950" stroke="#fff" stroke-width="2"/>
+            <text x="195" y="70" fill="#3fb950" font-weight="bold" font-size="12">Vértice Ótimo (x₁*, x₂*)</text>
+            <text x="245" y="165" fill="#8b949e" font-size="11">(6, 0)</text>
+            <text x="40" y="45" fill="#8b949e" font-size="11">(0, 8)</text>
+          </svg>
+        </div>
+
+        Calcule o <strong>valor numérico ótimo da função objetivo</strong> ($z^* = 5x_1^* + 4x_2^*$):
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor ótimo de z (ex: 44)" autocomplete="off">
+        <button class="action-btn">Verificar Resposta</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 2: COMBINAÇÕES CONVEXAS -->
+    <section class="card-exercise" id="q2">
+      <div class="exercise-header">
+        <h3>Questão 2: Geometria de Conjuntos Factíveis</h3>
+      </div>
+      <div class="question-text">
+        Sejam $u, v, w \in \mathcal{P}$ três vértices factíveis de um poliedro convexo $\mathcal{P} = \{x \mid Ax \le b\}$.<br>
+        Qual dos seguintes pontos pertence <strong>obrigatoriamente</strong> a $\mathcal{P}$, independente da matriz $A$ e do vetor $b$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como os pesos são não negativos (0.5, 0.3, 0.2 ≥ 0) e sua soma é exatamente 0.5 + 0.3 + 0.2 = 1.0, o ponto é uma combinação convexa dos três vértices, estando garantidamente no poliedro.">
+          p = 0.5 u + 0.3 v + 0.2 w.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o coeficiente negativo (-0.2) viola a exigência de não negatividade dos pesos convexos. O ponto é afim, mas pode estar fora do poliedro.">
+          p = 1.2 u - 0.2 v + 0.0 w.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: a soma dos coeficientes 0.4 + 0.4 + 0.4 = 1.2 excede a unidade, não caracterizando nem combinação convexa nem combinação afim.">
+          p = 0.4 u + 0.4 v + 0.4 w.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a soma 0.3 + 0.3 = 0.6 é estritamente menor que 1. Sem considerar a origem como elemento do poliedro, esse ponto pode violar as restrições.">
+          p = 0.3 u + 0.3 v + 0.0 w.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 3: VARIÁVEIS LIVRES -->
+    <section class="card-exercise" id="q3" data-hint="Cada variável livre xj é substituída por duas variáveis não negativas (xj+ - xj-). Para 4 variáveis livres e 2 variáveis não negativas originais, quantas variáveis teremos?">
+      <div class="exercise-header">
+        <h3>Questão 3: Active Recall Numérico — Variáveis na Forma Canônica</h3>
+      </div>
+      <div class="question-text">
+        Um problema de PL possui $6$ variáveis de decisão no total: $2$ variáveis já são não negativas ($x_1, x_2 \ge 0$), enquanto as outras $4$ variáveis são irrestritas em sinal ($x_3, x_4, x_5, x_6 \in \mathbb{R}$).<br><br>
+        Quantas variáveis de decisão <strong>estritamente não negativas</strong> terá o modelo após a substituição canônica padrão de variáveis livres?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o total de variáveis (ex: 10)" autocomplete="off">
+        <button class="action-btn">Verificar Total</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 4: MINIMAX E NORMAS -->
+    <section class="card-exercise" id="q4" data-hint="Na norma L-infinito, há apenas 1 variável escalar auxiliar t para limitar todos os desvios. O problema original tem 8 variáveis originais. Total = 8 + 1 = 9.">
+      <div class="exercise-header">
+        <h3>Questão 4: Active Recall Numérico — Ajuste Minimax Chebyshev</h3>
+      </div>
+      <div class="question-text">
+        Deseja-se realizar o ajuste de um filtro digital com $n = 8$ coeficientes minimizando o pior erro absoluto (norma $\ell_\infty$) sobre $m = 200$ frequências de amostragem: $\min_x \|Ax - b\|_\infty$.<br><br>
+        Quantas variáveis de decisão <strong>totais</strong> terá a formulação linear equivalente utilizando a técnica da epígrafe?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o total de variáveis (ex: 9)" autocomplete="off">
+        <button class="action-btn">Verificar Variáveis</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 5: CENTRO DE CHEBYSHEV COM DIAGRAMA NORMAL -->
+    <section class="card-exercise" id="q5" data-hint="O vetor normal é a = (3, -4). Calcule ||a||2 = sqrt(3^2 + (-4)^2) = sqrt(9 + 16) = sqrt(25) = 5.">
+      <div class="exercise-header">
+        <h3>Questão 5: Active Recall Numérico — Norma do Vetor Normal</h3>
+      </div>
+      <div class="question-text">
+        No cálculo do Centro de Chebyshev de um poliedro bidimensional, uma das faces é dada pela inequação afim:
+        $$3x_1 - 4x_2 \le 25$$
+
+        <div class="graph-diagram" style="margin: 0.8rem 0;">
+          <svg width="100%" height="160" viewBox="0 0 460 160" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="norm-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#f0883e"/>
+              </marker>
+            </defs>
+            <!-- Reta 3x1 - 4x2 = 25 -->
+            <line x1="80" y1="130" x2="380" y2="55" stroke="#58a6ff" stroke-width="2.5"/>
+            <text x="390" y="55" fill="#58a6ff" font-size="11">3x₁ - 4x₂ = 25</text>
+            <!-- Vetor normal perpendicular a = (3, -4) -->
+            <line x1="230" y1="92" x2="270" y2="140" stroke="#f0883e" stroke-width="2.5" marker-end="url(#norm-arrow)"/>
+            <text x="280" y="145" fill="#f0883e" font-weight="bold" font-size="12">Vetor Normal a = (3, -4)</text>
+          </svg>
+        </div>
+
+        Qual é o <strong>coeficiente numérico exato que multiplica o raio $r$</strong> na restrição linear correspondente $3x_{c1} - 4x_{c2} + k \cdot r \le 25$?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de k (ex: 5)" autocomplete="off">
+        <button class="action-btn">Verificar Coeficiente</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 6: PRECEDÊNCIA TEMPORAL -->
+    <section class="card-exercise" id="q6" data-hint="Calcule as durações dos caminhos da origem até o final: Caminho 1 (A-C) = 5 + 7 = 12 dias. Caminho 2 (B-D) = 8 + 6 = 14 dias. O término ocorre quando todos terminam.">
+      <div class="exercise-header">
+        <h3>Questão 6: Active Recall Numérico — Duração de Projeto (CPM)</h3>
+      </div>
+      <div class="question-text">
+        Considere a rede de um projeto de engenharia com as seguintes durações:<br>
+        • Tarefas $A$ ($5$ dias) e $B$ ($8$ dias) iniciam no dia $0$.<br>
+        • Tarefa $C$ ($7$ dias) depende exclusivamente do término de $A$.<br>
+        • Tarefa $D$ ($6$ dias) depende exclusivamente do término de $B$.<br><br>
+        Qual é a <strong>duração mínima do projeto em dias</strong> para concluir todas as 4 tarefas?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a duração em dias (ex: 14)" autocomplete="off">
+        <button class="action-btn">Verificar Duração</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 7: CONSERVAÇÃO EM REDE -->
+    <section class="card-exercise" id="q7" data-hint="A conservação no nó 4 exige que a soma das saídas menos a soma das entradas seja igual a b4. Aqui, saídas: x4,6 = 25. Entradas: x1,4 = 15 e x2,4 = 18. b4 = 25 - (15 + 18) = 25 - 33 = -8.">
+      <div class="exercise-header">
+        <h3>Questão 7: Active Recall Numérico — Balanço de Nó de Rede</h3>
+      </div>
+      <div class="question-text">
+        Em um problema de fluxo em redes, o nó $4$ recebe $15$ unidades de fluxo pelo arco $(1, 4)$ e $18$ unidades pelo arco $(2, 4)$.<br>
+        O nó $4$ despacha $25$ unidades pelo arco de saída $(4, 6)$ e não possui outros arcos conectados.<br><br>
+        Qual é o <strong>valor numérico do balanço $b_4$</strong> desse nó na equação de conservação $(\text{Saída} - \text{Entrada} = b_4)$?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de b4 (ex: -8)" autocomplete="off">
+        <button class="action-btn">Verificar Balanço</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 8: HOFFMAN-KRUSKAL -->
+    <section class="card-exercise" id="q8">
+      <div class="exercise-header">
+        <h3>Questão 8: Teorema de Hoffman-Kruskal e Total Unimodularidade</h3>
+      </div>
+      <div class="question-text">
+        Qual propriedade garante que a solução ótima de um problema de transporte com ofertas e demandas inteiras seja 100% inteira quando resolvido por um método de Programação Linear contínua?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Toda matriz de incidência de rede direcionada é Totalmente Unimodular (det de submatrizes ∈ {-1, 0, 1}), o que garante vértices com coordenadas inteiras pela regra de Cramer.">
+          A matriz de incidência nó-arco é Totalmente Unimodular e o vetor b é inteiro.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: a simetria de custos não tem relação com a integridade dos vértices; o custo influencia apenas a direção da busca ótima.">
+          A matriz de custos c é estritamente simétrica e positiva definida.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o algoritmo Simplex não arredonda variáveis dinamicamente; os próprios pontos extremos do poliedro já são inteiros.">
+          O algoritmo Simplex aplica uma regra interna de truncamento de frações ao pivoter.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o Teorema do Dual Fraco estabelece apenas a desigualdade entre os objetivos primal e dual, sem garantir integridade.">
+          O Teorema do Dual Fraco força o gap de integridade a convergir assintoticamente a zero.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 9: DUAL FORTE E GAP -->
+    <section class="card-exercise" id="q9" data-hint="Pelo Teorema do Dual Forte, no ótimo global, o valor da função objetivo do primal de maximização é rigorosamente igual ao valor da função objetivo do dual de minimização. O gap é zero.">
+      <div class="exercise-header">
+        <h3>Questão 9: Active Recall Numérico — Valor da Função Objetivo Dual</h3>
+      </div>
+      <div class="question-text">
+        Um problema primal de maximização de lucros possui solução ótima finita igual a $z^* = 470.00$.<br><br>
+        Pelo <strong>Teorema da Dualidade Forte</strong>, qual é o <strong>valor numérico exato da função objetivo dual de minimização</strong> ($w^* = b^T y^*$) na solução ótima?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor dual w* (ex: 470)" autocomplete="off">
+        <button class="action-btn">Verificar Valor</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 10: FOLGA COMPLEMENTAR -->
+    <section class="card-exercise" id="q10">
+      <div class="exercise-header">
+        <h3>Questão 10: Teorema das Folgas Complementares</h3>
+      </div>
+      <div class="question-text">
+        Seja um modelo primal com a restrição de horas de forno $2x_1 + 3x_2 \le 120$.<br>
+        Na solução ótima obtida, $x_1^* = 20$ e $x_2^* = 20$, de modo que $2(20) + 3(20) = 100 < 120$.<br><br>
+        O que o Teorema das Folgas Complementares determina sobre o preço-sombra (variável dual $y^*$) dessa restrição?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! Como a restrição possui folga estrita (sobram 20 horas de forno, 100 < 120), a condição de folga complementar y*(b - Ax) = 0 exige que y* seja obrigatoriamente zero. O recurso não é gargalo!">
+          O multiplicador dual y* associado a essa restrição é rigorosamente igual a zero.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: um preço-sombra positivo só pode ocorrer se a restrição estiver 100% saturada (ativa, Ax = b). Havendo sobra, seu valor marginal é zero.">
+          O multiplicador dual y* assume o valor positivo correspondente à folga de 20 horas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: variáveis duais em restrições de desigualdade ≤ em maximização não podem assumir valores negativos.">
+          O multiplicador dual y* torna-se estritamente negativo para penalizar o desperdício.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o teorema das folgas complementares fornece uma determinação exata e determinística (y* = 0), sem indeterminação matemática.">
+          O sistema dual torna-se matematicamente indeterminado para restrições frouxas.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 11: RAZÃO MÍNIMA -->
+    <section class="card-exercise" id="q11" data-hint="Calcule as razões para linhas com di > 0: Linha 1: 30 / 5 = 6.0; Linha 2: 28 / 7 = 4.0. A menor razão determina a variável que atinge zero primeiro e sai da base.">
+      <div class="exercise-header">
+        <h3>Questão 11: Active Recall Numérico — Passo Limite no Simplex</h3>
+      </div>
+      <div class="question-text">
+        Durante um pivoteamento do Simplex, a variável entrante possui vetor de direção $d = [5, 7]^T$ associado às variáveis básicas atuais $x_{B1} = 30$ e $x_{B2} = 28$.<br><br>
+        Qual é o <strong>valor numérico do passo máximo factível $\theta^*$</strong> permitido pelo teste da razão mínima?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de theta* (ex: 4)" autocomplete="off">
+        <button class="action-btn">Verificar Passo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 12: MAX-FLOW MIN-CUT -->
+    <section class="card-exercise" id="q12" data-hint="Pelo teorema de Ford-Fulkerson (dualidade em redes), o fluxo máximo de s para t é exatamente igual à capacidade do corte mínimo que separa s de t.">
+      <div class="exercise-header">
+        <h3>Questão 12: Teorema Max-Flow Min-Cut</h3>
+      </div>
+      <div class="question-text">
+        Em uma rede de distribuição, a capacidade do corte mínimo que desconecta a fonte $s$ do sumidouro $t$ é de $65 \text{ m}^3/\text{s}$.<br><br>
+        Pelo Teorema do Fluxo Máximo e Corte Mínimo, qual é a <strong>vazão máxima teórica em $\text{m}^3/\text{s}$</strong> que pode ser escoada entre $s$ e $t$?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a vazão máxima (ex: 65)" autocomplete="off">
+        <button class="action-btn">Verificar Vazão</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0005-simplex-tableau-e-fluxos-duais.html">← Lição 0005: Simplex & Algoritmos</a>
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0001-programacao-linear-e-dualidade.html">Ficha de Consulta Rápida &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Estado do Exame
+      const examState = {
+        q1: null, q2: null, q3: null, q4: null,
+        q5: null, q6: null, q7: null, q8: null,
+        q9: null, q10: null, q11: null, q12: null
+      };
+
+      function updateHUD() {
+        let answered = 0;
+        let correct = 0;
+        Object.keys(examState).forEach(k => {
+          const val = examState[k];
+          const chip = document.getElementById("chip-" + k);
+          if (val === true) {
+            answered++;
+            correct++;
+            if (chip) { chip.className = "chip fired"; }
+          } else if (val === false) {
+            answered++;
+            if (chip) { chip.className = "chip pending"; }
+          }
+        });
+
+        const percent = Math.round((answered / 12) * 100);
+        const scoreBadge = document.getElementById("hud-score-badge");
+        const barFill = document.getElementById("hud-bar-fill");
+
+        if (scoreBadge) {
+          scoreBadge.textContent = `${answered} / 12 Respondidas (${correct} Acertos)`;
+        }
+        if (barFill) {
+          barFill.style.width = `${percent}%`;
+        }
+      }
+
+      // Q1: z = 44
+      initInputExercise("q1", ["44", "44.0", "44,0"], "Solução ótima no vértice: x1=4, x2=6 -> z = 44", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 44) < 0.01;
+        examState.q1 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q2: Combinação convexa
+      initMultipleChoice("q2", "Combinação convexa com coeficientes não negativos que somam 1 pertence a P");
+      document.querySelector("#q2 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q2 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q3: Variáveis não negativas: 10
+      initInputExercise("q3", ["10"], "Variáveis não negativas totais: 2 + 4*2 = 10", (raw, clean) => {
+        const ok = clean.trim() === "10";
+        examState.q3 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q4: L-inf: 9
+      initInputExercise("q4", ["9"], "Variáveis totais na norma L-infinito: 8 parâmetros + 1 escalar t = 9", (raw, clean) => {
+        const ok = clean.trim() === "9";
+        examState.q4 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q5: ||(3, -4)||_2 = 5
+      initInputExercise("q5", ["5", "5.0", "5,0"], "Norma do vetor normal ||(3, -4)||_2 = 5", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 5) < 0.01;
+        examState.q5 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q6: Makespan = 14
+      initInputExercise("q6", ["14"], "Duração mínima de projeto (makespan): 14 dias", (raw, clean) => {
+        const ok = clean.trim() === "14";
+        examState.q6 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q7: Balanço b4 = -8
+      initInputExercise("q7", ["-8"], "Balanço b4 = 25 - 33 = -8", (raw, clean) => {
+        const ok = clean.trim() === "-8";
+        examState.q7 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q8: Hoffman-Kruskal
+      initMultipleChoice("q8", "Total unimodularidade da matriz de rede e vetor b inteiro garantem integridade");
+      document.querySelector("#q8 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q8 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q9: Dual Forte: w* = 470
+      initInputExercise("q9", ["470", "470.0", "470,0", "470.00", "470,00"], "Dual forte: w* = z* = 470.00", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 470) < 0.01;
+        examState.q9 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q10: Folga complementar
+      initMultipleChoice("q10", "Restrição com folga estrita possui multiplicador dual y* = 0");
+      document.querySelector("#q10 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q10 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q11: Razão mínima = 4
+      initInputExercise("q11", ["4", "4.0", "4,0"], "Razão mínima theta* = min(30/5, 28/7) = 4", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 4) < 0.01;
+        examState.q11 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q12: Max-Flow Min-Cut = 65
+      initInputExercise("q12", ["65", "65.0", "65,0"], "Teorema Max-Flow Min-Cut: fluxo máximo = 65 m3/s", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 65) < 0.01;
+        examState.q12 = ok;
+        updateHUD();
+        return ok;
+      });
+    });
+  </script>
+</body>
+</html>

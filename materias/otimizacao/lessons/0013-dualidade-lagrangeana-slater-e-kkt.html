@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0013: Dualidade Lagrangeana, Slater e Condições KKT — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 2 • Lição 0013 (Slide 15)</div>
+      <h1>Dualidade Lagrangeana, Qualificação de Slater e KKT</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Função Lagrangiana, concavidade intrínseca do dual, condição de Slater para dualidade forte e as 4 equações KKT.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0012-programacao-convexa-e-hessiana.html">← Lição Anterior</a>
+      <a href="0014-hierarquia-conica-e-revisao-convexa.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: TEORIA GERAL DA DUALIDADE -->
+    <section class="card-theory">
+      <h2>1. A Função Lagrangiana e a Função Dual de Lagrange</h2>
+      <p>
+        Para qualquer problema de otimização (mesmo não convexo) $\min f_0(x)$ s.a. $f_i(x) \le 0$ ($i=1,\dots,m$), definimos a <strong>Função Lagrangiana</strong>:
+      </p>
+      $$L(x, \lambda) = f_0(x) + \sum_{i=1}^m \lambda_i f_i(x), \quad \text{com } \lambda_i \ge 0$$
+      <p>
+        A <strong>Função Dual de Lagrange</strong> $g(\lambda)$ é o ínfimo da Lagrangiana sobre todo o domínio:
+      </p>
+      $$g(\lambda) = \inf_{x} \; L(x, \lambda)$$
+      <div class="callout definition">
+        <div class="callout-title">📌 Teorema da Concavidade do Dual</div>
+        <p style="margin-bottom: 0;">
+          A função dual $g(\lambda)$ é <strong>SEMPRE CÔNCAVA</strong>, mesmo quando o problema primal original $f_0(x)$ for terrivelmente não convexo! Além disso, o Teorema do Dual Fraco garante que $g(\lambda) \le p^*$ para todo $\lambda \ge 0$.
+        </p>
+      </div>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: LAGRANGIANA E DUAL DE SRIKANT -->
+    <div class="interactive-widget" id="srikant-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⚡ Simulador Interativo: A Lagrangiana e a Função Dual de Srikant</span>
+        </div>
+        <span class="widget-badge">Laboratório de Dualidade</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Considere o problema $\min \; x^2 + 1$ sujeito a $(x - 2)(x - 4) \le 0$ (região factível $x \in [2, 4]$, com ótimo $x^* = 2, p^* = 5$). 
+        Ajuste o <strong>multiplicador dual $\lambda$</strong>. 
+        Veja a parábola da Lagrangiana $L(x, \lambda)$ se deslocar e observe seu valor mínimo $g(\lambda)$ atingir o pico exato de $5.00$ em $\lambda^* = 2$!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1.25rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%;">
+          <!-- Gráfico 1: Lagrangiana L(x, lambda) -->
+          <div>
+            <div style="font-size: 0.85rem; font-weight: bold; color: var(--accent); margin-bottom: 0.3rem;">
+              Lagrangiana L(x, λ) no Espaço Primal
+            </div>
+            <svg id="lagr-svg" width="100%" height="220" viewBox="0 0 250 220" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="190" x2="230" y2="190" stroke="#8b949e" stroke-width="1.5"/>
+              <line x1="120" y1="200" x2="120" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+              <!-- Faixa factível [2, 4]: x in [0, 5], scale: 60 + x*30 -->
+              <rect x="120" y="20" width="60" height="170" fill="rgba(63, 185, 80, 0.12)" stroke="none"/>
+              <text x="150" y="35" fill="#3fb950" font-size="10" text-anchor="middle">Factível [2, 4]</text>
+
+              <!-- Parábola da Lagrangiana L(x, lambda) -->
+              <path id="path-lagr" d="" fill="none" stroke="#58a6ff" stroke-width="2.5"/>
+
+              <!-- Mínimo de L(x, lambda) -->
+              <circle id="dot-min-lagr" cx="120" cy="120" r="6" fill="#f0883e" stroke="#fff" stroke-width="2"/>
+            </svg>
+          </div>
+
+          <!-- Gráfico 2: Função Dual g(lambda) -->
+          <div>
+            <div style="font-size: 0.85rem; font-weight: bold; color: var(--accent); margin-bottom: 0.3rem;">
+              Função Dual Côncava g(λ)
+            </div>
+            <svg id="dual-fn-svg" width="100%" height="220" viewBox="0 0 250 220" xmlns="http://www.w3.org/2000/svg">
+              <line x1="30" y1="190" x2="230" y2="190" stroke="#8b949e" stroke-width="1.5"/>
+              <line x1="30" y1="190" x2="30" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+              <text x="235" y="195" fill="#8b949e" font-size="10">λ</text>
+              <text x="35" y="25" fill="#8b949e" font-size="10">g(λ)</text>
+
+              <!-- Curva côncava g(lambda) = (-lambda^2 + 9lambda + 1)/(1+lambda) -->
+              <!-- lambda=0 -> 1; lambda=2 -> 5; lambda=5 -> 3.5 -->
+              <path d="M 30,165 Q 110,65 220,105" fill="none" stroke="#8839ef" stroke-width="2.5"/>
+
+              <!-- Ponto Máximo Dual (lambda*=2, g*=5) -> cx=110, cy=65 -->
+              <circle cx="110" cy="65" r="5" fill="#3fb950"/>
+              <text x="120" y="60" fill="#3fb950" font-size="10" font-weight="bold">Ótimo Dual (λ*=2, g*=5)</text>
+
+              <!-- Ponto Atual em g(lambda) -->
+              <circle id="dot-dual-g" cx="110" cy="65" r="7" fill="#f0883e" stroke="#fff" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="widget-status-bar success" id="srikant-status" style="margin-top: 0.8rem;">
+          <span>λ = 2.00 • g(2.00) = <strong>5.00</strong> • Primal p* = <strong>5.00</strong>. <strong>Dualidade Forte Atingida!</strong></span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="gap: 1.5rem; justify-content: space-between;">
+        <div class="slider-control-group" style="flex: 2;">
+          <div class="slider-label">
+            <span>Multiplicador Dual ($\lambda$)</span>
+            <span id="srikant-lambda-val" style="color: var(--accent); font-weight: bold;">2.00</span>
+          </div>
+          <input type="range" class="interactive-slider" id="sl-srikant-lambda" min="0.0" max="5.0" value="2.0" step="0.1">
+        </div>
+
+        <button class="widget-btn secondary" id="btn-snap-srikant">🎯 Encaixar Multiplicador Ótimo (λ* = 2)</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: QUALIFICAÇÃO DE SLATER -->
+    <section class="card-theory">
+      <h2>2. Qualificação de Restrições de Slater</h2>
+      <div class="callout definition">
+        <div class="callout-title">📌 Condição de Slater</div>
+        <p style="margin-bottom: 0;">
+          Para um problema convexo, se existir um ponto factível estrito $x \in \text{relint}(\mathcal{D})$ tal que:
+          $$f_i(x) < 0 \quad \text{para todas as restrições não afins}$$
+          então o <strong>Teorema do Dual Forte é garantido</strong>: $d^* = p^*$ e o conjunto de multiplicadores ótimos duais é não vazio e limitado!
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Concavidade Universal da Função Dual</h3>
+      </div>
+      <div class="question-text">
+        Seja um problema primal de minimização $\min f_0(x)$ sujeito a $f_i(x) \le 0$ onde a função objetivo e as restrições são <strong>altamente não convexas</strong>.<br><br>
+        Qual é a classificação de curvatura da sua função dual de Lagrange $g(\lambda) = \inf_x L(x, \lambda)$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Como g(λ) é definida como o ínfimo pontual de uma família de funções afins em λ (L(x, λ) é afim em λ para cada x fixo), o ínfimo de funções côncavas/afins é SEMPRE CÔNCAVO, independente da não convexidade do primal!">
+          A função dual g(λ) é garantidamente côncava em todo o seu domínio.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a não convexidade do primal NÃO se propaga para a função dual. O operador de ínfimo preserva estritamente a concavidade em relação aos multiplicadores λ.">
+          A função dual herda a mesma não convexidade do problema primal.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: uma função afim exigiria que todos os gradientes de g fossem constantes, o que não ocorre em problemas com restrições ativas variáveis.">
+          A função dual torna-se estritamente afim (linear pura) em todo o espaço.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o dual de Lagrange é sempre bem definido (podendo assumir -∞ em pontos infactíveis), mas nunca indefinido.">
+          A função dual torna-se matematicamente indefinida e não diferenciável.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 3: AS 4 CONDIÇÕES KKT -->
+    <section class="card-theory">
+      <h2>3. As Condições de Karush-Kuhn-Tucker (KKT)</h2>
+      <p>
+        Para problemas convexos com diferenciação e satisfação da condição de Slater, as condições KKT são <strong>necessárias e suficientes</strong> para a otimalidade global:
+      </p>
+      <ol>
+        <li><strong>Estacionariedade:</strong> $\nabla f_0(x^*) + \sum \lambda_i^* \nabla f_i(x^*) + \sum \nu_j^* \nabla h_j(x^*) = \mathbf{0}$</li>
+        <li><strong>Factibilidade Primal:</strong> $f_i(x^*) \le 0, \quad h_j(x^*) = 0$</li>
+        <li><strong>Factibilidade Dual:</strong> $\lambda_i^* \ge 0$</li>
+        <li><strong>Folga Complementar:</strong> $\lambda_i^* \cdot f_i(x^*) = 0, \quad \forall i=1,\dots,m$</li>
+      </ol>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2" data-hint="Na condição de estacionariedade, grad(f0) + lambda * grad(f1) = 0. Para f0(x) = x^2, a derivada é 2x. Para x* = 2, 2(2) = 4. A derivada de f1(x) = (x-2)(x-4) = x^2 - 6x + 8 é 2x - 6. Em x* = 2, 2(2) - 6 = -2. Então: 4 + lambda*(-2) = 0 -> 2*lambda = 4 -> lambda* = 2.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Active Recall Numérico — Estacionariedade KKT</h3>
+      </div>
+      <div class="question-text">
+        No exemplo de Srikant $\min x^2 + 1$ s.a. $x^2 - 6x + 8 \le 0$, o ponto ótimo primal é $x^* = 2.0$.<br><br>
+        Utilizando a condição KKT de <strong>Estacionariedade</strong> ($\nabla f_0(x^*) + \lambda^* \nabla f_1(x^*) = 0$), determine o <strong>valor numérico do multiplicador ótimo $\lambda^*$</strong>:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de lambda* (ex: 2)" autocomplete="off">
+        <button class="action-btn">Verificar Multiplicador</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0012-programacao-convexa-e-hessiana.html">← Lição Anterior: 0012 (Programação Convexa)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0014-hierarquia-conica-e-revisao-convexa.html">Próxima: Lição 0014 (Hierarquia Cônica) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Concavidade universal
+      initMultipleChoice("ex1", "A função dual de Lagrange é universalmente côncava como ínfimo de funções afins");
+
+      // Ex 2: lambda* = 2
+      initInputExercise("ex2", ["2", "2.0", "2,0"], "Multiplicador ótimo KKT: 4 + lambda*(-2) = 0 -> lambda* = 2", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 2) < 0.01;
+      });
+
+      // ==========================================
+      // SIMULADOR SRIKANT LAGRANGIAN & DUAL
+      // ==========================================
+      const slL = document.getElementById("sl-srikant-lambda");
+      const vL = document.getElementById("srikant-lambda-val");
+      const pathLagr = document.getElementById("path-lagr");
+      const dotMinLagr = document.getElementById("dot-min-lagr");
+      const dotDualG = document.getElementById("dot-dual-g");
+      const srikantStatus = document.getElementById("srikant-status");
+
+      function updateSrikant() {
+        const lam = parseFloat(slL.value);
+        vL.textContent = lam.toFixed(2);
+
+        // L(x, lam) = (1+lam)*x^2 - 6*lam*x + (1 + 8*lam)
+        // Minimo ocorre em x* = 3*lam / (1+lam)
+        // g(lam) = (-lam^2 + 9*lam + 1) / (1+lam)
+        const xMin = (3 * lam) / (1 + lam);
+        const gVal = (-Math.pow(lam, 2) + 9 * lam + 1) / (1 + lam);
+
+        // SVG 1: Lagrangiana (x in [0, 5], y in [0, 15])
+        // Scale X: 60 + x*30; Scale Y: 190 - y*10
+        let d = "";
+        for (let x = 0; x <= 5.01; x += 0.2) {
+          const y = (1 + lam) * x * x - 6 * lam * x + (1 + 8 * lam);
+          const cx = 60 + x * 30;
+          const cy = 190 - Math.min(18, Math.max(0, y)) * 10;
+          d += (x === 0 ? `M ${cx},${cy}` : ` L ${cx},${cy}`);
+        }
+        pathLagr.setAttribute("d", d);
+
+        const cxMin = 60 + xMin * 30;
+        const cyMin = 190 - Math.min(18, Math.max(0, gVal)) * 10;
+        dotMinLagr.setAttribute("cx", cxMin);
+        dotMinLagr.setAttribute("cy", cyMin);
+
+        // SVG 2: Dual g(lambda) (lam in [0, 5], g in [0, 6])
+        // Scale X: 30 + lam*38; Scale Y: 190 - g*25
+        const cxDual = 30 + lam * 38;
+        const cyDual = 190 - gVal * 25;
+        dotDualG.setAttribute("cx", cxDual);
+        dotDualG.setAttribute("cy", cyDual);
+
+        const isOpt = Math.abs(lam - 2.0) < 0.15;
+        srikantStatus.className = "widget-status-bar" + (isOpt ? " success" : "");
+        srikantStatus.innerHTML = `<span>λ = <strong>${lam.toFixed(2)}</strong> • Mínimo da Lagrangiana: x* = ${xMin.toFixed(2)} • g(λ) = <strong>${gVal.toFixed(2)}</strong> ${isOpt ? "🏆 [DUAL FORTE ATINGIDO: g(2) = p* = 5.00]" : "(Gap restante: " + (5.0 - gVal).toFixed(2) + ")"}</span>`;
+      }
+
+      slL.addEventListener("input", updateSrikant);
+
+      document.getElementById("btn-snap-srikant").addEventListener("click", () => {
+        slL.value = 2.0;
+        updateSrikant();
+      });
+
+      updateSrikant();
+    });
+  </script>
+</body>
+</html>

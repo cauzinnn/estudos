@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Referência: Otimização Combinatória, MIP e NLP — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Referência • Módulo 3</div>
+      <h1>Ficha Rápida: MIP, Otimização Combinatória e NLP</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Linearização Big-M, lógica booleana em inteiros, formulações do TSP, árvore de Branch & Bound e algoritmos de descida não lineares.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0002-programacao-convexa-e-kkt.html">← Ficha Módulo 2 (Convexa)</a>
+      <a href="../lessons/0015-modelos-nao-convexos-e-arredondamento.html">Lição 0015: Modelos Não Convexos &rarr;</a>
+    </div>
+
+    <!-- 1. LINEARIZAÇÃO BIG-M E CUSTOS FIXOS -->
+    <section class="card-theory">
+      <h2>1. Modelagem com Variáveis Binárias e Técnica do Big-M</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Estrutura Física / Lógica</th>
+              <th>Formulação Matemática Não Linear</th>
+              <th>Equivalente Linear com Big-M ($z \in \{0, 1\}$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Custo Fixo de Ativação</strong></td>
+              <td>$$\text{Custo}(x) = \begin{cases} c x + K, & x > 0 \\ 0, & x = 0 \end{cases}$$</td>
+              <td>$$\text{Min} \; c x + K z \quad \text{s.a.} \quad x \le M z, \; x \ge 0$$</td>
+            </tr>
+            <tr>
+              <td><strong>Condicional Se-Então</strong></td>
+              <td>$$\text{Se } z = 1 \implies a^T x \le b$$</td>
+              <td>$$a^T x \le b + M(1 - z)$$</td>
+            </tr>
+            <tr>
+              <td><strong>Disjunção (Um ou Outro)</strong></td>
+              <td>$$(a_1^T x \le b_1) \;\lor\; (a_2^T x \le b_2)$$</td>
+              <td>$$a_1^T x \le b_1 + M z \quad \text{e} \quad a_2^T x \le b_2 + M(1 - z)$$</td>
+            </tr>
+            <tr>
+              <td><strong>Lógica E (AND: $z = y_1 \land y_2$)</strong></td>
+              <td>$$z = 1 \iff y_1 = 1 \text{ e } y_2 = 1$$</td>
+              <td>$$z \le y_1, \quad z \le y_2, \quad z \ge y_1 + y_2 - 1$$</td>
+            </tr>
+            <tr>
+              <td><strong>Lógica OU (OR: $z = y_1 \lor y_2$)</strong></td>
+              <td>$$z = 1 \iff y_1 = 1 \text{ ou } y_2 = 1$$</td>
+              <td>$$z \ge y_1, \quad z \ge y_2, \quad z \le y_1 + y_2$$</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. FORMULAÇÕES DO CAIXEIRO VIAJANTE (TSP) -->
+    <section class="card-theory">
+      <h2>2. O Problema do Caixeiro Viajante (TSP)</h2>
+      <p>
+        Minimizar $\sum c_{ij} x_{ij}$ sujeito a $\sum_j x_{ij} = 1$ (grau de saída) e $\sum_i x_{ij} = 1$ (grau de entrada). Para impedir que a solução se decomponha em múltiplos <strong>subciclos desconectados</strong>, existem duas abordagens consagradas:
+      </p>
+      <ul>
+        <li><strong>Formulação MTZ (Miller-Tucker-Zemlin):</strong> Adiciona variáveis de potencial escalar $u_i \in \mathbb{R}$ ($i=2,\dots,n$):
+          $$u_i - u_j + n x_{ij} \le n - 1, \quad \forall 2 \le i \ne j \le n$$
+          <em>Vantagem:</em> Apenas $O(n^2)$ restrições (tamanho polinomial compacto).
+        </li>
+        <li><strong>Formulação DFJ (Dantzig-Fulkerson-Johnson):</strong> Cortes de eliminação de subciclo para todo subconjunto próprio não vazio $S \subset V$:
+          $$\sum_{i \in S, j \in S} x_{ij} \le |S| - 1$$
+          <em>Vantagem:</em> Relaxação linear muito mais justa (bound dual superior), resolvida via geração dinâmica de planos de corte (Branch & Cut).
+        </li>
+      </ul>
+    </section>
+
+    <!-- 3. ÁRVORE DE BRANCH AND BOUND -->
+    <section class="card-theory">
+      <h2>3. Algoritmo de Branch and Bound (B&B)</h2>
+      <div class="callout definition">
+        <div class="callout-title">📌 As Três Regras de Poda de Nós na Árvore</div>
+        <ol style="margin-bottom: 0;">
+          <li><strong>Poda por Inviabilidade:</strong> O relaxamento LP do nó filho não possui nenhuma solução factível ($\mathcal{P}_{\text{filho}} = \emptyset$).</li>
+          <li><strong>Poda por Limitante (Bound):</strong> O limitante inferior do relaxamento $z_{\text{relax}} \ge z_{\text{incumbente}}$ (o melhor inteiro já conhecido é superior ao potencial desse ramo).</li>
+          <li><strong>Poda por Integralidade:</strong> O relaxamento LP atinge uma solução onde todas as variáveis binárias/inteiras assumem valores estritamente inteiros ($x_j \in \mathbb{Z}$). Atualiza a solução incumbente se melhorar o custo!</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 4. ALGORITMOS DE PROGRAMAÇÃO NÃO LINEAR (NLP) -->
+    <section class="card-theory">
+      <h2>4. Algoritmos de Otimização Não Linear Contínua (NLP)</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Algoritmo</th>
+              <th>Equação de Atualização</th>
+              <th>Taxa de Convergência</th>
+              <th>Custo por Iteração</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Gradiente Descendente</strong></td>
+              <td>$$x_{k+1} = x_k - \alpha_k \nabla f(x_k)$$</td>
+              <td>Linear (lenta em vales estreitos)</td>
+              <td>$O(n)$ (avaliação de derivadas de 1ª ordem)</td>
+            </tr>
+            <tr>
+              <td><strong>Método de Newton</strong></td>
+              <td>$$x_{k+1} = x_k - [\nabla^2 f(x_k)]^{-1} \nabla f(x_k)$$</td>
+              <td><strong>Quadrática</strong> (super rápida perto do ótimo)</td>
+              <td>$O(n^3)$ (cálculo e inversão da Hessiana)</td>
+            </tr>
+            <tr>
+              <td><strong>Quasi-Newton (BFGS)</strong></td>
+              <td>$$x_{k+1} = x_k - \alpha_k H_k \nabla f(x_k)$$</td>
+              <td>Superlinear</td>
+              <td>$O(n^2)$ (aproximação cumulativa de $H = [\nabla^2 f]^{-1}$)</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>Busca Linear (Armijo)</strong></td>
+              <td>$$f(x_k + \alpha d_k) \le f(x_k) + c_1 \alpha \nabla f(x_k)^T d_k$$</td>
+              <td>Garante decrescimento suficiente</td>
+              <td>Algumas avaliações de função por passo</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Índice da Disciplina</a>
+      <a href="../lessons/0015-modelos-nao-convexos-e-arredondamento.html">Iniciar Lição 0015: Modelos Não Convexos &rarr;</a>
+    </div>
+
+  </div>
+</body>
+</html>

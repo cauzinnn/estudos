@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0007: Restrições de Igualdade e Curvas de Trade-off — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 2 • Lição 0007 (Slide 9)</div>
+      <h1>Mínimos Quadrados com Restrições de Igualdade e Tradeoffs</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Soluções de norma mínima em matrizes largas, sistema KKT em blocos e a construção da Fronteira de Pareto multiobjetivo.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0006-minimos-quadrados-e-projecao-ortogonal.html">← Lição Anterior</a>
+      <a href="0008-regularizacao-ridge-e-lasso.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: NORMA MÍNIMA EM MATRIZES LARGAS -->
+    <section class="card-theory">
+      <h2>1. Matrizes Largas e o Problema de Norma Mínima</h2>
+      <p>
+        Quando $A \in \mathbb{R}^{m \times n}$ é uma matriz larga com mais incógnitas que equações ($m < n$), o sistema $Ax = b$ admite <strong>infinitas soluções</strong> (o espaço de soluções é um subespaço afim).
+      </p>
+      <p>
+        Para eliminar a ambiguidade física, selecionamos a solução de menor energia (menor norma euclidiana $\|x\|_2^2$):
+      </p>
+      $$\min_{x} \; \|x\|_2^2 \quad \text{sujeito a:} \quad Ax = b$$
+      <div class="callout definition">
+        <div class="callout-title">📌 Pseudo-inversa à Direita</div>
+        <p style="margin-bottom: 0;">
+          Geometricamente, o vetor ótimo $\hat{x}$ é ortogonal ao espaço nulo $\mathcal{N}(A)$, logo reside no espaço linha $\mathcal{R}(A^T) \implies \hat{x} = A^T z$. Substituindo na restrição $A(A^T z) = b$, obtemos a fórmula analítica:
+          $$\hat{x} = A^T (A A^T)^{-1} b$$
+          onde $A^\dagger = A^T (AA^T)^{-1}$ é a <strong>pseudo-inversa à direita</strong> (invertível se $A$ tem posto linha pleno).
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="A matriz A = [1, 2] tem dimensão 1x2. Calcule A A^T = 1*(1) + 2*(2) = 5. A pseudo-inversa à direita é A^T (A A^T)^(-1) = [1, 2]^T / 5 = [0.2, 0.4]^T. Para b = 10, x* = [10*0.2, 10*0.4] = [2, 4]. A norma ao quadrado é 2^2 + 4^2 = 20.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Norma Mínima em Subespaço Afim</h3>
+      </div>
+      <div class="question-text">
+        Deseja-se encontrar a solução de menor norma euclidiana para a única equação linear:
+        $$x_1 + 2 x_2 = 10$$
+        Calcule o <strong>valor da menor norma ao quadrado</strong> $\|\hat{x}\|_2^2 = x_1^2 + x_2^2$ que satisfaz essa igualdade:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a norma ao quadrado (ex: 20)" autocomplete="off">
+        <button class="action-btn">Verificar Norma</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 2: MÍNIMOS QUADRADOS RESTRITOS A IGUALDADES -->
+    <section class="card-theory">
+      <h2>2. Mínimos Quadrados com Restrições Lineares de Igualdade</h2>
+      <p>
+        Considere minimizar um resíduo quadrático sujeito a restrições físicas obrigatórias:
+      </p>
+      $$\min_x \|Ax - b\|_2^2 \quad \text{sujeito a:} \quad C x = d$$
+      <p>
+        Introduzindo o multiplicador de Lagrange $z \in \mathbb{R}^p$, as condições de otimalidade geram um sistema linear em blocos:
+      </p>
+      $$\begin{bmatrix} A^T A & C^T \\ C & 0 \end{bmatrix} \begin{bmatrix} \hat{x} \\ z \end{bmatrix} = \begin{bmatrix} A^T b \\ d \end{bmatrix}$$
+      <p>
+        Essa matriz $2 \times 2$ em blocos é denominada <strong>Matriz KKT</strong> (Karush-Kuhn-Tucker).
+      </p>
+    </section>
+
+    <!-- SEÇÃO 3: TRADEOFFS E A FRONTEIRA DE PARETO -->
+    <section class="card-theory">
+      <h2>3. Análise de Tradeoffs Multiobjetivo e a Curva de Pareto</h2>
+      <p>
+        Na prática, desejamos minimizar múltiplos objetivos conflitantes simultaneamente, como o <strong>erro de rastreamento</strong> $J_1(x) = \|Ax - b\|_2^2$ e o <strong>consumo de combustível/energia</strong> $J_2(x) = \|Cx - d\|_2^2$.
+      </p>
+      <p>
+        Pelo método da escalarização ponderada, combinamos ambos via parâmetro de penalidade $\lambda > 0$:
+      </p>
+      $$\min_x \quad J_1(x) + \lambda J_2(x)$$
+      <ul>
+        <li>Para $\lambda \to 0$: minimiza exclusivamente $J_1$ (máxima precisão, ignora combustível).</li>
+        <li>Para $\lambda \to \infty$: minimiza exclusivamente $J_2$ (gasto nulo de energia, trajetória estática).</li>
+      </ul>
+      <p>
+        Variando $\lambda \in (0, \infty)$, o conjunto de soluções ótimas traça uma curva convexa descendente: a <strong>Fronteira de Pareto</strong>.
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: CURVA DE PARETO E CONTROLE DE VEÍCULO -->
+    <div class="interactive-widget" id="pareto-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⚡ Simulador Interativo: Fronteira de Pareto & Trade-off de Energia</span>
+        </div>
+        <span class="widget-badge">Controle Multiobjetivo</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Ajuste o parâmetro de ponderação $\lambda$ para equilibrar o <strong>Erro de Rastreamento ($J_1$)</strong> contra o <strong>Gasto de Combustível ($J_2$)</strong>. 
+        Observe o ponto deslizar pela curva de Pareto convexa e veja a trajetória do veículo se adaptar em tempo real!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1.25rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%;">
+          <!-- Gráfico 1: Curva de Pareto J1 vs J2 -->
+          <div>
+            <div style="font-size: 0.85rem; font-weight: bold; color: var(--accent); margin-bottom: 0.3rem;">
+              Plano de Pareto: Erro (J₁) vs. Combustível (J₂)
+            </div>
+            <svg id="pareto-svg" width="100%" height="220" viewBox="0 0 250 220" xmlns="http://www.w3.org/2000/svg">
+              <!-- Eixos -->
+              <line x1="30" y1="190" x2="230" y2="190" stroke="#8b949e" stroke-width="1.5"/>
+              <line x1="30" y1="190" x2="30" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+              <text x="235" y="195" fill="#8b949e" font-size="10">J₂ (Combustível)</text>
+              <text x="35" y="25" fill="#8b949e" font-size="10">J₁ (Erro)</text>
+
+              <!-- Curva Convexa de Pareto (J1 * J2 = constante) -->
+              <!-- Ex: J1 = 15 / (J2 + 0.5) -->
+              <path id="pareto-curve" d="M 40,30 Q 60,140 220,175" fill="none" stroke="#58a6ff" stroke-width="2.5"/>
+
+              <!-- Ponto Ótimo Atual sobre a Curva de Pareto -->
+              <circle id="pareto-dot" cx="100" cy="115" r="7" fill="#f0883e" stroke="#fff" stroke-width="2"/>
+            </svg>
+          </div>
+
+          <!-- Gráfico 2: Trajetória Física do Hovercraft -->
+          <div>
+            <div style="font-size: 0.85rem; font-weight: bold; color: var(--accent); margin-bottom: 0.3rem;">
+              Trajetória Física: Alvos vs. Curva Real
+            </div>
+            <svg id="traj-svg" width="100%" height="220" viewBox="0 0 250 220" xmlns="http://www.w3.org/2000/svg">
+              <!-- Grid simples -->
+              <rect x="10" y="10" width="230" height="190" fill="rgba(0,0,0,0.02)" stroke="#30363d" stroke-width="1" rx="6"/>
+              
+              <!-- Waypoints / Alvos Prescritos -->
+              <circle cx="50" cy="150" r="5" fill="#3fb950"/>
+              <text x="45" y="170" fill="#3fb950" font-size="10">W₁</text>
+
+              <circle cx="125" cy="40" r="5" fill="#3fb950"/>
+              <text x="120" y="30" fill="#3fb950" font-size="10">W₂</text>
+
+              <circle cx="200" cy="160" r="5" fill="#3fb950"/>
+              <text x="195" y="180" fill="#3fb950" font-size="10">W₃</text>
+
+              <!-- Curva da Trajetória Real (ajustada por lambda) -->
+              <path id="traj-path" d="M 50,150 Q 125,70 200,160" fill="none" stroke="#f0883e" stroke-width="2.5"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="widget-status-bar" id="pareto-status" style="margin-top: 0.8rem;">
+          <span>λ = 1.00 • Erro de Alvo: J₁ = 2.45 • Combustível: J₂ = 4.10. Equilíbrio de Pareto.</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="gap: 1.5rem; justify-content: space-between;">
+        <div class="slider-control-group" style="flex: 2;">
+          <div class="slider-label">
+            <span>Penalidade de Combustível ($\lambda$ - Escala Logarítmica)</span>
+            <span id="pareto-lambda-val" style="color: var(--accent); font-weight: bold;">1.00</span>
+          </div>
+          <input type="range" class="interactive-slider" id="sl-pareto-lambda" min="-2" max="2" value="0" step="0.05">
+        </div>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Pegadinha de Prova — Convexidade da Fronteira de Pareto</h3>
+      </div>
+      <div class="question-text">
+        Analise a seguinte afirmação teórica:<br>
+        <em>"Ao minimizar dois objetivos estritamente convexos $J_1(x)$ e $J_2(x)$, a curva de trade-off no plano $(J_1, J_2)$ gerada pela variação de $\lambda > 0$ é garantidamente convexa e não decrescente."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com a palavra final! A curva de Pareto é convexa, mas ela é estritamente NÃO CRESCENTE (ou seja, DECRESCENTE): para diminuir o erro J1, é obrigatório aumentar o gasto de combustível J2! Não existe trade-off em que ambos melhorem simultaneamente na fronteira ótima.">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Exato! A curva é convexa e estritamente DECRESCENTE (inclinação negativa -dJ1/dJ2 = λ). Melhorar um objetivo na fronteira de Pareto acarreta necessariamente piorar o outro.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: Estrutura do Sistema KKT com Restrições de Igualdade</h3>
+      </div>
+      <div class="question-text">
+        No problema de mínimos quadrados restrito $\min \|Ax - b\|_2^2$ sujeito a $C x = d$, qual submatriz ocupa o bloco inferior direito da matriz KKT $2 \times 2$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Como as restrições são puramente lineares de igualdade (sem termos quadráticos nas variáveis duais), a segunda derivada da Lagrangiana em relação aos multiplicadores z é identicamente zero, gerando um bloco nulo (matriz de zeros).">
+          Uma matriz de zeros de dimensão p × p (bloco nulo 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: a matriz identidade I só surgiria se houvesse regularização direta sobre os próprios multiplicadores de Lagrange, o que não ocorre na formulação padrão.">
+          Uma matriz identidade I de dimensão p × p ponderada por λ.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o produto C^T C relaciona as colunas das restrições e não aparece no bloco inferior direito do sistema de equações KKT.">
+          O produto de Gram Cᵀ C associado às restrições.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o bloco superior esquerdo é que contém a matriz de covariância Aᵀ A.">
+          A matriz de resíduos cruzados Aᵀ C.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0006-minimos-quadrados-e-projecao-ortogonal.html">← Lição Anterior: 0006 (Mínimos Quadrados)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0008-regularizacao-ridge-e-lasso.html">Próxima: Lição 0008 (Ridge & Lasso) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Norma mínima: ||x||^2 = 20
+      initInputExercise("ex1", ["20", "20.0", "20,0"], "Norma mínima ||x||^2 = 2^2 + 4^2 = 20", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 20) < 0.01;
+      });
+
+      // Ex 2: Falsa (curva é decrescente)
+      initTrueFalse("ex2", false, "A curva de Pareto é convexa e decrescente (trade-off negativo)",
+        "Atenção: A inclinação é negativa (-λ), indicando que diminuir um custo piora o outro!",
+        "Correto! A curva é convexa e estritamente decrescente.");
+
+      // Ex 3: Bloco inferior direito KKT é 0
+      initMultipleChoice("ex3", "O bloco inferior direito da matriz KKT é a matriz nula 0");
+
+      // ==========================================
+      // SIMULADOR CURVA DE PARETO & HOVERCRAFT
+      // ==========================================
+      const slLambda = document.getElementById("sl-pareto-lambda");
+      const vLambda = document.getElementById("pareto-lambda-val");
+      const pDot = document.getElementById("pareto-dot");
+      const trajPath = document.getElementById("traj-path");
+      const pStatus = document.getElementById("pareto-status");
+
+      function updatePareto() {
+        const logL = parseFloat(slLambda.value);
+        const lambda = Math.pow(10, logL);
+        vLambda.textContent = lambda < 0.1 ? lambda.toFixed(3) : lambda.toFixed(2);
+
+        // Mapeamento Pareto: lambda grande -> J2 pequeno (esquerda), J1 grande (topo)
+        // lambda pequeno -> J1 pequeno (baixo), J2 grande (direita)
+        // normalized t in [0, 1]
+        const t = (logL + 2) / 4; // 0 (lambda=0.01) a 1 (lambda=100)
+        
+        // Ponto no SVG Pareto: de (210, 170) para (45, 35)
+        const dotX = 210 - t * 165;
+        const dotY = 170 - (1 - Math.pow(1 - t, 2)) * 135;
+
+        pDot.setAttribute("cx", dotX);
+        pDot.setAttribute("cy", dotY);
+
+        // Curvatura do Hovercraft: t=0 (lambda pequeno) atinge W2 exatamente (cy = 40)
+        // t=1 (lambda grande, economiza energia) passa reto (cy = 120)
+        const peakY = 40 + t * 90;
+        trajPath.setAttribute("d", `M 50,150 Q 125,${peakY} 200,160`);
+
+        const j1 = (0.2 + t * 8.5).toFixed(2);
+        const j2 = (12.0 / (1 + t * 4)).toFixed(2);
+
+        pStatus.className = "widget-status-bar" + (Math.abs(logL) < 0.2 ? " success" : "");
+        pStatus.innerHTML = `<span>λ = <strong>${vLambda.textContent}</strong> • Erro de Alvo: <strong>J₁ = ${j1}</strong> • Gasto de Energia: <strong>J₂ = ${j2}</strong> ${Math.abs(logL) < 0.2 ? "⭐ [EQUILÍBRIO RECOMENDADO]" : ""}</span>`;
+      }
+
+      slLambda.addEventListener("input", updatePareto);
+      updatePareto();
+    });
+  </script>
+</body>
+</html>

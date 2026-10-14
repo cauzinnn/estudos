@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0003: Fluxo em Redes e Unimodularidade Total — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 1 • Lição 0003 (Slide 5)</div>
+      <h1>Problemas de Fluxo em Redes e Unimodularidade Total</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Matriz de incidência nó-arco, conservação de fluxo, transporte e designação, e a garantia de soluções inteiras em LP contínuo.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0002-otimizacao-minimax-e-variavel-epigrafe.html">← Lição Anterior</a>
+      <a href="0004-dualidade-lp-e-folga-complementar.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: O MODELO GERAL DE FLUXO EM REDES -->
+    <section class="card-theory">
+      <h2>1. Modelo Geral de Fluxo de Custo Mínimo (Min-Cost Flow)</h2>
+      <p>
+        Uma rede é um grafo direcionado $G = (V, E)$ onde cada arco $e = (i, j) \in E$ conduz um fluxo $x_{ij} \ge 0$ com custo unitário $c_{ij}$ e capacidade máxima $u_{ij}$.
+      </p>
+      <p>
+        Cada nó $i \in V$ possui um balanço de suprimento/demanda $b_i$:
+      </p>
+      <ul>
+        <li><strong>Nó de Oferta / Fonte:</strong> $b_i > 0$ (injeta fluxo na rede).</li>
+        <li><strong>Nó de Demanda / Sumidouro:</strong> $b_i < 0$ (consome fluxo da rede).</li>
+        <li><strong>Nó de Transbordo (Intermediário):</strong> $b_i = 0$ (todo fluxo que entra deve sair).</li>
+      </ul>
+      <p>
+        A lei de conservação em cada nó $i$ impõe que a soma do fluxo que <em>sai</em> menos o fluxo que <em>entra</em> deve ser igual a $b_i$:
+      </p>
+      $$\sum_{j : (i,j) \in E} x_{ij} - \sum_{k : (k,i) \in E} x_{ki} = b_i, \quad \forall i \in V$$
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: LABORATÓRIO DE BALANCEAMENTO DE FLUXO -->
+    <div class="interactive-widget" id="network-simulator">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⚡ Simulador Interativo: Balanceador Vivo de Fluxo em Redes</span>
+        </div>
+        <span class="widget-badge">Laboratório de Redes</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Roteie <strong>30 unidades de fluxo</strong> do Nó 1 ($b_1 = +30$) até o Nó 4 ($b_4 = -30$). 
+        Os nós intermediários 2 e 3 são de transbordo ($b_i = 0$). 
+        Ajuste os fluxos nos arcos: <strong>nós equilibrados acendem em verde</strong>; nós com violação de conservação acendem em vermelho!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1rem;">
+        <svg id="net-svg" width="100%" height="280" viewBox="0 0 540 280" xmlns="http://www.w3.org/2000/svg" style="max-width: 540px;">
+          <defs>
+            <marker id="net-arrow" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#58a6ff"/>
+            </marker>
+          </defs>
+
+          <!-- Arcos -->
+          <!-- 1 -> 2 (c=3, u=25) -->
+          <line x1="80" y1="140" x2="240" y2="60" stroke="#58a6ff" stroke-width="3" marker-end="url(#net-arrow)"/>
+          <text id="lbl-x12" x="145" y="90" fill="#f0883e" font-size="12" font-weight="bold">x₁₂ = 15 [c=3]</text>
+
+          <!-- 1 -> 3 (c=7, u=25) -->
+          <line x1="80" y1="140" x2="240" y2="220" stroke="#58a6ff" stroke-width="3" marker-end="url(#net-arrow)"/>
+          <text id="lbl-x13" x="145" y="195" fill="#f0883e" font-size="12" font-weight="bold">x₁₃ = 15 [c=7]</text>
+
+          <!-- 2 -> 3 (c=2, u=15) -->
+          <line x1="240" y1="60" x2="240" y2="220" stroke="#58a6ff" stroke-width="3" marker-end="url(#net-arrow)"/>
+          <text id="lbl-x23" x="250" y="145" fill="#f0883e" font-size="12" font-weight="bold">x₂₃ = 0 [c=2]</text>
+
+          <!-- 2 -> 4 (c=6, u=20) -->
+          <line x1="240" y1="60" x2="440" y2="140" stroke="#58a6ff" stroke-width="3" marker-end="url(#net-arrow)"/>
+          <text id="lbl-x24" x="340" y="90" fill="#f0883e" font-size="12" font-weight="bold">x₂₄ = 15 [c=6]</text>
+
+          <!-- 3 -> 4 (c=4, u=25) -->
+          <line x1="240" y1="220" x2="440" y2="140" stroke="#58a6ff" stroke-width="3" marker-end="url(#net-arrow)"/>
+          <text id="lbl-x34" x="340" y="195" fill="#f0883e" font-size="12" font-weight="bold">x₃₄ = 15 [c=4]</text>
+
+          <!-- Nós -->
+          <!-- Nó 1 -->
+          <circle id="node-1" cx="80" cy="140" r="26" fill="#1f6feb" stroke="#58a6ff" stroke-width="2.5"/>
+          <text x="80" y="136" font-family="monospace" font-weight="bold" font-size="12" fill="#fff" text-anchor="middle">Nó 1</text>
+          <text id="node-1-b" x="80" y="152" font-family="monospace" font-size="10" fill="#e6edf3" text-anchor="middle">b = +30</text>
+
+          <!-- Nó 2 -->
+          <circle id="node-2" cx="240" cy="60" r="24" fill="#161b22" stroke="#8b949e" stroke-width="2.5"/>
+          <text x="240" y="56" font-family="monospace" font-weight="bold" font-size="12" fill="#fff" text-anchor="middle">Nó 2</text>
+          <text id="node-2-b" x="240" y="72" font-family="monospace" font-size="10" fill="#e6edf3" text-anchor="middle">b = 0</text>
+
+          <!-- Nó 3 -->
+          <circle id="node-3" cx="240" cy="220" r="24" fill="#161b22" stroke="#8b949e" stroke-width="2.5"/>
+          <text x="240" y="216" font-family="monospace" font-weight="bold" font-size="12" fill="#fff" text-anchor="middle">Nó 3</text>
+          <text id="node-3-b" x="240" y="232" font-family="monospace" font-size="10" fill="#e6edf3" text-anchor="middle">b = 0</text>
+
+          <!-- Nó 4 -->
+          <circle id="node-4" cx="440" cy="140" r="26" fill="#8250df" stroke="#a371f7" stroke-width="2.5"/>
+          <text x="440" y="136" font-family="monospace" font-weight="bold" font-size="12" fill="#fff" text-anchor="middle">Nó 4</text>
+          <text id="node-4-b" x="440" y="152" font-family="monospace" font-size="10" fill="#e6edf3" text-anchor="middle">b = -30</text>
+        </svg>
+
+        <div class="widget-status-bar" id="net-status">
+          <span><strong>Custo Total:</strong> $285 • Todos os 4 nós perfeitamente balanceados!</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; width: 100%;">
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Fluxo x₁₂ [cap 25]</span><span id="v-x12" style="color: var(--accent); font-weight: bold;">15</span></div>
+          <input type="range" class="interactive-slider" id="sl-x12" min="0" max="25" value="15">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Fluxo x₁₃ [cap 25]</span><span id="v-x13" style="color: var(--accent); font-weight: bold;">15</span></div>
+          <input type="range" class="interactive-slider" id="sl-x13" min="0" max="25" value="15">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Fluxo x₂₃ [cap 15]</span><span id="v-x23" style="color: var(--accent); font-weight: bold;">0</span></div>
+          <input type="range" class="interactive-slider" id="sl-x23" min="0" max="15" value="0">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Fluxo x₂₄ [cap 20]</span><span id="v-x24" style="color: var(--accent); font-weight: bold;">15</span></div>
+          <input type="range" class="interactive-slider" id="sl-x24" min="0" max="20" value="15">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Fluxo x₃₄ [cap 25]</span><span id="v-x34" style="color: var(--accent); font-weight: bold;">15</span></div>
+          <input type="range" class="interactive-slider" id="sl-x34" min="0" max="25" value="15">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button class="widget-btn secondary" id="btn-net-opt">🎯 Encontrar Fluxo de Custo Mínimo Ótimo</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="No nó de transbordo, todo fluxo que entra deve sair. Fluxo entrando: x_{1,2} = 30. Fluxos saindo: x_{2,4} + x_{2,5} = 30. Se x_{2,4} = 18, quanto vale x_{2,5}?">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Balanço em Nó de Transbordo</h3>
+      </div>
+      <div class="question-text">
+        Em uma rede de fluxo, considere um nó de transbordo intermediário $2$ ($b_2 = 0$).<br>
+        O fluxo recebido pelo arco $(1, 2)$ é $x_{1,2} = 30$.<br>
+        O nó $2$ despacha fluxo através de dois arcos de saída: $(2, 4)$ e $(2, 5)$.<br>
+        Sabendo que o arco $(2, 4)$ transporta $x_{2,4} = 18$, determine o <strong>fluxo $x_{2,5}$</strong> que deve ser escoado pelo arco $(2, 5)$:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o fluxo x_2,5 (ex: 12)" autocomplete="off">
+        <button class="action-btn">Verificar Fluxo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 2: MATRIZ DE INCIDÊNCIA NÓ-ARCO -->
+    <section class="card-theory">
+      <h2>2. A Matriz de Incidência Nó-Arco ($A x = b$)</h2>
+      <p>
+        Na forma matricial compacta $Ax = b$, a matriz de incidência $A \in \mathbb{R}^{|V| \times |E|}$ possui uma linha para cada nó e uma coluna para cada arco direcionado $e = (i, j)$:
+      </p>
+      <ul>
+        <li>$A_{i, e} = +1$ (o arco <em>sai</em> do nó $i$ - cauda).</li>
+        <li>$A_{j, e} = -1$ (o arco <em>entra</em> no nó $j$ - cabeça).</li>
+        <li>$A_{k, e} = 0$ para qualquer outro nó não incidente.</li>
+      </ul>
+      <div class="callout definition">
+        <div class="callout-title">📌 Teorema do Equilíbrio Global de Redes</div>
+        <p style="margin-bottom: 0;">
+          Como cada coluna de $A$ possui exatamente um $+1$ e um $-1$, a soma de todas as linhas de $A$ é identicamente zero: $\mathbf{1}^T A = \mathbf{0}^T$. Logo, para que o sistema $Ax = b$ seja viável, é estritamente obrigatório que a soma das ofertas seja igual à soma das demandas:
+          $$\mathbf{1}^T b = \sum_{i \in V} b_i = 0$$
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2" data-hint="A soma de todos os b_i deve ser rigorosamente zero: (+40) + (+30) + (-25) + (-15) + b_5 = 0.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Active Recall Numérico — Equilíbrio Global de Oferta e Demanda</h3>
+      </div>
+      <div class="question-text">
+        Uma rede logística possui 5 nós com os seguintes suprimentos parciais:<br>
+        $b_1 = +40$ (fábrica 1), $b_2 = +30$ (fábrica 2), $b_3 = -25$ (centro consumidor A), $b_4 = -15$ (centro consumidor B).<br><br>
+        Qual deve ser o <strong>valor numérico exato de $b_5$</strong> para que o problema de transporte balanceado admita solução viável?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de b_5 (ex: -30)" autocomplete="off">
+        <button class="action-btn">Verificar Balanço</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 3: TAXONOMIA E TOTAL UNIMODULARIDADE -->
+    <section class="card-theory">
+      <h2>3. Total Unimodularidade (TU) e Soluções Inteiras</h2>
+      <p>
+        Uma matriz $A$ é <strong>Totalmente Unimodular (TU)</strong> se o determinante de <em>toda</em> submatriz quadrada pertence a $\{-1, 0, 1\}$.
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Teorema de Hoffman-Kruskal</div>
+        <p style="margin-bottom: 0;">
+          Se a matriz de restrições $A$ for Totalmente Unimodular e o vetor $b$ for inteiro, então <strong>todos os vértices do poliedro $\{x \mid Ax = b, x \ge 0\}$ são inteiros</strong>!
+        </p>
+      </div>
+      <p>
+        Toda matriz de incidência nó-arco de fluxo em redes é comprovadamente TU. Logo, problemas como Designação e Caminho Mínimo podem ser resolvidos como LPs contínuos, fornecendo resultados estritamente inteiros sem qualquer necessidade de Branch & Bound.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: Diagnóstico Estrutural — Problema de Designação em Rede</h3>
+      </div>
+      <div class="question-text">
+        Em um problema de designação de $n$ pessoas para $n$ postos de trabalho formulado como um fluxo de custo mínimo, qual é a dimensão do vetor $b$ e a soma de suas componentes positivas?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Há n nós de pessoas (com b_i = +1, cuja soma é +n) e n nós de postos de trabalho (com b_j = -1, cuja soma é -n). O total de nós é 2n e a soma das fontes é exatamente +n.">
+          O vetor b tem dimensão 2n, e a soma das componentes de oferta é igual a +n.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: cada pessoa e cada tarefa é representada por um nó distinto no grafo bipartido. Com n pessoas e n tarefas, o grafo possui 2n nós no total.">
+          O vetor b tem dimensão n², e a soma das componentes de oferta é igual a +n².
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: se a dimensão fosse n, haveria nós apenas para as pessoas, sem representar os nós de destino das tarefas a serem atribuídas.">
+          O vetor b tem dimensão n, e a soma das componentes de oferta é igual a zero.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a soma das ofertas não é unitária no problema global de designação de n postos; ela só seria unitária no problema de caminho mínimo de um único par.">
+          O vetor b tem dimensão 2n, mas a soma de suas componentes positivas é igual a 1.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Pegadinha de Exame — Integridade sem Variáveis Discretas</h3>
+      </div>
+      <div class="question-text">
+        Analise a seguinte questão de prova:<br>
+        <em>"Ao relaxar as variáveis binárias $x_{ij} \in \{0, 1\}$ de um problema de designação para o intervalo contínuo $0 \le x_{ij} \le 1$, o algoritmo Simplex pode encontrar um vértice com valores fracionários (como $x_{1,1} = 0.5$), exigindo ramificação (Branch & Bound) para encontrar a alocação inteira."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com essa armadilha clássica! Graças à Total Unimodularidade da matriz de incidência, o poliedro do relaxamento contínuo NÃO possui vértices fracionários. Todos os pontos extremos são inteiros {0, 1}. O Simplex NUNCA retornará 0.5 em um vértice!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Perfeito! Pelo Teorema de Hoffman-Kruskal, como a matriz de incidência de rede é TU e os vetores b e u são inteiros (+1, -1, 1), todos os vértices do poliedro relaxado já são puramente binários inteiros. Não há perda de integridade no relaxamento contínuo!">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Rastreamento Matricial de Arcos de Rede</h3>
+      </div>
+      <div class="question-text">
+        Em uma rede de fluxo, seja a aresta direcionada $e$ que parte do nó de origem $3$ e chega ao nó de destino $5$.<br><br>
+        Quais são os coeficientes correspondentes a essa aresta na coluna $e$ da matriz de incidência nó-arco $A$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! A convenção canônica adota +1 na linha do nó de cauda (origem 3, onde o fluxo sai) e -1 na linha do nó de cabeça (destino 5, onde o fluxo entra), sendo 0 em todas as demais linhas.">
+          Linha 3 tem valor +1, linha 5 tem valor -1 e todas as outras linhas têm valor 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a convenção inverte os sinais: o nó de saída subtrai fluxo localmente, recebendo sinal positivo (+1) na equação de conservação padrão saída - entrada = b.">
+          Linha 3 tem valor -1, linha 5 tem valor +1 e todas as outras linhas têm valor 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: uma aresta orientada possui um sentido estrito (de 3 para 5); se ambas as linhas tivessem +1, a soma da coluna seria 2, violando a propriedade 1^T A = 0.">
+          Ambas as linhas 3 e 5 têm valor +1, indicando conexão ativa no grafo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a capacidade máxima do arco (u_e) é imposta como um limitante superior da variável (x_e ≤ u_e), e não inserida diretamente no corpo da matriz de incidência.">
+          Linha 3 tem o valor da capacidade máxima do arco e linha 5 tem valor nulo.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0002-otimizacao-minimax-e-variavel-epigrafe.html">← Lição Anterior: 0002 (Minimax & Epígrafe)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0004-dualidade-lp-e-folga-complementar.html">Próxima: Lição 0004 (Dualidade em PL) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Balanço no nó 2
+      initInputExercise("ex1", ["12"], "Conservação no nó 2: 30 = 18 + 12", (raw, clean) => {
+        return clean.trim() === "12";
+      });
+
+      // Ex 2: Equilíbrio global
+      initInputExercise("ex2", ["-30"], "Equilíbrio global: sum(b) = 0 -> b5 = -30", (raw, clean) => {
+        return clean.trim() === "-30";
+      });
+
+      // Ex 3: Designação vetor b
+      initMultipleChoice("ex3", "Estrutura do vetor b na designação: 2n nós com soma de ofertas +n");
+
+      // Ex 4: Hoffman-Kruskal e ausência de fracionários
+      initTrueFalse("ex4", false, "Total unimodularidade garante vértices inteiros no relaxamento contínuo",
+        "Atenção: A total unimodularidade impede qualquer vértice fracionário!",
+        "Correto! Matrizes TU possuem vértices puramente inteiros com dados inteiros.");
+
+      // Ex 5: Linhas da matriz de incidência
+      initMultipleChoice("ex5", "Linha do nó de origem recebe +1 e nó de destino recebe -1");
+
+      // ==========================================
+      // MOTOR DO SIMULADOR DE FLUXO EM REDES
+      // ==========================================
+      const slX12 = document.getElementById("sl-x12");
+      const slX13 = document.getElementById("sl-x13");
+      const slX23 = document.getElementById("sl-x23");
+      const slX24 = document.getElementById("sl-x24");
+      const slX34 = document.getElementById("sl-x34");
+
+      const vX12 = document.getElementById("v-x12");
+      const vX13 = document.getElementById("v-x13");
+      const vX23 = document.getElementById("v-x23");
+      const vX24 = document.getElementById("v-x24");
+      const vX34 = document.getElementById("v-x34");
+
+      const lblX12 = document.getElementById("lbl-x12");
+      const lblX13 = document.getElementById("lbl-x13");
+      const lblX23 = document.getElementById("lbl-x23");
+      const lblX24 = document.getElementById("lbl-x24");
+      const lblX34 = document.getElementById("lbl-x34");
+
+      const node1 = document.getElementById("node-1");
+      const node2 = document.getElementById("node-2");
+      const node3 = document.getElementById("node-3");
+      const node4 = document.getElementById("node-4");
+      const netStatus = document.getElementById("net-status");
+
+      function updateNetwork() {
+        const x12 = parseInt(slX12.value);
+        const x13 = parseInt(slX13.value);
+        const x23 = parseInt(slX23.value);
+        const x24 = parseInt(slX24.value);
+        const x34 = parseInt(slX34.value);
+
+        vX12.textContent = x12;
+        vX13.textContent = x13;
+        vX23.textContent = x23;
+        vX24.textContent = x24;
+        vX34.textContent = x34;
+
+        lblX12.textContent = `x₁₂ = ${x12} [c=3]`;
+        lblX13.textContent = `x₁₃ = ${x13} [c=7]`;
+        lblX23.textContent = `x₂₃ = ${x23} [c=2]`;
+        lblX24.textContent = `x₂₄ = ${x24} [c=6]`;
+        lblX34.textContent = `x₃₄ = ${x34} [c=4]`;
+
+        // Balanços dos 4 nós: Saída - Entrada
+        const bal1 = (x12 + x13) - 0;           // deve ser +30
+        const bal2 = (x23 + x24) - x12;          // deve ser 0
+        const bal3 = x34 - (x13 + x23);          // deve ser 0
+        const bal4 = 0 - (x24 + x34);            // deve ser -30
+
+        const ok1 = bal1 === 30;
+        const ok2 = bal2 === 0;
+        const ok3 = bal3 === 0;
+        const ok4 = bal4 === -30;
+
+        node1.setAttribute("stroke", ok1 ? "#3fb950" : "#c62828");
+        node1.setAttribute("stroke-width", ok1 ? "3" : "4");
+
+        node2.setAttribute("stroke", ok2 ? "#3fb950" : "#c62828");
+        node2.setAttribute("stroke-width", ok2 ? "3" : "4");
+
+        node3.setAttribute("stroke", ok3 ? "#3fb950" : "#c62828");
+        node3.setAttribute("stroke-width", ok3 ? "3" : "4");
+
+        node4.setAttribute("stroke", ok4 ? "#3fb950" : "#c62828");
+        node4.setAttribute("stroke-width", ok4 ? "3" : "4");
+
+        // Custo Total
+        const totalCost = 3 * x12 + 7 * x13 + 2 * x23 + 6 * x24 + 4 * x34;
+
+        const allOk = ok1 && ok2 && ok3 && ok4;
+        const isOptimal = allOk && totalCost === 235; // Melhor rota: 20 por 1->2->4 e 5 por 1->2->3->4 e 5 por 1->3->4
+
+        if (allOk) {
+          netStatus.className = "widget-status-bar success";
+          netStatus.innerHTML = `<span>🏆 <strong>Fluxo 100% Factível e Balanceado!</strong> Custo Total: <strong>$${totalCost}</strong>. Todos os nós conservam rigorosamente o fluxo!</span>`;
+        } else {
+          let errs = [];
+          if (!ok1) errs.push(`Nó 1 despacha ${bal1}/30`);
+          if (!ok2) errs.push(`Nó 2 balanço = ${bal2} (esperado 0)`);
+          if (!ok3) errs.push(`Nó 3 balanço = ${bal3} (esperado 0)`);
+          if (!ok4) errs.push(`Nó 4 recebe ${-bal4}/30`);
+          netStatus.className = "widget-status-bar error";
+          netStatus.innerHTML = `<span>⚠️ <strong>Desbalanceamento Físico:</strong> ${errs.join(" • ")} | Custo Atual: $${totalCost}</span>`;
+        }
+      }
+
+      [slX12, slX13, slX23, slX24, slX34].forEach(sl => sl.addEventListener("input", updateNetwork));
+
+      document.getElementById("btn-net-opt").addEventListener("click", () => {
+        // Rota mais barata:
+        // Caminho 1->2->4: custo 3 + 6 = 9. Cap gargalo: u24 = 20. Envia 20.
+        // Restam 10 unidades.
+        // Caminho 1->2->3->4: custo 3 + 2 + 4 = 9. Cap gargalo: u12 restante é 25-20=5. Envia 5.
+        // Restam 5 unidades.
+        // Caminho 1->3->4: custo 7 + 4 = 11. Envia 5.
+        // x12 = 25, x13 = 5, x23 = 5, x24 = 20, x34 = 10.
+        // Custo = 25*3 + 5*7 + 5*2 + 20*6 + 10*4 = 75 + 35 + 10 + 120 + 40 = 280.
+        slX12.value = 25;
+        slX13.value = 5;
+        slX23.value = 5;
+        slX24.value = 20;
+        slX34.value = 10;
+        updateNetwork();
+      });
+
+      updateNetwork();
+    });
+  </script>
+</body>
+</html>

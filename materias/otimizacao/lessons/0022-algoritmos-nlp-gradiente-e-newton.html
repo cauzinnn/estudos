@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0022: Algoritmos NLP: Gradiente e Método de Newton — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0022 (Slide 25)</div>
+      <h1>Algoritmos de Descida NLP: Gradiente, Newton e Armijo</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Gradiente descendente em vales mal-condicionados, a convergência quadrática do Método de Newton e busca linear de Armijo.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0021-programacao-nao-linear-e-minimos-locais.html">← Lição Anterior</a>
+      <a href="simulado-modulo-3-combinatoria-e-nlp.html">Simulado Módulo 3 &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: MÉTODOS DE PRIMEIRA VS SEGUNDA ORDEM -->
+    <section class="card-theory">
+      <h2>1. Comparativo: Gradiente Descendente vs. Método de Newton</h2>
+      <p>
+        Para encontrar o mínimo de uma função diferenciável $f: \mathbb{R}^n \to \mathbb{R}$:
+      </p>
+      <ul>
+        <li><strong>Gradiente Descendente:</strong> Segue a direção oposta de maior declive $d_k = -\nabla f(x_k)$:
+          $$x_{k+1} = x_k - \alpha_k \nabla f(x_k)$$
+          <em>Gargalo:</em> Em vales alongados e estreitos (com autovalores da Hessiana desiguais $\lambda_{\max} \gg \lambda_{\min}$), o vetor gradiente aponta quase transversalmente às curvas de nível, gerando um <strong>zigue-zague ineficiente</strong> de convergência lenta.
+        </li>
+        <li><strong>Método de Newton:</strong> Ajusta uma aproximação quadrática de Taylor utilizando a curvatura da <strong>matriz Hessiana</strong>:
+          $$x_{k+1} = x_k - [\nabla^2 f(x_k)]^{-1} \nabla f(x_k)$$
+          <em>Vantagem Suprema:</em> Corrige automaticamente a excentricidade do vale. Para funções quadráticas puras, <strong>atinge o mínimo global em exatamente 1 passo</strong>!
+        </li>
+      </ul>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: DUELO GRADIENTE VS NEWTON EM VALE ESTREITO -->
+    <div class="interactive-widget" id="duel-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⚔️ Simulador Interativo: Duelo Gradiente vs. Método de Newton</span>
+        </div>
+        <span class="widget-badge">Convergência em Vales</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Considere o vale mal-condicionado $f(x_1, x_2) = 10 x_1^2 + x_2^2$ com mínimo na origem $(0,0)$. 
+        Compare as trajetórias de descida a partir de $(3.0, 3.0)$ geradas pelo <strong>Gradiente Descendente</strong> (zigue-zague lento) contra o <strong>Método de Newton</strong> (salto direto em 1 passo!).
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1rem;">
+        <svg id="duel-svg" width="100%" height="280" viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- Eixos coordenados centrados em (250, 140) -->
+          <line x1="50" y1="140" x2="450" y2="140" stroke="#8b949e" stroke-width="1.5"/>
+          <line x1="250" y1="260" x2="250" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+
+          <!-- Elipses alongadas de nível: 10 x1^2 + x2^2 = C. Scale X: 250 + x1*50; Scale Y: 140 - x2*35 -->
+          <ellipse cx="250" cy="140" rx="160" ry="80" fill="none" stroke="#58a6ff" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.4"/>
+          <ellipse cx="250" cy="140" rx="110" ry="55" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.6"/>
+          <ellipse cx="250" cy="140" rx="60" ry="30" fill="none" stroke="#58a6ff" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.8"/>
+
+          <circle cx="250" cy="140" r="5" fill="#3fb950"/>
+          <text x="250" y="158" fill="#3fb950" font-size="10" font-weight="bold" text-anchor="middle">Mínimo (0, 0)</text>
+
+          <!-- Ponto Inicial (3.0, 3.0) -> cx=400, cy=35 -->
+          <circle cx="400" cy="35" r="6" fill="#8839ef"/>
+          <text x="405" y="30" fill="#8839ef" font-size="11" font-weight="bold">Início (3, 3)</text>
+
+          <!-- Trajetória Traçada Dinâmica -->
+          <path id="duel-path" d="" fill="none" stroke="#f0883e" stroke-width="2.5"/>
+        </svg>
+
+        <div class="widget-status-bar" id="duel-status">
+          <span>Selecione um método abaixo para visualizar a trajetória de convergência!</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="justify-content: center; gap: 0.8rem;">
+        <button class="widget-btn" id="btn-run-grad">🏃 Executar Gradiente (Zigue-Zague)</button>
+        <button class="widget-btn success" id="btn-run-newton">⚡ Executar Newton (1 Passo Direto)</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: BUSCA LINEAR DE ARMIJO -->
+    <section class="card-theory">
+      <h2>2. Busca Linear e a Condição de Armijo</h2>
+      <p>
+        Para garantir convergência sem dar passos exagerados que ultrapassem o vale, utiliza-se a <strong>Busca Linear por Backtracking com Condição de Armijo</strong>:
+      </p>
+      $$f(x_k + \alpha d_k) \le f(x_k) + c_1 \cdot \alpha \cdot \nabla f(x_k)^T d_k, \quad \text{com } c_1 \in (0, 1)$$
+      <p>
+        Se a condição falhar, reduz-se o tamanho do passo multiplicando por um fator de encolhimento $\alpha \leftarrow \beta \alpha$ ($\beta \in (0, 1)$) até que o decrescimento suficiente seja verificado.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Custo Computacional do Método de Newton</h3>
+      </div>
+      <div class="question-text">
+        Qual é a principal desvantagem prática do Método de Newton puro em problemas com muitas variáveis (ex: $n = 100.000$)?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Calcular e fatorar/inverter a matriz Hessiana de dimensão n × n consome O(n³) operações por passo. Para n = 100.000, isso exige terabytes de RAM e trilhões de operações, inviabilizando o Newton puro (utiliza-se L-BFGS ou Gradiente Conjugado).">
+          O custo computacional de calcular e resolver o sistema com a matriz Hessiana de ordem O(n³).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o Método de Newton possui convergência quadrática super rápida próxima ao ótimo; a lentidão provém do custo de cada iteração, e não do número de passos.">
+          A velocidade de convergência linear extremamente lenta que exige milhões de iterações.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o Método de Newton não utiliza variáveis de folga ou tabela Simplex; ele é um método de ponto interior contínuo puramente baseado em cálculo.">
+          A necessidade de tabular pivôs artificiais do algoritmo Simplex em cada iteração.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a condição de Armijo pode ser aplicada tanto no Gradiente quanto em Newton com busca linear para assegurar estabilidade.">
+          A impossibilidade de aplicar a condição de Armijo em direções de segunda ordem.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0021-programacao-nao-linear-e-minimos-locais.html">← Lição Anterior: 0021 (Programação Não Linear)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="simulado-modulo-3-combinatoria-e-nlp.html">Avançar para o Simulado do Módulo 3 &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Custo O(n^3) da Hessiana
+      initMultipleChoice("ex1", "Custo O(n^3) de calcular e fatorar a Hessiana é o gargalo do Método de Newton");
+
+      // ==========================================
+      // SIMULADOR GRADIENTE VS NEWTON
+      // ==========================================
+      const btnGrad = document.getElementById("btn-run-grad");
+      const btnNewton = document.getElementById("btn-run-newton");
+      const dPath = document.getElementById("duel-path");
+      const dStatus = document.getElementById("duel-status");
+
+      // Ponto inicial: x1 = 3.0, x2 = 3.0 -> SVG (400, 35)
+      // Centro (0, 0) -> SVG (250, 140)
+
+      btnGrad.addEventListener("click", () => {
+        // Zigue-zague clássico de 10 passos
+        // f(x1, x2) = 10 x1^2 + x2^2. grad = (20 x1, 2 x2).
+        dPath.setAttribute("d", "M 400,35 L 320,120 L 330,105 L 290,135 L 295,130 L 275,142 L 278,138 L 265,141 L 260,140 L 250,140");
+        dPath.setAttribute("stroke", "#f0883e");
+        dStatus.className = "widget-status-bar";
+        dStatus.innerHTML = `<span>🏃 <strong>Gradiente Descendente:</strong> 15 iterações em zigue-zague ortogonal devido ao mau condicionamento da elipse (λ₁/λ₂ = 10)!</span>`;
+      });
+
+      btnNewton.addEventListener("click", () => {
+        // Salto direto em 1 passo de (400, 35) até a origem (250, 140)
+        dPath.setAttribute("d", "M 400,35 L 250,140");
+        dPath.setAttribute("stroke", "#3fb950");
+        dStatus.className = "widget-status-bar success";
+        dStatus.innerHTML = `<span>⚡ <strong>Método de Newton: CONVERGÊNCIA EM 1 PASSO EXATO!</strong> A pré-multiplicação pela inversa da Hessiana elimina a excentricidade do vale e atinge o ótimo imediatamente!</span>`;
+      });
+    });
+  </script>
+</body>
+</html>

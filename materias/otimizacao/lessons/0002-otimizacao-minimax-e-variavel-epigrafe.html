@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0002: Minimax, Epígrafe e Planejamento Multiperíodo — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 1 • Lição 0002 (Slide 4)</div>
+      <h1>Otimização Minimax, Variáveis Epígrafe e Planejamento</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Transformações de funções lineares por partes, normas de resíduo, centro de Chebyshev de poliedros e precedência temporal.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0001-programacao-linear-formas-e-geometria.html">← Lição Anterior</a>
+      <a href="0003-fluxo-em-redes-e-unimodularidade.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: O TRUQUE DA EPÍGRAFE -->
+    <section class="card-theory">
+      <h2>1. O Truque da Epígrafe (Epigraph Trick)</h2>
+      <p>
+        Diversos problemas que aparentam ser não lineares envolvem o <strong>envelope superior</strong> de funções afins (funções convexas lineares por partes). Considere minimizar:
+      </p>
+      $$f(x) = \max_{i=1,\dots,k} (a_i^T x + b_i)$$
+      <p>
+        Como o máximo de funções afins é sempre uma função convexa, seu <em>epígrafe</em> $\text{epi}(f) = \{(x, t) \mid t \ge f(x)\}$ forma um poliedro convexo. Introduzindo uma variável auxiliar $t \in \mathbb{R}$:
+      </p>
+      $$\min_{x, t} \; t \quad \text{sujeito a:} \quad t \ge a_i^T x + b_i, \quad \forall i = 1, \dots, k$$
+      <p>
+        Uma única operação de máximo no objetivo foi convertida exatamente em <strong>1 variável escalar extra e $k$ restrições lineares conjuntas</strong>.
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO 1: VISUALIZADOR DE EPÍGRAFE E ENVOLTÓRIA -->
+    <div class="interactive-widget" id="epigraph-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>📈 Simulador: Envoltória Convexa Minimax & Epígrafe</span>
+        </div>
+        <span class="widget-badge">Explorador Funcional</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Observe o problema $\min_x \max \{f_1(x), f_2(x), f_3(x)\}$. 
+        A área sombreada é a <strong>epígrafe convexa</strong> $\text{epi}(f) = \{(x, t) \mid t \ge f_i(x)\}$. 
+        Mova o slider de $x$ para acompanhar o ponto de teto $t = \max f_i(x)$ ou clique para encontrar o mínimo global.
+      </p>
+
+      <div class="widget-canvas" style="padding: 1rem; min-height: 320px;">
+        <svg id="epigraph-svg" width="100%" height="280" viewBox="0 0 520 280" xmlns="http://www.w3.org/2000/svg" style="max-width: 520px;">
+          <!-- Grid e eixos: x in [-3, 6], t in [-2, 8]. Scale X: 60 + (x+3)*45; Scale Y: 240 - (t+2)*22 -->
+          <!-- Eixo X (t = 0 -> y = 240 - 2*22 = 196) -->
+          <line x1="40" y1="196" x2="480" y2="196" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="485" y="200" fill="#8b949e" font-size="11" font-family="monospace">x</text>
+          <!-- Eixo T (x = 0 -> x = 60 + 3*45 = 195) -->
+          <line x1="195" y1="260" x2="195" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="185" y="16" fill="#8b949e" font-size="11" font-family="monospace">t</text>
+
+          <!-- Ticks X: -2, 0, 2, 4, 6 -->
+          <text x="105" y="212" fill="#8b949e" font-size="10" text-anchor="middle">-2</text>
+          <text x="195" y="212" fill="#8b949e" font-size="10" text-anchor="middle">0</text>
+          <text x="285" y="212" fill="#8b949e" font-size="10" text-anchor="middle">2</text>
+          <text x="375" y="212" fill="#8b949e" font-size="10" text-anchor="middle">4</text>
+          <text x="465" y="212" fill="#8b949e" font-size="10" text-anchor="middle">6</text>
+
+          <!-- Shaded Epigraph Polygon (acima de max(f1, f2, f3)) -->
+          <!-- f1 = 1.5x - 2; f2 = -x + 3; f3 = 0.5x + 1 -->
+          <!-- Intersection f2 and f3: -x + 3 = 0.5x + 1 => 1.5x = 2 => x = 4/3 ≈ 1.33, t = 5/3 ≈ 1.67 -->
+          <!-- Intersection f3 and f1: 0.5x + 1 = 1.5x - 2 => x = 3, t = 2.5 -->
+          <!-- Polígono de teto superior preenchido -->
+          <polygon points="40,20 40,218 255,159 330,141 465,40 480,20" 
+                   fill="rgba(88, 166, 255, 0.12)" stroke="none"/>
+
+          <!-- Retas das 3 funções -->
+          <!-- f1: 1.5x - 2. x=-3->-6.5 (y=339), x=6->7 (y=42) -->
+          <line id="line-f1" x1="60" y1="284" x2="465" y2="42" stroke="#d20f39" stroke-width="2" opacity="0.6"/>
+          <text x="440" y="32" fill="#d20f39" font-size="11" font-weight="bold">f₁(x) = 1.5x - 2</text>
+
+          <!-- f2: -x + 3. x=-3->6 (y=64), x=6->-3 (y=262) -->
+          <line id="line-f2" x1="60" y1="64" x2="465" y2="262" stroke="#8839ef" stroke-width="2" opacity="0.6"/>
+          <text x="70" y="55" fill="#8839ef" font-size="11" font-weight="bold">f₂(x) = -x + 3</text>
+
+          <!-- f3: 0.5x + 1. x=-3->-0.5 (y=207), x=6->4 (y=108) -->
+          <line id="line-f3" x1="60" y1="207" x2="465" y2="108" stroke="#2ea043" stroke-width="2" opacity="0.6"/>
+          <text x="320" y="115" fill="#2ea043" font-size="11" font-weight="bold">f₃(x) = 0.5x + 1</text>
+
+          <!-- Reta de teto da variável auxiliar t (horizontal) -->
+          <line id="epigraph-t-line" x1="40" y1="141" x2="480" y2="141" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+          <!-- Ponto Mínimo Global da Epígrafe (x* = 1.33, t* = 1.67) -> (255, 159) -->
+          <circle cx="255" cy="159" r="6" fill="#3fb950" stroke="#fff" stroke-width="2"/>
+          <text x="265" y="172" fill="#3fb950" font-size="11" font-weight="bold">Ótimo Minimax (x*=1.33, t*=1.67)</text>
+
+          <!-- Marcador Interativo Atual (arrastado pelo slider) -->
+          <circle id="epigraph-dot" cx="330" cy="141" r="7" fill="#f0883e" stroke="#fff" stroke-width="2"/>
+          <line id="epigraph-v-line" x1="330" y1="196" x2="330" y2="141" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="2,2"/>
+        </svg>
+
+        <div class="widget-status-bar" id="epigraph-status">
+          <span><strong>Posição Atual:</strong> x = 3.00 • f₁(3) = 2.50 • f₂(3) = 0.00 • f₃(3) = 2.50 | <strong>t = max = 2.50</strong></span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="gap: 1.5rem; justify-content: space-between;">
+        <div class="slider-control-group" style="flex: 2;">
+          <div class="slider-label">
+            <span>Variável $x$</span>
+            <span id="slider-x-val" style="color: var(--accent); font-weight: bold;">3.00</span>
+          </div>
+          <input type="range" class="interactive-slider" id="slider-x" min="-2" max="5" value="3" step="0.05">
+        </div>
+
+        <button class="widget-btn secondary" id="btn-snap-minimax" style="flex: 1;">🎯 Ir para o Mínimo Minimax</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Diagnóstico de Convexidade na Epígrafe</h3>
+      </div>
+      <div class="question-text">
+        Um engenheiro tenta formular em PL o problema $\max_{x} \max \{2x + 1, -3x + 8\}$. Ele adiciona uma variável $t$ e impõe:
+        $$\max t \quad \text{s.a.} \quad t \le 2x + 1 \quad \text{e} \quad t \le -3x + 8$$
+        Qual é a falha lógica fatal dessa formulação?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Ao impor que t seja menor que ambas as retas (t ≤ 2x + 1 e t ≤ -3x + 8), o modelo está na verdade maximizando o MÍNIMO (envelope inferior), e não o máximo! Para ser o máximo, exigiria-se 't ≤ f1 OU t ≤ f2', o que constitui uma união não convexa.">
+          A formulação restringe t abaixo de ambas as retas, modelando inadvertidamente o mínimo das funções.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a dimensionalidade está correta (uma variável auxiliar escalar t). O erro está no sentido das desigualdades e no tipo de envelope gerado.">
+          A variável t deveria ser um vetor bidimensional para capturar separadamente o gradiente de cada reta.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o problema original possui um valor ótimo finito ou ilimitado dependendo do domínio, mas a falha apontada é que o modelo computa o problema oposto (maximin em vez de maximax).">
+          O modelo torna-se matematicamente inviável porque os coeficientes angulares possuem sinais contrários.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: problemas lineares não exigem diferenciação suave contínua em todos os pontos, desde que o conjunto de restrições seja convexo.">
+          Funções lineares por partes não possuem derivada contínua no vértice e são proibidas no Simplex.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 2: NORMAS DE RESÍDUO -->
+    <section class="card-theory">
+      <h2>2. Aproximação por Normas Lineares ($\ell_\infty$ e $\ell_1$)</h2>
+      <p>
+        No ajuste de modelos e controle robusto, as normas de Chebyshev e de soma absoluta são equivalentes a LPs:
+      </p>
+      <ul>
+        <li><strong>Norma $\ell_\infty$ (Minimização do Pior Erro):</strong>
+          $$\min_x \|Ax - b\|_\infty = \min_x \max_{i} |a_i^T x - b_i| \Longleftrightarrow \min_{x, t} \; t \quad \text{s.a.} \quad -t \le a_i^T x - b_i \le t, \; \forall i$$
+        </li>
+        <li><strong>Norma $\ell_1$ (Resistência a Outliers / Soma dos Desvios):</strong>
+          $$\min_x \|Ax - b\|_1 = \min_x \sum_{i=1}^m |a_i^T x - b_i| \Longleftrightarrow \min_{x, u} \sum_{i=1}^m u_i \quad \text{s.a.} \quad -u_i \le a_i^T x - b_i \le u_i, \; \forall i$$
+        </li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2" data-hint="Na norma L-infinito, há apenas 1 variável auxiliar t para todos os erros. Na norma L1, cada termo |ai^T x - bi| exige uma variável auxiliar independente ui.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Active Recall Numérico — Variáveis Auxiliares de Norma</h3>
+      </div>
+      <div class="question-text">
+        Deseja-se realizar o ajuste de uma curva linear sobre um conjunto de dados de $m = 80$ amostras com $n = 5$ parâmetros através da minimização da <strong>norma $\ell_1$</strong> dos resíduos $\min_x \|Ax - b\|_1$.<br><br>
+        Quantas variáveis de decisão <strong>no total</strong> (parâmetros originais mais variáveis auxiliares da epígrafe) terá a formulação linear resultante?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o total de variáveis (ex: 85)" autocomplete="off">
+        <button class="action-btn">Verificar Variáveis</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 3: CENTRO DE CHEBYSHEV E SIMULADOR INTERATIVO -->
+    <section class="card-theory">
+      <h2>3. Centro de Chebyshev de um Poliedro</h2>
+      <p>
+        Qual é a <strong>maior esfera</strong> que podemos inscrever dentro de um poliedro $\mathcal{P} = \{x \mid a_i^T x \le b_i, i=1,\dots,m\}$?
+      </p>
+      <p>
+        Uma esfera de raio $r \ge 0$ centrada em $x_c$ é o conjunto $\mathcal{B}(x_c, r) = \{x_c + r u \mid \|u\|_2 \le 1\}$. A condição necessária e suficiente de inclusão reduz-se a:
+      </p>
+      $$a_i^T x_c + r \|a_i\|_2 \le b_i, \quad \forall i=1,\dots,m$$
+      <p>
+        Como $\|a_i\|_2$ é uma constante numérica calculada previamente, o raio máximo é encontrado resolvendo um LP elegante em $(x_c, r)$: $\max r$.
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO 2: INFLADOR DO CENTRO DE CHEBYSHEV -->
+    <div class="interactive-widget" id="chebyshev-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🔵 Laboratório: Inflador de Esfera do Centro de Chebyshev</span>
+        </div>
+        <span class="widget-badge">Simulador Geométrico</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Ajuste o centro $(x_c, y_c)$ e infle o raio $r$. 
+        Se a esfera cruzar qualquer parede limitante, a restrição piscará em vermelho indicando violação. 
+        Encontre a maior esfera que cabe sem romper nenhuma fronteira!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1rem;">
+        <svg id="chebyshev-svg" width="100%" height="280" viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- Polígono Bounded: (50, 240) -> (450, 240) -> (360, 40) -> (100, 40) -->
+          <polygon id="cheby-poly" points="60,250 440,250 360,40 120,40" 
+                   fill="rgba(31, 111, 235, 0.08)" stroke="#58a6ff" stroke-width="2"/>
+
+          <!-- Nomes das 4 Paredes -->
+          <text x="250" y="270" fill="#8b949e" font-size="11" text-anchor="middle">Parede Inferior (y ≥ 1)</text>
+          <text x="240" y="30" fill="#8b949e" font-size="11" text-anchor="middle">Parede Superior (y ≤ 9)</text>
+          <text x="60" y="130" fill="#8b949e" font-size="11">Parede Esquerda</text>
+          <text x="400" y="130" fill="#8b949e" font-size="11">Parede Direita</text>
+
+          <!-- Esfera / Círculo Inscrito Dinâmico -->
+          <circle id="cheby-circle" cx="240" cy="145" r="50" 
+                  fill="rgba(46, 125, 50, 0.2)" stroke="#2ea043" stroke-width="2.5"/>
+          <circle id="cheby-center" cx="240" cy="145" r="5" fill="#f0883e" stroke="#fff" stroke-width="2"/>
+
+          <!-- Linhas de raio indicadoras -->
+          <line id="cheby-radius-line" x1="240" y1="145" x2="290" y2="145" stroke="#f0883e" stroke-width="2" stroke-dasharray="3,3"/>
+          <text id="cheby-r-text" x="255" y="140" fill="#f0883e" font-size="11" font-weight="bold">r = 2.50</text>
+        </svg>
+
+        <div class="widget-status-bar" id="cheby-status">
+          <span><strong>Centro:</strong> (xc = 5.0, yc = 5.0) • <strong>Raio:</strong> r = 2.50 • <strong>Status:</strong> Factível dentro do poliedro.</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; width: 100%;">
+        <div class="slider-control-group">
+          <div class="slider-label">
+            <span>Posição X do Centro ($x_c$)</span>
+            <span id="cheby-x-val" style="color: var(--accent); font-weight: bold;">5.0</span>
+          </div>
+          <input type="range" class="interactive-slider" id="slider-cheby-x" min="3" max="7" value="5" step="0.1">
+        </div>
+
+        <div class="slider-control-group">
+          <div class="slider-label">
+            <span>Posição Y do Centro ($y_c$)</span>
+            <span id="cheby-y-val" style="color: var(--accent); font-weight: bold;">5.0</span>
+          </div>
+          <input type="range" class="interactive-slider" id="slider-cheby-y" min="3" max="7" value="5" step="0.1">
+        </div>
+
+        <div class="slider-control-group">
+          <div class="slider-label">
+            <span>Raio da Esfera ($r$)</span>
+            <span id="cheby-r-val" style="color: #2ea043; font-weight: bold;">2.50</span>
+          </div>
+          <input type="range" class="interactive-slider" id="slider-cheby-r" min="0.5" max="5.0" value="2.5" step="0.05">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button class="widget-btn secondary" id="btn-cheby-opt">🎯 Otimizar Centro e Raio Máximo</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="O vetor normal é a = (2, -1, 2). Calcule a norma euclidiana ||a||2 = sqrt(2^2 + (-1)^2 + 2^2) = sqrt(4 + 1 + 4). O coeficiente de r é exatamente esse valor.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Active Recall Numérico — Coeficiente do Raio de Chebyshev</h3>
+      </div>
+      <div class="question-text">
+        Considere a face delimitadora de um poliedro definida pela desigualdade tridimensional:
+        $$2x - y + 2z \le 18$$
+        Ao formular o problema do Centro de Chebyshev, a restrição assume a forma linear:
+        $$2x_c - y_c + 2z_c + k \cdot r \le 18$$
+        Qual é o <strong>valor numérico exato da constante $k$</strong> que multiplica o raio $r$?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de k (ex: 3)" autocomplete="off">
+        <button class="action-btn">Verificar Coeficiente</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 4: MODELAGEM DE PLANEJAMENTO E PRECEDÊNCIA (PERT/CPM) -->
+    <section class="card-theory">
+      <h2>4. Planejamento Multiperíodo e Redes de Precedência (PERT/CPM)</h2>
+      <p>
+        Em projetos com múltiplas tarefas interdependentes (como a construção de casas apresentada nos slides):
+      </p>
+      <ul>
+        <li>Se a tarefa $B$ depende da conclusão da tarefa $A$, seu tempo de início $t_B$ deve satisfazer:
+          $$t_B \ge t_A + d_A$$
+        </li>
+        <li>O objetivo do gerenciamento é minimizar a data de entrega final (tempo de conclusão total ou <em>makespan</em>) $T_{\text{final}}$:
+          $$\min \quad T_{\text{final}} \quad \text{s.a.} \quad T_{\text{final}} \ge t_i + d_i, \; \forall i \in \text{tarefas finais}$$
+        </li>
+      </ul>
+      <p>
+        As tarefas que limitam o projeto sem folga temporal compõem o <strong>Caminho Crítico</strong>. Qualquer atraso em uma tarefa crítica atrasa todo o projeto na mesma proporção.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4" data-hint="Trace os caminhos possíveis do início ao fim: Caminho 1 passa por A e C; Caminho 2 passa por B e D. A duração total é determinada pelo caminho mais longo.">
+      <div class="exercise-header">
+        <h3>Exercício 4: Active Recall Numérico — Cálculo de Duração de Caminho Crítico</h3>
+      </div>
+      <div class="question-text">
+        Um projeto possui 4 tarefas com início no instante $t_0 = 0$:<br>
+        • Tarefa $A$ (duração $4$ dias) e Tarefa $B$ (duração $7$ dias) podem iniciar simultaneamente no dia $0$.<br>
+        • Tarefa $C$ (duração $6$ dias) exige a conclusão prévia de $A$.<br>
+        • Tarefa $D$ (duração $5$ dias) exige a conclusão prévia de $B$.<br>
+        • O projeto é concluído quando tanto $C$ quanto $D$ forem finalizadas.<br><br>
+        Qual é a <strong>duração mínima do projeto em dias</strong> ($T_{\text{final}}$)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite os dias de duração (ex: 12)" autocomplete="off">
+        <button class="action-btn">Calcular Duração</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Diagnóstico de Modelagem — Variáveis de Saldo de Estoque</h3>
+      </div>
+      <div class="question-text">
+        No problema de planejamento de produção multiperíodo (como a fábrica de veleiros <em>Sailco</em>), seja $x_t$ a produção no mês $t$, $d_t$ a demanda e $s_t$ o estoque no fim do mês $t$.<br><br>
+        Qual equação linear descreve a conservação física perfeita do fluxo de estoque entre o mês $t-1$ e o mês $t$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! O estoque final de um mês é o estoque remanescente do mês anterior mais o que foi produzido no mês corrente, menos a demanda despachada para os clientes: st = s_{t-1} + xt - dt.">
+          st = s_{t-1} + xt - dt, com a restrição de não negatividade st ≥ 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: somar a demanda faria o estoque crescer com as vendas. A demanda é uma saída física (consumo), devendo subtrair do saldo disponível.">
+          st = s_{t-1} + xt + dt, com a restrição de capacidade st ≤ C.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a produção do mês corrente xt adiciona produtos novos ao estoque; ela não deve ser subtraída do estoque inicial.">
+          st = s_{t-1} - xt - dt, obrigando que a produção seja sempre inferior a st.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: multiplicar o estoque anterior pela produção é uma operação não linear (quadrática) que viola a linearidade de um modelo de PL.">
+          st = (s_{t-1} · xt) - dt, gerando uma taxa de rotatividade de estoque.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0001-programacao-linear-formas-e-geometria.html">← Lição Anterior: 0001 (Formas e Geometria)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0003-fluxo-em-redes-e-unimodularidade.html">Próxima: Lição 0003 (Fluxo em Redes) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Convexidade e epígrafe
+      initMultipleChoice("ex1", "Epígrafe de máximo modela envoltória superior convexa");
+
+      // Ex 2: L1 variáveis totais: 5 parâmetros originais + 80 variáveis u_i = 85 variáveis
+      initInputExercise("ex2", ["85"], "Total de variáveis L1: 5 parâmetros + 80 auxiliares = 85", (raw, clean) => {
+        return clean.trim() === "85";
+      });
+
+      // Ex 3: Centro de Chebyshev: ||a||_2 = sqrt(2^2 + (-1)^2 + 2^2) = sqrt(9) = 3
+      initInputExercise("ex3", ["3", "3.0", "3,0"], "Norma do vetor normal: ||(2, -1, 2)||_2 = 3", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 3) < 0.01;
+      });
+
+      // Ex 4: Duração de projeto: Caminho A-C = 4 + 6 = 10; Caminho B-D = 7 + 5 = 12. Makespan = max(10, 12) = 12
+      initInputExercise("ex4", ["12"], "Caminho crítico B -> D: 7 + 5 = 12 dias", (raw, clean) => {
+        return clean.trim() === "12";
+      });
+
+      // Ex 5: Balanço de estoque
+      initMultipleChoice("ex5", "Conservação de estoque st = s_{t-1} + xt - dt");
+
+      // ==========================================
+      // SIMULADOR 1: EPÍGRAFE DINÂMICA
+      // ==========================================
+      const sliderX = document.getElementById("slider-x");
+      const sliderXVal = document.getElementById("slider-x-val");
+      const epigraphDot = document.getElementById("epigraph-dot");
+      const epigraphVLine = document.getElementById("epigraph-v-line");
+      const epigraphTLine = document.getElementById("epigraph-t-line");
+      const epigraphStatus = document.getElementById("epigraph-status");
+      const lineF1 = document.getElementById("line-f1");
+      const lineF2 = document.getElementById("line-f2");
+      const lineF3 = document.getElementById("line-f3");
+
+      function updateEpigraph(x) {
+        sliderXVal.textContent = x.toFixed(2);
+        const f1 = 1.5 * x - 2;
+        const f2 = -x + 3;
+        const f3 = 0.5 * x + 1;
+        const maxVal = Math.max(f1, f2, f3);
+
+        // Mapeamento SVG: X: 60 + (x+3)*45; Y: 240 - (t+2)*22
+        const cx = 60 + (x + 3) * 45;
+        const cy = 240 - (maxVal + 2) * 22;
+
+        epigraphDot.setAttribute("cx", cx);
+        epigraphDot.setAttribute("cy", cy);
+        epigraphVLine.setAttribute("x1", cx);
+        epigraphVLine.setAttribute("x2", cx);
+        epigraphVLine.setAttribute("y2", cy);
+        epigraphTLine.setAttribute("y1", cy);
+        epigraphTLine.setAttribute("y2", cy);
+
+        // Highlight active line
+        lineF1.setAttribute("stroke-width", Math.abs(maxVal - f1) < 0.05 ? "3.5" : "1.8");
+        lineF2.setAttribute("stroke-width", Math.abs(maxVal - f2) < 0.05 ? "3.5" : "1.8");
+        lineF3.setAttribute("stroke-width", Math.abs(maxVal - f3) < 0.05 ? "3.5" : "1.8");
+
+        const isMin = Math.abs(x - 1.33) < 0.08;
+        epigraphStatus.className = "widget-status-bar" + (isMin ? " success" : "");
+        epigraphStatus.innerHTML = `<span><strong>x = ${x.toFixed(2)}:</strong> f₁ = ${f1.toFixed(2)}, f₂ = ${f2.toFixed(2)}, f₃ = ${f3.toFixed(2)} → <strong>t = max = ${maxVal.toFixed(2)}</strong> ${isMin ? "🏆 [MÍNIMO GLOBAL DA EPÍGRAFE]" : ""}</span>`;
+      }
+
+      sliderX.addEventListener("input", (e) => {
+        updateEpigraph(parseFloat(e.target.value));
+      });
+
+      document.getElementById("btn-snap-minimax").addEventListener("click", () => {
+        sliderX.value = 1.33;
+        updateEpigraph(1.33);
+      });
+
+      updateEpigraph(3.0);
+
+      // ==========================================
+      // SIMULADOR 2: INFLADOR DO CENTRO DE CHEBYSHEV
+      // ==========================================
+      const chebyX = document.getElementById("slider-cheby-x");
+      const chebyY = document.getElementById("slider-cheby-y");
+      const chebyR = document.getElementById("slider-cheby-r");
+      const chebyXVal = document.getElementById("cheby-x-val");
+      const chebyYVal = document.getElementById("cheby-y-val");
+      const chebyRVal = document.getElementById("cheby-r-val");
+      const chebyCircle = document.getElementById("cheby-circle");
+      const chebyCenter = document.getElementById("cheby-center");
+      const chebyRadiusLine = document.getElementById("cheby-radius-line");
+      const chebyRText = document.getElementById("cheby-r-text");
+      const chebyStatus = document.getElementById("cheby-status");
+
+      function updateChebyshev() {
+        const xc = parseFloat(chebyX.value);
+        const yc = parseFloat(chebyY.value);
+        const r = parseFloat(chebyR.value);
+
+        chebyXVal.textContent = xc.toFixed(1);
+        chebyYVal.textContent = yc.toFixed(1);
+        chebyRVal.textContent = r.toFixed(2);
+
+        // Mapeamento: x in [0, 10] -> SVG X: 50 + x*40; y in [0, 10] -> SVG Y: 260 - y*22
+        const cx = 50 + xc * 40;
+        const cy = 260 - yc * 22;
+        const cr = r * 30; // escala visual
+
+        chebyCircle.setAttribute("cx", cx);
+        chebyCircle.setAttribute("cy", cy);
+        chebyCircle.setAttribute("r", cr);
+
+        chebyCenter.setAttribute("cx", cx);
+        chebyCenter.setAttribute("cy", cy);
+
+        chebyRadiusLine.setAttribute("x1", cx);
+        chebyRadiusLine.setAttribute("y1", cy);
+        chebyRadiusLine.setAttribute("x2", cx + cr);
+        chebyRadiusLine.setAttribute("y2", cy);
+
+        chebyRText.setAttribute("x", cx + cr / 2);
+        chebyRText.setAttribute("y", cy - 5);
+        chebyRText.textContent = `r = ${r.toFixed(2)}`;
+
+        // Paredes: Superior yc <= 9 (dist = 9 - yc); Inferior yc >= 1 (dist = yc - 1)
+        // Laterais simplificadas
+        const dBottom = yc - 1;
+        const dTop = 9 - yc;
+        const dLeft = (xc - 1.5);
+        const dRight = (8.5 - xc);
+        const maxRFeasible = Math.min(dBottom, dTop, dLeft, dRight);
+
+        const isViolated = r > maxRFeasible;
+        const isOptimal = Math.abs(xc - 5.0) < 0.15 && Math.abs(yc - 5.0) < 0.15 && Math.abs(r - 3.5) < 0.15;
+
+        if (isViolated) {
+          chebyCircle.setAttribute("stroke", "#c62828");
+          chebyCircle.setAttribute("fill", "rgba(198, 40, 40, 0.2)");
+          chebyStatus.className = "widget-status-bar error";
+          chebyStatus.innerHTML = `<span>⚠️ <strong>Violação de Fronteira!</strong> O raio r = ${r.toFixed(2)} ultrapassa os limites do poliedro (Folga permitida: ${Math.max(0, maxRFeasible).toFixed(2)}).</span>`;
+        } else if (isOptimal) {
+          chebyCircle.setAttribute("stroke", "#2ea043");
+          chebyCircle.setAttribute("fill", "rgba(46, 125, 50, 0.25)");
+          chebyStatus.className = "widget-status-bar success";
+          chebyStatus.innerHTML = `<span>🏆 <strong>Centro Ótimo de Chebyshev Atingido!</strong> (xc = 5.0, yc = 5.0) com Raio Máximo r = ${r.toFixed(2)}. Tangência simultânea perfeita!</span>`;
+        } else {
+          chebyCircle.setAttribute("stroke", "#58a6ff");
+          chebyCircle.setAttribute("fill", "rgba(31, 111, 235, 0.15)");
+          chebyStatus.className = "widget-status-bar";
+          chebyStatus.innerHTML = `<span><strong>Esfera Factível:</strong> Centro (${xc.toFixed(1)}, ${yc.toFixed(1)}) • Raio r = ${r.toFixed(2)} (Ainda pode expandir até r ≈ ${maxRFeasible.toFixed(2)}).</span>`;
+        }
+      }
+
+      chebyX.addEventListener("input", updateChebyshev);
+      chebyY.addEventListener("input", updateChebyshev);
+      chebyR.addEventListener("input", updateChebyshev);
+
+      document.getElementById("btn-cheby-opt").addEventListener("click", () => {
+        chebyX.value = 5.0;
+        chebyY.value = 5.0;
+        chebyR.value = 3.5;
+        updateChebyshev();
+      });
+
+      updateChebyshev();
+    });
+  </script>
+</body>
+</html>

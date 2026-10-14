@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0015: Modelos Não Convexos e Relaxação Linear — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0015 (Slides 17 e 18)</div>
+      <h1>Modelos Não Convexos, P vs. NP e a Falácia do Arredondamento</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Limitações da convexidade, relaxação linear de problemas inteiros e por que arredondar frações é um perigo matemático fatal.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0003-combinatoria-mip-e-nlp.html">Ficha: MIP & NLP</a>
+      <a href="0016-custos-fixos-e-big-m.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: A FRONTEIRA ENTRE P E NP -->
+    <section class="card-theory">
+      <h2>1. A Fronteira da Complexidade: Por Que Inteiros Mudam Tudo?</h2>
+      <p>
+        Enquanto problemas de otimização contínua convexa pertencem à classe $\mathbf{P}$ (resolvíveis em tempo polinomial), a introdução de <strong>variáveis inteiras ou binárias</strong> ($x_i \in \mathbb{Z}$ ou $x_i \in \{0, 1\}$) transforma o problema em <strong>NP-difícil</strong>.
+      </p>
+      <p>
+        Para resolver um MIP (Mixed-Integer Program), o primeiro passo é sempre resolver sua <strong>Relaxação Linear (LP Relaxation)</strong>: ignorar a restrição de integridade e permitir que $x_i$ assuma valores reais contínuos no intervalo $[0, 1]$.
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Teorema do Bound da Relaxação</div>
+        <p style="margin-bottom: 0;">
+          Para um problema de maximização, a solução da relaxação linear $z_{\text{relax}}$ fornece um <strong>limitante superior absoluto</strong> para o melhor inteiro $z_{\text{int}}^*$:
+          $$z_{\text{int}}^* \le z_{\text{relax}}$$
+          A diferença $z_{\text{relax}} - z_{\text{int}}^*$ é o <strong>Integrality Gap</strong>.
+        </p>
+      </div>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: A FALÁCIA DO ARREDONDAMENTO -->
+    <div class="interactive-widget" id="rounding-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⚠️ Simulador Interativo: Os Perigos do Arredondamento Ingênuo</span>
+        </div>
+        <span class="widget-badge">Laboratório Discreto</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        O vértice ótimo do relaxamento contínuo é fracionário: $(x_1, x_2) = (4.7, 3.8)$. 
+        Os pontos pretos na grade são as coordenadas inteiras viáveis. 
+        <strong>Clique nas estratégias de arredondamento</strong> para constatar como métodos ingênuos geram infactibilidade ou perdem a solução ótima!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1rem;">
+        <svg id="round-svg" width="100%" height="280" viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- Eixos coordenados: x1 em [0, 6], x2 em [0, 6]. Scale: 50 + x*60 -->
+          <line x1="50" y1="240" x2="440" y2="240" stroke="#8b949e" stroke-width="1.5"/>
+          <line x1="50" y1="240" x2="50" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="445" y="245" fill="#8b949e" font-size="11" font-family="monospace">x₁</text>
+          <text x="40" y="25" fill="#8b949e" font-size="11" font-family="monospace">x₂</text>
+
+          <!-- Poliedro Factível da Relaxação Contínua: (0,0)->(5,0)->(4.7, 3.8)->(0, 5) -->
+          <!-- Scaled: (50, 240) -> (350, 240) -> (332, 40) -> (50, 40) -->
+          <polygon points="50,240 350,240 332,40 50,40" fill="rgba(31, 111, 235, 0.12)" stroke="#58a6ff" stroke-width="2"/>
+
+          <!-- Grade de Pontos Inteiros viáveis e inviáveis -->
+          <!-- Inteiros viáveis em x1=1..5, x2=1..4 -->
+          <g id="grid-points">
+            <!-- (4, 4) ponto ótimo inteiro -->
+            <circle cx="290" cy="40" r="5" fill="#3fb950"/>
+            <text x="290" y="30" fill="#3fb950" font-size="10" text-anchor="middle">(4, 4)*</text>
+            <!-- (5, 4) inviável (fora do polígono) -->
+            <circle cx="350" cy="40" r="5" fill="#c62828"/>
+            <text x="350" y="30" fill="#c62828" font-size="10" text-anchor="middle">(5, 4)</text>
+            <!-- (4, 3) viável subótimo -->
+            <circle cx="290" cy="90" r="4" fill="#8b949e"/>
+            <!-- (5, 0) -->
+            <circle cx="350" cy="240" r="4" fill="#8b949e"/>
+          </g>
+
+          <!-- Vértice Fracionário Contínuo Ótimo: (4.7, 3.8) -> cx=332, cy=50 -->
+          <circle cx="332" cy="50" r="7" fill="#58a6ff" stroke="#fff" stroke-width="2"/>
+          <text x="345" y="55" fill="#58a6ff" font-weight="bold" font-size="11">Ótimo Contínuo (4.7, 3.8)</text>
+
+          <!-- Marcador do Ponto de Arredondamento Selecionado -->
+          <circle id="round-cursor" cx="350" cy="40" r="9" fill="none" stroke="#f0883e" stroke-width="3" stroke-dasharray="3,3"/>
+        </svg>
+
+        <div class="widget-status-bar error" id="round-status">
+          <span>⚠️ <strong>Arredondamento Tradicional (5, 4):</strong> O ponto cai FORA da região factível! Violou as restrições físicas do problema.</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+        <button class="widget-btn" id="btn-round-nearest">Arredondar para Mais Próximo: (5, 4)</button>
+        <button class="widget-btn secondary" id="btn-round-down">Arredondar para Baixo: (4, 3)</button>
+        <button class="widget-btn secondary" id="btn-round-opt">🏆 Ótimo Inteiro Real: (4, 4)</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Diagnóstico da Falácia do Arredondamento</h3>
+      </div>
+      <div class="question-text">
+        Por que resolver a relaxação contínua de um problema inteiro e simplesmente arredondar as frações para o inteiro mais próximo é uma estratégia condenada ao fracasso em problemas industriais?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! O ponto arredondado pode violar restrições (tornando-se infactível) ou ficar muito distante do verdadeiro vértice ótimo discreto. É estritamente necessário usar Branch and Bound!">
+          O ponto arredondado pode violar as restrições ou ficar drasticamente subótimo em relação ao ótimo inteiro.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a complexidade da relaxação linear é polinomial e muito veloz; o problema reside na validade matemática do arredondamento.">
+          A relaxação linear possui complexidade exponencial que impede a obtenção do ponto fracionário.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o Simplex encontra vértices com precisão numérica perfeita; frações não decorrem de erros de máquina.">
+          As frações da relaxação decorrem de erros de ponto flutuante que corrompem a memória do computador.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o Teorema do Dual Fraco é válido universalmente, fornecendo o limitante superior da relaxação.">
+          O Teorema do Dual Fraco deixa de ser válido em qualquer modelo que contenha frações decimais.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2" data-hint="O gap de integridade é a diferença entre o limitante superior da relaxação linear e o valor da solução ótima inteira: Gap = z_relax - z_int = 145.8 - 138.0 = 7.8.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Active Recall Numérico — Integrality Gap</h3>
+      </div>
+      <div class="question-text">
+        Em um problema de maximização de receita, a relaxação linear (LP) fornece o valor ótimo contínuo $z_{\text{relax}} = 145.80$.<br>
+        Após busca completa por Branch & Bound, a solução inteira ótima encontrada atingiu lucro de $z_{\text{int}}^* = 138.00$.<br><br>
+        Qual é o <strong>valor numérico do gap de integridade</strong> ($z_{\text{relax}} - z_{\text{int}}^*$)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o gap de integridade (ex: 7.8)" autocomplete="off">
+        <button class="action-btn">Calcular Gap</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0003-combinatoria-mip-e-nlp.html">Ficha: MIP & NLP</a>
+      <a href="0016-custos-fixos-e-big-m.html">Próxima: Lição 0016 (Custos Fixos & Big-M) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Falácia do arredondamento
+      initMultipleChoice("ex1", "Arredondamento ingênuo pode gerar infactibilidade ou subotimalidade severa");
+
+      // Ex 2: Gap de integridade 145.8 - 138.0 = 7.8
+      initInputExercise("ex2", ["7.8", "7,8", "7.80", "7,80"], "Gap de integridade: 145.80 - 138.00 = 7.80", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 7.8) < 0.01;
+      });
+
+      // ==========================================
+      // SIMULADOR DE ARREDONDAMENTO
+      // ==========================================
+      const btnNearest = document.getElementById("btn-round-nearest");
+      const btnDown = document.getElementById("btn-round-down");
+      const btnOpt = document.getElementById("btn-round-opt");
+      const cursor = document.getElementById("round-cursor");
+      const statusBox = document.getElementById("round-status");
+
+      btnNearest.addEventListener("click", () => {
+        cursor.setAttribute("cx", "350");
+        cursor.setAttribute("cy", "40");
+        cursor.setAttribute("stroke", "#c62828");
+        statusBox.className = "widget-status-bar error";
+        statusBox.innerHTML = `<span>⚠️ <strong>Ponto (5, 4): INVIÁVEL!</strong> Arredondar para o mais próximo fez a solução sair do poliedro, violando as restrições!</span>`;
+      });
+
+      btnDown.addEventListener("click", () => {
+        cursor.setAttribute("cx", "290");
+        cursor.setAttribute("cy", "90");
+        cursor.setAttribute("stroke", "#f0883e");
+        statusBox.className = "widget-status-bar";
+        statusBox.innerHTML = `<span>⚠️ <strong>Ponto (4, 3): FACTÍVEL, MAS SUBÓTIMO!</strong> Valor objetivo z = $31.00 (muito inferior ao verdadeiro ótimo de $36.00).</span>`;
+      });
+
+      btnOpt.addEventListener("click", () => {
+        cursor.setAttribute("cx", "290");
+        cursor.setAttribute("cy", "40");
+        cursor.setAttribute("stroke", "#3fb950");
+        statusBox.className = "widget-status-bar success";
+        statusBox.innerHTML = `<span>🏆 <strong>Ponto Ótimo Inteiro Real (4, 4):</strong> 100% Factível e Maximiza o Lucro ($36.00). Encontrado exclusivamente por Branch & Bound!</span>`;
+      });
+    });
+  </script>
+</body>
+</html>

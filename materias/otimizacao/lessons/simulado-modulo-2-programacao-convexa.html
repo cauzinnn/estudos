@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulado Módulo 2: Programação Convexa — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Avaliação Diagnóstica • Módulo 2</div>
+      <h1>Simulado Integrado: Programação Convexa & KKT</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        12 questões práticas avançadas cobrindo mínimos quadrados, regularização Ridge/Lasso, elipsoides, Markowitz, SOCP, SDP e condições KKT.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0002-programacao-convexa-e-kkt.html">Ficha: Convexa & KKT</a>
+      <a href="0014-hierarquia-conica-e-revisao-convexa.html">← Lição 0014</a>
+    </div>
+
+    <!-- HUD INTERATIVO DE DESEMPENHO AO VIVO -->
+    <div class="interactive-widget" id="exam-hud-m2" style="position: sticky; top: 1rem; z-index: 99; margin: 1rem 0; box-shadow: 0 6px 20px rgba(0,0,0,0.08);">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>📊 Painel de Desempenho do Exame (Módulo 2)</span>
+        </div>
+        <span class="widget-badge" id="hud-m2-badge">0 / 12 Respondidas (0%)</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <!-- Barra de Progresso e Aproveitamento -->
+        <div class="bar-track" style="height: 18px;">
+          <div class="bar-fill success" id="hud-m2-bar" style="width: 0%;"></div>
+        </div>
+
+        <!-- Grade de Chips de Navegação Direta -->
+        <div class="chips-container" style="justify-content: center;">
+          <a href="#q1" class="chip" id="chip-q1">Q1</a>
+          <a href="#q2" class="chip" id="chip-q2">Q2</a>
+          <a href="#q3" class="chip" id="chip-q3">Q3</a>
+          <a href="#q4" class="chip" id="chip-q4">Q4</a>
+          <a href="#q5" class="chip" id="chip-q5">Q5</a>
+          <a href="#q6" class="chip" id="chip-q6">Q6</a>
+          <a href="#q7" class="chip" id="chip-q7">Q7</a>
+          <a href="#q8" class="chip" id="chip-q8">Q8</a>
+          <a href="#q9" class="chip" id="chip-q9">Q9</a>
+          <a href="#q10" class="chip" id="chip-q10">Q10</a>
+          <a href="#q11" class="chip" id="chip-q11">Q11</a>
+          <a href="#q12" class="chip" id="chip-q12">Q12</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTÃO 1: EQUAÇÕES NORMAIS -->
+    <section class="card-exercise" id="q1" data-hint="A matriz A tem 1 coluna: A = [1, 1, 1]^T e b = [3, 5, 7]^T. A^T A = 1^2 + 1^2 + 1^2 = 3. A^T b = 3 + 5 + 7 = 15. x* = (A^T A)^(-1) A^T b = 15 / 3 = 5.">
+      <div class="exercise-header">
+        <h3>Questão 1: Resolução de Mínimos Quadrados Unidimensional</h3>
+      </div>
+      <div class="question-text">
+        Deseja-se estimar a melhor constante $x$ que ajusta o sistema sobredeterminado de 3 equações:
+        $$x \approx 3, \quad x \approx 5, \quad x \approx 7$$
+        através do critério de Mínimos Quadrados ($\min_x \sum_{i=1}^3 (x - b_i)^2$).<br><br>
+        Utilizando as <strong>Equações Normais</strong> ($A^TA x = A^Tb$), calcule o <strong>valor numérico da solução ótima $x^*$</strong>:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de x* (ex: 5)" autocomplete="off">
+        <button class="action-btn">Verificar Resposta</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 2: PROJEÇÃO E IDEMPOTÊNCIA -->
+    <section class="card-exercise" id="q2">
+      <div class="exercise-header">
+        <h3>Questão 2: Propriedades da Matriz de Projeção Ortogonal</h3>
+      </div>
+      <div class="question-text">
+        Seja $P = A(A^TA)^{-1}A^T$ a matriz de projeção sobre o subespaço coluna de $A$.<br>
+        Qual é o resultado da operação matricial $(I - P) \cdot P$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Pela propriedade da idempotência (P² = P), temos (I - P)P = P - P² = P - P = 0. A matriz (I - P) projeta sobre o complemento ortogonal, sendo perfeitamente ortogonal a P!">
+          A matriz nula de dimensão m × m (resultado = 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: (I - P) e P são matrizes ortogonais complementares; o produto entre elas é identicamente nulo.">
+          A matriz identidade I.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: como P² = P, a subtração resulta em zero, não na própria matriz P.">
+          A própria matriz de projeção P.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a matriz é sempre bem definida e comutativa na projeção ortogonal.">
+          Uma matriz diagonal com autovalores iguais a 2.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 3: NORMA MÍNIMA -->
+    <section class="card-exercise" id="q3" data-hint="A matriz A = [2, 1] tem A A^T = 2^2 + 1^2 = 5. A pseudo-inversa é [2, 1]^T / 5 = [0.4, 0.2]^T. Para b = 15, x1 = 15 * 0.4 = 6, x2 = 15 * 0.2 = 3. ||x||^2 = 6^2 + 3^2 = 36 + 9 = 45.">
+      <div class="exercise-header">
+        <h3>Questão 3: Active Recall Numérico — Norma Mínima em Matriz Larga</h3>
+      </div>
+      <div class="question-text">
+        Dada a restrição linear de um sistema subdeterminado:
+        $$2 x_1 + x_2 = 15$$
+        Calcule o <strong>valor da menor norma euclidiana ao quadrado</strong> $\|\hat{x}\|_2^2 = x_1^2 + x_2^2$ entre todas as infinitas soluções possíveis:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a norma ao quadrado (ex: 45)" autocomplete="off">
+        <button class="action-btn">Verificar Norma</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 4: FRONTEIRA DE PARETO -->
+    <section class="card-exercise" id="q4">
+      <div class="exercise-header">
+        <h3>Questão 4: Interpretação Geométrica do Parâmetro de Pareto</h3>
+      </div>
+      <div class="question-text">
+        No problema de trade-off multiobjetivo $\min J_1(x) + \lambda J_2(x)$, qual é o significado geométrico do parâmetro $\lambda > 0$ em relação à curva de Pareto no plano $(J_2, J_1)$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A reta tangente à curva de Pareto no ponto ótimo possui inclinação dada por -λ (isto é, dJ1/dJ2 = -λ). O valor de λ define a taxa marginal de substituição entre os dois objetivos!">
+          O parâmetro -λ representa o coeficiente angular da reta tangente à curva de Pareto naquele ponto ótimo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a distância à origem depende das grandezas físicas dos dados; λ atua na inclinação angular da reta suporte.">
+          O parâmetro λ mede a distância euclidiana exata do ponto ótimo até a origem (0,0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o raio de curvatura envolve segundas derivadas, enquanto λ define a primeira derivada da fronteira.">
+          O parâmetro λ é igual ao raio de curvatura local da fronteira de eficiência.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o gap de dualidade é nulo em problemas convexos; λ pondera a preferência relativa entre os objetivos.">
+          O parâmetro λ quantifica o gap de integridade entre os objetivos discretos e contínuos.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 5: RIDGE VS LASSO -->
+    <section class="card-exercise" id="q5">
+      <div class="exercise-header">
+        <h3>Questão 5: Seleção de Features e Esparsidade</h3>
+      </div>
+      <div class="question-text">
+        Em um problema de bioinformática com $10.000$ genes e apenas $50$ pacientes ($n \gg m$), deseja-se selecionar apenas os $5$ a $10$ genes mais determinantes para diagnóstico.<br><br>
+        Qual técnica de regularização deve ser empregada e por quê?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! A regularização Lasso (norma L1) zera rigorosamente coeficientes irrelevantes devido aos vértices de sua bola de norma nos eixos, funcionando como um selecionador automático de features.">
+          Regularização Lasso (norma L1), pois induz esparsidade matemática zerando a maioria dos coeficientes.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Ridge (L2) encolhe os coeficientes conjuntamente, mas mantém todos os 10.000 genes ativos com valores decimais pequenos, inviabilizando a seleção.">
+          Regularização Ridge (norma L2), pois possui solução analítica fechada que elimina genes redundantes.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: mínimos quadrados comuns sem regularização nem sequer possui solução única quando n >> m (matriz singular com infinitas soluções e sobreajuste extremo).">
+          Mínimos quadrados ordinários sem regularização para evitar distorção estatística.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a norma L-infinito penaliza apenas o erro máximo extremo, sem promover a esparsidade de variáveis.">
+          Regularização Chebyshev (norma L-infinito), pois minimiza o pior gene ruidoso.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 6: ESTIMADOR ROBUSTO -->
+    <section class="card-exercise" id="q6" data-hint="Para a norma L-infinito, o estimador que minimiza max |yi - c| é exatamente o ponto médio entre o menor e o maior valor: c* = (ymin + ymax) / 2 = (4 + 20) / 2 = 12.">
+      <div class="exercise-header">
+        <h3>Questão 6: Active Recall Numérico — Estimador Minimax Chebyshev</h3>
+      </div>
+      <div class="question-text">
+        Dado o conjunto de medições de temperatura $\{4, 7, 9, 11, 20\}$, deseja-se encontrar a constante central $c^*$ que minimiza o <strong>pior erro absoluto</strong> ($\min_c \max_i |y_i - c|$).<br><br>
+        Qual é o <strong>valor numérico do estimador ótimo $c^*$</strong>?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de c* (ex: 12)" autocomplete="off">
+        <button class="action-btn">Verificar Estimador</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 7: SEMI-EIXO DE ELIPSOIDE -->
+    <section class="card-exercise" id="q7" data-hint="O semi-eixo é r = 1 / sqrt(lambda). Para lambda = 0.04, sqrt(0.04) = 0.2. r = 1 / 0.2 = 5.0.">
+      <div class="exercise-header">
+        <h3>Questão 7: Active Recall Numérico — Maior Semi-Eixo do Elipsoide</h3>
+      </div>
+      <div class="question-text">
+        Uma matriz simétrica $Q \succ 0$ possui autovalores $\lambda_1 = 4.0$ e $\lambda_2 = 0.04$.<br>
+        Considere o elipsoide de nível unitário $\{x \mid x^T Q x \le 1\}$.<br><br>
+        Qual é o <strong>comprimento do maior semi-eixo</strong> desse elipsoide?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o comprimento do semi-eixo (ex: 5.0)" autocomplete="off">
+        <button class="action-btn">Verificar Semi-Eixo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 8: CLASSIFICAÇÃO DE CURVATURA -->
+    <section class="card-exercise" id="q8">
+      <div class="exercise-header">
+        <h3>Questão 8: Convexidade de Matriz Hessiana</h3>
+      </div>
+      <div class="question-text">
+        Uma função $f(x)$ possui matriz Hessiana com autovalores dados por $\lambda_1 = 6.0$, $\lambda_2 = 0.0$ e $\lambda_3 = 3.5$ em todos os pontos do domínio.<br><br>
+        Qual é a classificação estrita dessa função?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como todos os autovalores são maiores ou iguais a zero (λ ≥ 0) e pelo menos um é nulo (λ2 = 0), a Hessiana é Positiva Semidefinida (∇²f ⪰ 0). A função é CONVEXA, porém não estritamente convexa (possui vale com curvatura plana).">
+          É uma função convexa, mas não estritamente convexa (Hessiana positiva semidefinida).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a convexidade estrita exigiria que TODOS os autovalores fossem estritamente positivos (λ > 0). Ter λ = 0 impede a convexidade estrita.">
+          É uma função estritamente convexa com mínimo global isolado único.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: para ser indefinida, deveria haver pelo menos um autovalor estritamente negativo, o que não ocorre aqui (todos são ≥ 0).">
+          É uma função indefinida não convexa com ponto de sela.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: uma função côncava exigiria que todos os autovalores fossem não positivos (λ ≤ 0).">
+          É uma função côncava devido à presença do autovalor nulo.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 9: CARTEIRA DE MARKOWITZ -->
+    <section class="card-exercise" id="q9" data-hint="Para dois ativos perfeitamente negativamente correlacionados (rho = -1), a variância da carteira é var = (w1*sigma1 - w2*sigma2)^2. Para w1 = 0.5, w2 = 0.5 e sigma1 = sigma2 = 12%, var = (0.5*12 - 0.5*12)^2 = 0! O risco é 100% eliminado!">
+      <div class="exercise-header">
+        <h3>Questão 9: Active Recall Numérico — Risco Zero com Correlação Negativa Perfeita</h3>
+      </div>
+      <div class="question-text">
+        Dois ativos possuem o mesmo risco individual $\sigma_1 = \sigma_2 = 12\%$ e <strong>correlação perfeitamente negativa ($\rho = -1.0$)</strong>.<br>
+        Um investidor monta uma carteira $50/50$ ($x_1 = 0.5, x_2 = 0.5$).<br><br>
+        Qual é o <strong>desvio-padrão total da carteira em porcentagem</strong> ($\sigma_p = \sqrt{x^T \Sigma x}$)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o desvio-padrão da carteira (ex: 0)" autocomplete="off">
+        <button class="action-btn">Calcular Risco</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 10: CONE DE SEGUNDA ORDEM -->
+    <section class="card-exercise" id="q10">
+      <div class="exercise-header">
+        <h3>Questão 10: Formulação de Restrições em Cones de Segunda Ordem</h3>
+      </div>
+      <div class="question-text">
+        Qual das seguintes restrições descreve matematicamente um <strong>Cone de Segunda Ordem Rotacionado</strong>?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! A equação xᵀx ≤ 2yz com y ≥ 0 e z ≥ 0 é a definição canônica do Cone de Segunda Ordem Rotacionado, equivalente após rotação ortogonal a ||(2x, y-z)||₂ ≤ y+z.">
+          ||x||₂² ≤ 2 y z, com y ≥ 0 e z ≥ 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a restrição ||x||2 ≤ t é o Cone de Lorentz padrão não rotacionado.">
+          ||x||₂ ≤ t, com t ≥ 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: a desigualdade no sentido contrário (≥) descreve uma região não convexa complementar.">
+          ||x||₂² ≥ y z, com y, z livres.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o produto interno escalar xᵀy ≤ z não impõe a curvatura cônica euclidiana.">
+          xᵀy ≤ z, com z ≥ 0.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 11: CONDIÇÃO DE SLATER -->
+    <section class="card-exercise" id="q11">
+      <div class="exercise-header">
+        <h3>Questão 11: Papel Teórico da Condição de Slater</h3>
+      </div>
+      <div class="question-text">
+        O que a verificação bem-sucedida da Condição de Slater assegura formalmente sobre um problema de otimização convexo?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A condição de Slater garante que o gap de dualidade é nulo (p* = d*, Dual Forte) e que os multiplicadores de Lagrange ótimos existem e são atingidos.">
+          Garante a existência de Dualidade Forte (gap de dualidade nulo p* = d*) com multiplicadores duais ótimos finitos.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a condição de Slater é uma condição de qualificação de restrições para a dualidade forte, não um critério de integridade de variáveis.">
+          Garante que todas as soluções básicas factíveis do modelo serão puramente inteiras.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o Simplex aplica-se apenas a problemas lineares (LP), enquanto Slater se aplica à otimização convexa geral não linear.">
+          Garante que o algoritmo Simplex convergirá em número polinomial de iterações.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Slater não exige que a matriz Hessiana seja invertível em todos os pontos, apenas factibilidade estrita.">
+          Garante que a matriz Hessiana de todas as restrições seja invertível.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 12: ESTACIONARIEDADE KKT -->
+    <section class="card-exercise" id="q12" data-hint="A função é f0(x) = (x - 6)^2 + 10. A restrição é x <= 4 (isto é, x - 4 <= 0). O ótimo com restrição ativa ocorre em x* = 4. A derivada de f0 é 2(x - 6) -> em x* = 4: 2(4 - 6) = -4. Pela estacionariedade KKT: grad(f0) + lambda*grad(f1) = 0 -> -4 + lambda*(1) = 0 -> lambda* = 4.">
+      <div class="exercise-header">
+        <h3>Questão 12: Active Recall Numérico — Multiplicador de Lagrange KKT</h3>
+      </div>
+      <div class="question-text">
+        Considere o problema convexo unidimensional:
+        $$\min_{x} \quad (x - 6)^2 + 10 \quad \text{sujeito a:} \quad x \le 4$$
+        Como a restrição limita a solução (o mínimo não restrito é $x = 6$), o ponto ótimo restrito é $x^* = 4.0$.<br><br>
+        Utilizando a condição KKT de <strong>Estacionariedade</strong> ($\nabla f_0(x^*) + \lambda^* \nabla(x - 4) = 0$), determine o <strong>valor numérico do multiplicador ótimo $\lambda^*$</strong>:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de lambda* (ex: 4)" autocomplete="off">
+        <button class="action-btn">Verificar Multiplicador</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0014-hierarquia-conica-e-revisao-convexa.html">← Lição 0014: Hierarquia Cônica</a>
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0002-programacao-convexa-e-kkt.html">Ficha de Consulta Rápida Módulo 2 &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Estado do Exame
+      const examState = {
+        q1: null, q2: null, q3: null, q4: null,
+        q5: null, q6: null, q7: null, q8: null,
+        q9: null, q10: null, q11: null, q12: null
+      };
+
+      function updateHUD() {
+        let answered = 0;
+        let correct = 0;
+        Object.keys(examState).forEach(k => {
+          const val = examState[k];
+          const chip = document.getElementById("chip-" + k);
+          if (val === true) {
+            answered++;
+            correct++;
+            if (chip) chip.className = "chip fired";
+          } else if (val === false) {
+            answered++;
+            if (chip) chip.className = "chip pending";
+          }
+        });
+
+        const percent = Math.round((answered / 12) * 100);
+        const scoreBadge = document.getElementById("hud-m2-badge");
+        const barFill = document.getElementById("hud-m2-bar");
+
+        if (scoreBadge) {
+          scoreBadge.textContent = `${answered} / 12 Respondidas (${correct} Acertos)`;
+        }
+        if (barFill) {
+          barFill.style.width = `${percent}%`;
+        }
+      }
+
+      // Q1: x* = 5
+      initInputExercise("q1", ["5", "5.0", "5,0"], "Equações normais 3x = 15 -> x* = 5", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 5) < 0.01;
+        examState.q1 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q2: (I - P)P = 0
+      initMultipleChoice("q2", "Idempotência e ortogonalidade implicam (I - P)P = 0");
+      document.querySelector("#q2 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q2 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q3: Norma mínima = 45
+      initInputExercise("q3", ["45", "45.0", "45,0"], "Norma mínima: 6^2 + 3^2 = 45", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 45) < 0.01;
+        examState.q3 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q4: Coeficiente angular tangente = -lambda
+      initMultipleChoice("q4", "Parâmetro -lambda é a taxa marginal e inclinação tangente da curva de Pareto");
+      document.querySelector("#q4 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q4 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q5: Lasso L1 esparsidade
+      initMultipleChoice("q5", "Lasso L1 zera coeficientes irrelevantes por geometria de vértices");
+      document.querySelector("#q5 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q5 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q6: Estimador L-inf = 12
+      initInputExercise("q6", ["12", "12.0", "12,0"], "Estimador ótimo L-inf: (4 + 20) / 2 = 12", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 12) < 0.01;
+        examState.q6 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q7: Maior semi-eixo = 5.0
+      initInputExercise("q7", ["5", "5.0", "5,0"], "Maior semi-eixo: 1 / sqrt(0.04) = 5.0", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 5) < 0.01;
+        examState.q7 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q8: Convexa não estrita
+      initMultipleChoice("q8", "Autovalores não negativos com pelo menos um nulo geram função convexa não estrita");
+      document.querySelector("#q8 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q8 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q9: Risco zero = 0
+      initInputExercise("q9", ["0", "0.0", "0,0"], "Correlação rho = -1 gera carteira com risco perfeitamente nulo (0%)", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num) < 0.01;
+        examState.q9 = ok;
+        updateHUD();
+        return ok;
+      });
+
+      // Q10: Cone rotacionado
+      initMultipleChoice("q10", "Cone rotacionado de segunda ordem: ||x||2^2 <= 2yz com y, z >= 0");
+      document.querySelector("#q10 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q10 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q11: Slater e Dual Forte
+      initMultipleChoice("q11", "Condição de Slater assegura Dualidade Forte p* = d* e multiplicadores atingíveis");
+      document.querySelector("#q11 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.q11 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q12: Estacionariedade KKT lambda* = 4
+      initInputExercise("q12", ["4", "4.0", "4,0"], "Estacionariedade KKT: 2(4 - 6) + lambda* = 0 -> lambda* = 4", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 4) < 0.01;
+        examState.q12 = ok;
+        updateHUD();
+        return ok;
+      });
+    });
+  </script>
+</body>
+</html>

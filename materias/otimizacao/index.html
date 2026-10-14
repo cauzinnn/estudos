@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Otimização — Programação Linear, Convexa e Não Convexa</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <h1>Otimização</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Programação linear, métodos convexos, dualidade lagrangeana, redes, MIP combinatório e algoritmos NLP.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../../index.html">← Estudos</a>
+      <a href="reference/0001-programacao-linear-e-dualidade.html">Ficha: PL & Dualidade</a>
+      <a href="reference/0002-programacao-convexa-e-kkt.html">Ficha: Convexa & KKT</a>
+      <a href="reference/0003-combinatoria-mip-e-nlp.html">Ficha: MIP & NLP</a>
+    </div>
+
+    <!-- MÓDULO 1: PROGRAMAÇÃO LINEAR -->
+    <section class="card-exercise">
+      <div class="exercise-header">
+        <h2>Módulo 1: Programação Linear (Slides 3 a 7)</h2>
+      </div>
+      <div class="options-list">
+        <a href="lessons/0001-programacao-linear-formas-e-geometria.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0001: Programação Linear, Formas Canônica/Padrão e Geometria dos Vértices</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Hiperplanos, semiespaços e poliedros; combinações afins vs convexas; os 3 regimes de solução e simulador 2D com sliders.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0002-otimizacao-minimax-e-variavel-epigrafe.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0002: Otimização Minimax, Variáveis Epígrafe e Planejamento Multiperíodo</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Transformação de envoltória convexa superior, normas $\ell_\infty$ e $\ell_1$, simulador de epígrafe e inflador do centro de Chebyshev.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0003-fluxo-em-redes-e-unimodularidade.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0003: Problemas de Fluxo em Redes e Matriz Totalmente Unimodular</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Conservação de fluxo $Ax = b$, balanceador vivo de rede com medidores de nó e teorema de Hoffman-Kruskal.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0004-dualidade-lp-e-folga-complementar.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0004: Teoria da Dualidade em PL e Condições de Folga Complementar</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Balança Primal-Dual com medidor visual de Duality Gap, teoremas de dualidade e condições KKT de folga complementar.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0005-simplex-tableau-e-fluxos-duais.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0005: Algoritmo Simplex, Pivoteamento de Tableau e Fluxos Duais</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Máquina interativa de pivoteamento com eliminação gaussiana ao vivo e simulador de corte mínimo (Max-Flow Min-Cut).
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/simulado-modulo-1-programacao-linear.html" class="option-btn" style="text-decoration: none; border-left: 3px solid var(--success);">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--success);">Simulado Diagnóstico Integrado: Módulo 1</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              12 questões avançadas com HUD ao vivo, active recall numérico e análise de pegadinhas de Programação Linear.
+            </small>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- MÓDULO 2: PROGRAMAÇÃO CONVEXA (SLIDES 8 A 16) -->
+    <section class="card-exercise">
+      <div class="exercise-header">
+        <h2>Módulo 2: Programação Convexa (Slides 8 a 16)</h2>
+      </div>
+      <div class="options-list">
+        <a href="lessons/0006-minimos-quadrados-e-projecao-ortogonal.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0006: Mínimos Quadrados, Equações Normais e Projeção Ortogonal</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Sistemas sobredeterminados, equações normais, simulador de regressão com resíduos ortogonais e matriz de projeção $P$.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0007-restricoes-de-igualdade-e-tradeoffs.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0007: Mínimos Quadrados com Restrições de Igualdade e Tradeoffs</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Soluções de norma mínima para matrizes largas, matriz KKT em blocos e simulador da curva de Pareto com controle de trajetória.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0008-regularizacao-ridge-e-lasso.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0008: Regularização Ridge, Lasso e a Geometria da Esparsidade</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Identidade de Tikhonov, estimadores estatísticos e simulador geométrico do ponto de contato em losango $\ell_1$ vs círculo $\ell_2$.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0009-formas-quadraticas-e-elipsoides.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0009: Formas Quadráticas, Decomposição Espectral e Elipsoides</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Autovalores e autovetores de matrizes simétricas, positividade definida e simulador deformador de elipsoides com semi-eixos $1/\sqrt{\lambda}$.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0010-qps-qcqps-e-portfolio-markowitz.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0010: Programação Quadrática (QP), QCQPs e Portfólio de Markowitz</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Condições estritas de convexidade $P \succeq 0$, diversificação de risco e simulador da Fronteira Eficiente de Markowitz.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0011-cones-socp-e-programacao-semidefinida-sdp.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0011: Cones Convexos, Cones de Segunda Ordem (SOCP) e SDP</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Simulador 3D do Cone de Lorentz, otimização robusta com incerteza elipsoidal e o Lema do Complemento de Schur.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0012-programacao-convexa-e-hessiana.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0012: Programação Convexa Geral, Jensen e a Matriz Hessiana</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Condições diferenciais $\nabla^2 f \succeq 0$, simulador da corda secante de Jensen e equivalência com a epígrafe.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0013-dualidade-lagrangeana-slater-e-kkt.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0013: Dualidade Lagrangeana, Qualificação de Slater e KKT</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Simulador da função dual côncava de Srikant, teorema do dual forte com condição de Slater e as 4 equações KKT.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0014-hierarquia-conica-e-revisao-convexa.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0014: Hierarquia Cônica de Solvers e Revisão Convexa</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Navegador interativo da pirâmide $\text{LP} \subset \text{QP} \subset \text{QCQP} \subset \text{SOCP} \subset \text{SDP}$ e seleção de solvers.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/simulado-modulo-2-programacao-convexa.html" class="option-btn" style="text-decoration: none; border-left: 3px solid var(--success);">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--success);">Simulado Diagnóstico Integrado: Módulo 2</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              12 questões práticas avançadas com HUD ao vivo cobrindo mínimos quadrados, elipsoides, Markowitz, cones e condições KKT.
+            </small>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- MÓDULO 3: PROGRAMAÇÃO NÃO CONVEXA E COMBINATÓRIA (SLIDES 17 A 25) -->
+    <section class="card-exercise">
+      <div class="exercise-header">
+        <h2>Módulo 3: Programação Não Convexa e Combinatória (Slides 17 a 25)</h2>
+      </div>
+      <div class="options-list">
+        <a href="lessons/0015-modelos-nao-convexos-e-arredondamento.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0015: Modelos Não Convexos, P vs. NP e a Falácia do Arredondamento</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Relaxação contínua de MIPs, integrality gap e simulador dos perigos do arredondamento ingênuo de frações.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0016-custos-fixos-e-big-m.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0016: Custos Fixos de Ativação e a Técnica do Big-M</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Variáveis binárias de setup, limites variáveis, cálculo do $M$ mais justo e simulador de ponto de equilíbrio.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0017-logica-booleana-e-condicionais.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0017: Restrições Lógicas Se-Então e Linearização Booleana</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Condicionais se-então, disjunções, e compilador interativo de portas lógicas (AND, OR, Implicação) em inequações lineares.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0018-set-cover-e-o-caixeiro-viajante-tsp.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0018: Cobertura de Conjuntos (Set Cover) e o Caixeiro Viajante (TSP)</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Cobertura de conjuntos, o enigma dos subciclos desconectados no TSP e simulador de cortes de eliminação MTZ/DFJ.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0019-qap-e-conjuntos-sos.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0019: Atribuição Quadrática (QAP) e Conjuntos SOS-1/SOS-2</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              O problema combinatório QAP, simulador de tráfego em shopping e interpolação linear por partes contínua via SOS-2.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0020-branch-and-bound-e-planos-de-corte.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0020: Algoritmo Branch and Bound e Planos de Corte</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Navegador interativo da árvore de busca com ramificação passo a passo, as 3 regras de poda e cortes de Gomory.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0021-programacao-nao-linear-e-minimos-locais.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0021: Programação Não Linear (NLP) e Múltiplos Mínimos Locais</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Superfícies não convexas contínuas, simulador de bacias de atração, dependência do ponto inicial e heurística multi-start.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/0022-algoritmos-nlp-gradiente-e-newton.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Lição 0022: Algoritmos de Descida NLP: Gradiente, Newton e Armijo</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Duelo interativo entre o zigue-zague do Gradiente e o salto direto do Método de Newton, e busca linear com decréscimo suficiente.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/simulado-modulo-3-combinatoria-e-nlp.html" class="option-btn" style="text-decoration: none; border-left: 3px solid var(--success);">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--success);">Simulado Diagnóstico Integrado: Módulo 3</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              12 questões práticas avançadas com HUD ao vivo cobrindo Big-M, lógica booleana, TSP, Branch & Bound e algoritmos NLP.
+            </small>
+          </div>
+        </a>
+      </div>
+    </section>
+
+  </div>
+</body>
+</html>

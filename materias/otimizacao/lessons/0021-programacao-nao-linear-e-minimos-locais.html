@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0021: Programação Não Linear e Mínimos Locais — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0021 (Slide 24)</div>
+      <h1>Programação Não Linear (NLP) e Múltiplos Mínimos Locais</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Desafios de modelos não convexos contínuos, bacias de atração, dependência do ponto inicial e pontos de sela.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0020-branch-and-bound-e-planos-de-corte.html">← Lição Anterior</a>
+      <a href="0022-algoritmos-nlp-gradiente-e-newton.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: O DESAFIO DA NÃO CONVEXIDADE CONTÍNUA -->
+    <section class="card-theory">
+      <h2>1. A Paisagem Acidentada da Otimização Não Convexa</h2>
+      <p>
+        Diferente da Programação Convexa (onde qualquer mínimo local é global), a <strong>Programação Não Linear (NLP) Geral</strong> apresenta múltiplos vales isolados por cristas e pontos de sela:
+      </p>
+      $$\min_{x \in \mathbb{R}^n} \quad f(x) \quad \text{sujeito a:} \quad g_i(x) \le 0$$
+      <p>
+        Algoritmos clássicos baseados em derivadas (como gradiente descendente) encontram apenas o <strong>ótimo local da bacia de atração</strong> na qual o ponto inicial $x_0$ foi posicionado. Se o ponto de partida for inadequado, o solver fica preso em um vale muito inferior ao melhor resultado global.
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: BACIAS DE ATRAÇÃO NLP -->
+    <div class="interactive-widget" id="basin-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🌄 Simulador Interativo: Bacias de Atração & Armadilha de Mínimo Local</span>
+        </div>
+        <span class="widget-badge">Superfície Não Convexa</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        A função $f(x)$ possui dois poços: um <strong>Mínimo Local Subótimo (à esquerda)</strong> e o <strong>Mínimo Global Verdadeiro (à direita)</strong>, separados por uma crista em $x \approx 0.6$. 
+        Escolha o ponto de partida $x_0$ e clique em <strong>Rolar Gradiente</strong> para ver onde o otimizador converge!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 280px; padding: 1rem;">
+        <svg id="basin-svg" width="100%" height="240" viewBox="0 0 500 240" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- Eixo horizontal -->
+          <line x1="40" y1="210" x2="460" y2="210" stroke="#8b949e" stroke-width="1.5"/>
+          <line x1="250" y1="220" x2="250" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+
+          <!-- Linha vertical divisora de águas (Crista / Separatriz em x=0.6 -> cx=285) -->
+          <line x1="285" y1="210" x2="285" y2="30" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="290" y="45" fill="#f0883e" font-size="10">Crista Divisora (x = 0.6)</text>
+
+          <!-- Curva da Função Multimodal com 2 poços -->
+          <path id="basin-path" d="" fill="none" stroke="#58a6ff" stroke-width="3"/>
+
+          <!-- Mínimo Local Subótimo em x = -1.3 -> cx=170, cy=155 -->
+          <circle cx="170" cy="155" r="5" fill="#d20f39"/>
+          <text x="170" y="175" fill="#d20f39" font-size="10" text-anchor="middle">Local (f=6.5)</text>
+
+          <!-- Mínimo Global Real em x = 2.7 -> cx=410, cy=185 -->
+          <circle cx="410" cy="185" r="6" fill="#3fb950"/>
+          <text x="410" y="200" fill="#3fb950" font-weight="bold" font-size="11" text-anchor="middle">Global (f=1.2)*</text>
+
+          <!-- Bolinha que rola pelo gradiente -->
+          <circle id="basin-ball" cx="170" cy="155" r="8" fill="#f0883e" stroke="#fff" stroke-width="2"/>
+        </svg>
+
+        <div class="widget-status-bar" id="basin-status">
+          <span>Iniciando em x₀ = -2.0. Convergiu para o Mínimo Local Subótimo (f = 6.50).</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <div class="slider-control-group" style="min-width: 220px; flex: 2;">
+          <div class="slider-label"><span>Ponto Inicial ($x_0$)</span><span id="v-basin-x0" style="color: var(--accent); font-weight: bold;">-2.0</span></div>
+          <input type="range" class="interactive-slider" id="sl-basin-x0" min="-2.4" max="3.4" value="-2.0" step="0.1">
+        </div>
+
+        <button class="widget-btn" id="btn-roll-grad" style="flex: 1;">⚡ Descer Gradiente</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Heurística Multi-Start em Otimização Não Convexa</h3>
+      </div>
+      <div class="question-text">
+        Como os engenheiros lidam na prática com a dependência de bacias de atração ao resolver modelos não convexos complexos com solvers locais?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A estratégia de 'Multi-Start' dispara o solver local a partir de dezenas ou centenas de pontos iniciais sorteados aleatoriamente em todo o domínio, retendo no final o menor mínimo local encontrado.">
+          Executam o solver repetidas vezes a partir de múltiplos pontos iniciais aleatórios (estratégia Multi-Start).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: o algoritmo Simplex aplica-se estritamente a problemas lineares poliedrais, não resolvendo problemas não lineares contínuos multimodais.">
+          Aplicam o algoritmo Simplex primal para saltar de crista em crista instantaneamente.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: alterar o sinal do gradiente faz o método subir para máximos em vez de descer para mínimos.">
+          Invertem o sinal do gradiente em cada iteração ímpar para escapar dos poços locais.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: métodos de descida continuam convergindo para mínimos locais finitos, não sofrendo de divergência assintótica para o infinito.">
+          Aguardam a divergência da função objetivo, pois todo mínimo local é teoricamente infinito.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0020-branch-and-bound-e-planos-de-corte.html">← Lição Anterior: 0020 (Branch & Bound)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0022-algoritmos-nlp-gradiente-e-newton.html">Próxima: Lição 0022 (Algoritmos NLP) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Multi-Start
+      initMultipleChoice("ex1", "Estratégia Multi-Start executa o solver local de múltiplos pontos iniciais");
+
+      // ==========================================
+      // SIMULADOR DE BACIAS DE ATRAÇÃO
+      // ==========================================
+      const slX0 = document.getElementById("sl-basin-x0");
+      const vX0 = document.getElementById("v-basin-x0");
+      const ball = document.getElementById("basin-ball");
+      const btnRoll = document.getElementById("btn-roll-grad");
+      const statusBox = document.getElementById("basin-status");
+      const bPath = document.getElementById("basin-path");
+
+      // f(x) = 0.25*x^4 - (2/3)*x^3 - 1.5*x^2 + 2x + 10
+      function f(x) {
+        return 0.25 * Math.pow(x, 4) - (2/3) * Math.pow(x, 3) - 1.5 * Math.pow(x, 2) + 2 * x + 10;
+      }
+
+      function toSvg(x, y) {
+        // x in [-2.5, 3.5] -> svg X in [60, 460] (scale: 225 + x*66.6)
+        // y in [0, 16] -> svg Y in [210, 30] (scale: 210 - y*11.2)
+        return {
+          cx: 225 + x * 66.6,
+          cy: 210 - y * 11.2
+        };
+      }
+
+      // Desenhar curva estática
+      let d = "";
+      for (let x = -2.5; x <= 3.51; x += 0.1) {
+        const p = toSvg(x, f(x));
+        d += (x === -2.5 ? `M ${p.cx},${p.cy}` : ` L ${p.cx},${p.cy}`);
+      }
+      bPath.setAttribute("d", d);
+
+      function updateBallPos(x) {
+        vX0.textContent = x.toFixed(1);
+        const p = toSvg(x, f(x));
+        ball.setAttribute("cx", p.cx);
+        ball.setAttribute("cy", p.cy);
+      }
+
+      slX0.addEventListener("input", (e) => {
+        updateBallPos(parseFloat(e.target.value));
+      });
+
+      btnRoll.addEventListener("click", () => {
+        const startX = parseFloat(slX0.value);
+        // Crista em x = 0.6
+        const targetX = startX < 0.6 ? -1.3 : 2.7;
+        const targetY = f(targetX);
+        const p = toSvg(targetX, targetY);
+
+        ball.setAttribute("cx", p.cx);
+        ball.setAttribute("cy", p.cy);
+
+        if (targetX < 0) {
+          statusBox.className = "widget-status-bar error";
+          statusBox.innerHTML = `<span>⚠️ <strong>Preso em Mínimo Local Subótimo!</strong> x* = -1.30 com f(x*) = 6.50. A crista em x=0.6 impediu o gradiente de enxergar o vale global!</span>`;
+        } else {
+          statusBox.className = "widget-status-bar success";
+          statusBox.innerHTML = `<span>🏆 <strong>Mínimo Global Atingido!</strong> x* = 2.70 com f(x*) = 1.20. Ponto inicial x₀ estava na bacia de atração correta!</span>`;
+        }
+      });
+
+      updateBallPos(-2.0);
+    });
+  </script>
+</body>
+</html>

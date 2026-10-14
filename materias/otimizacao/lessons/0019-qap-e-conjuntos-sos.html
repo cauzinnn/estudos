@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0019: QAP e Conjuntos Ordenados Especiais (SOS) — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0019 (Slide 22)</div>
+      <h1>Atribuição Quadrática (QAP) e Conjuntos SOS-1/SOS-2</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        O problema combinatório QAP, tráfego interdepartamental e a interpolação linear por partes via Special Ordered Sets (SOS).
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0018-set-cover-e-o-caixeiro-viajante-tsp.html">← Lição Anterior</a>
+      <a href="0020-branch-and-bound-e-planos-de-corte.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: O PROBLEMA QAP -->
+    <section class="card-theory">
+      <h2>1. O Problema de Atribuição Quadrática (QAP)</h2>
+      <p>
+        Deseja-se alocar $n$ instalações a $n$ locais físicos pré-determinados. Conhecemos a <strong>distância $d_{kl}$</strong> entre os locais $k$ e $l$, e o <strong>fluxo de tráfego $f_{ij}$</strong> entre as instalações $i$ e $j$:
+      </p>
+      $$\min_{x} \quad \sum_{i=1}^n \sum_{j=1}^n \sum_{k=1}^n \sum_{l=1}^n f_{ij} \cdot d_{kl} \cdot x_{ik} \cdot x_{jl}$$
+      <p>
+        O produto $x_{ik} \cdot x_{jl}$ é não linear (quadrático nas variáveis binárias). O QAP é reconhecido como um dos problemas combinatórios mais difíceis da computação teórica (instâncias com $n \ge 35$ desafiam supercomputadores).
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: ALOCAÇÃO DE LOJAS EM SHOPPING (QAP) -->
+    <div class="interactive-widget" id="qap-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🏬 Simulador Interativo: Alocação de Lojas em Shopping (QAP)</span>
+        </div>
+        <span class="widget-badge">Atribuição Quadrática</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Alinhe 4 lojas nos 4 pontos do shopping (Local 1 a 4). 
+        O tráfego de pedestres entre o <strong>Cinema e a Praça de Alimentação</strong> é altíssimo ($f = 80$). 
+        Clique no botão para trocar suas posições e veja o custo total quadrático de deslocamento cair drasticamente!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 240px; padding: 1.25rem;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; width: 100%;" id="mall-slots">
+          <!-- Injetado dinamicamente via JS -->
+        </div>
+
+        <div class="widget-status-bar" id="qap-status" style="margin-top: 1rem;">
+          <span>Custo de Deslocamento Total: <strong>7.200 pés-cliente</strong>.</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: center;">
+        <button class="widget-btn secondary" id="btn-swap-qap">🔀 Trocar Posições das Lojas</button>
+        <button class="widget-btn" id="btn-opt-qap">🏆 Alocação Ótima Mínima</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: CONJUNTOS ORDENADOS ESPECIAIS (SOS) -->
+    <section class="card-theory">
+      <h2>2. Conjuntos SOS-1 e SOS-2 (Special Ordered Sets)</h2>
+      <p>
+        Criados por Beale e Tomlin, os conjuntos SOS fornecem regras nativas para os algoritmos de Branch & Bound acelerarem podas discretas:
+      </p>
+      <ul>
+        <li><strong>SOS-1 (Escolha Única):</strong> Em um conjunto de variáveis não negativas $(\lambda_1, \dots, \lambda_k)$, <strong>no máximo uma</strong> pode ser não nula.</li>
+        <li><strong>SOS-2 (Interpolação Linear por Partes):</strong> <strong>No máximo duas variáveis adjacentes</strong> podem ser positivas ($\lambda_i, \lambda_{i+1} > 0$), com $\sum \lambda_i = 1$. Isso garante que qualquer função não linear por partes seja interpolada com continuidade exata!</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Aplicação Canônica de Conjuntos SOS-2</h3>
+      </div>
+      <div class="question-text">
+        Qual é a principal aplicação computacional da restrição SOS-2 em solvers modernos de MIP?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como o SOS-2 restringe a não nulidade a no máximo dois pesos vizinhos contíguos (λi, λi+1), ele permite interpolar qualquer curva contínua linear por partes sem precisar adicionar dezenas de variáveis binárias manuais.">
+          Modelar a aproximação linear por partes contínua de funções não lineares de uma variável.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: SOS-1 é que modela a escolha de uma única opção discreta exclusiva, enquanto SOS-2 envolve pares adjacentes.">
+          Modelar a escolha exclusiva de uma única fábrica entre k opções disponíveis.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: problemas de fluxo em redes não utilizam SOS; eles são resolvidos pelo Simplex contínuo graças à total unimodularidade.">
+          Garantir a total unimodularidade da matriz de incidência em problemas de rede.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: SOS é uma ferramenta para variáveis discretas e aproximações contínuas, sem relação com cones semidefinidos.">
+          Converter restrições quadráticas em matrizes positivas semidefinidas LMI.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0018-set-cover-e-o-caixeiro-viajante-tsp.html">← Lição Anterior: 0018 (Set Cover & TSP)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0020-branch-and-bound-e-planos-de-corte.html">Próxima: Lição 0020 (Branch & Bound) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Aplicação de SOS-2
+      initMultipleChoice("ex1", "SOS-2 é utilizado para aproximar funções contínuas lineares por partes");
+
+      // ==========================================
+      // SIMULADOR QAP
+      // ==========================================
+      const slotsContainer = document.getElementById("mall-slots");
+      const statusBox = document.getElementById("qap-status");
+      const btnSwap = document.getElementById("btn-swap-qap");
+      const btnOpt = document.getElementById("btn-opt-qap");
+
+      let currentAlloc = ["Cinema", "Livraria", "Roupas", "Praça de Alimentação"];
+      const dist = [
+        [0, 50, 100, 150],
+        [50, 0, 50, 100],
+        [100, 50, 0, 50],
+        [150, 100, 50, 0]
+      ];
+      const flow = {
+        "Cinema-Praça de Alimentação": 80,
+        "Praça de Alimentação-Cinema": 80,
+        "Cinema-Livraria": 5, "Livraria-Cinema": 5,
+        "Livraria-Roupas": 20, "Roupas-Livraria": 20,
+        "Roupas-Praça de Alimentação": 15, "Praça de Alimentação-Roupas": 15,
+        "Cinema-Roupas": 5, "Roupas-Cinema": 5,
+        "Livraria-Praça de Alimentação": 10, "Praça de Alimentação-Livraria": 10
+      };
+
+      function renderMall() {
+        let html = "";
+        currentAlloc.forEach((shop, idx) => {
+          html += `
+            <div style="background-color: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.8rem; text-align: center;">
+              <small style="color: var(--text-muted); display:block;">Local ${idx+1}</small>
+              <strong style="color: var(--accent); font-size: 0.95rem;">${shop}</strong>
+            </div>
+          `;
+        });
+        slotsContainer.innerHTML = html;
+
+        // Calcular custo QAP
+        let totalCost = 0;
+        for (let i = 0; i < 4; i++) {
+          for (let j = 0; j < 4; j++) {
+            if (i !== j) {
+              const pair = `${currentAlloc[i]}-${currentAlloc[j]}`;
+              const f = flow[pair] || 0;
+              const d = dist[i][j];
+              totalCost += f * d;
+            }
+          }
+        }
+
+        const isOpt = totalCost <= 7000;
+        statusBox.className = "widget-status-bar" + (isOpt ? " success" : "");
+        statusBox.innerHTML = `<span>Custo de Tráfego Total: <strong>${totalCost} pés-cliente</strong> ${isOpt ? "🏆 [ALOCAÇÃO ÓTIMA QAP! Cinema e Alimentação vizinhos]" : "(Subótimo: clientes andam muito)"}</span>`;
+      }
+
+      btnSwap.addEventListener("click", () => {
+        // Inverte meio
+        const tmp = currentAlloc[1];
+        currentAlloc[1] = currentAlloc[2];
+        currentAlloc[2] = tmp;
+        renderMall();
+      });
+
+      btnOpt.addEventListener("click", () => {
+        // Coloca Cinema e Praça juntos: Local 2 e Local 3
+        currentAlloc = ["Livraria", "Cinema", "Praça de Alimentação", "Roupas"];
+        renderMall();
+      });
+
+      renderMall();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0011: Cones Convexos, SOCP e Programação Semidefinida — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 2 • Lição 0011 (Slide 13)</div>
+      <h1>Cones Convexos, Cones de Segunda Ordem (SOCP) e SDP</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Geometria do cone de Lorentz, otimização robusta, espectraedros e o complemento de Schur em desigualdades matriciais lineares (LMI).
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0010-qps-qcqps-e-portfolio-markowitz.html">← Lição Anterior</a>
+      <a href="0012-programacao-convexa-e-hessiana.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: O QUE É UM CONE CONVEXO -->
+    <section class="card-theory">
+      <h2>1. Definição de Cones Convexos e o Cone de Lorentz</h2>
+      <p>
+        Um conjunto $C \subseteq \mathbb{R}^n$ é um <strong>cone</strong> se para todo $x \in C$ e $\alpha > 0$, o raio $\alpha x \in C$. É um <strong>cone convexo</strong> se também for fechado sob soma ($x + y \in C$).
+      </p>
+      <p>
+        O <strong>Cone de Segunda Ordem (SOC / Cone de Lorentz / Ice-cream Cone)</strong> em $\mathbb{R}^{n+1}$ é definido por:
+      </p>
+      $$\mathcal{K}_{\text{SOC}} = \left\{ (x, t) \in \mathbb{R}^n \times \mathbb{R} \;\middle|\; \|x\|_2 \le t \right\}$$
+      <p>
+        Uma restrição geral de <strong>SOCP (Second-Order Cone Program)</strong> impõe que uma transformação afim pertença ao cone de Lorentz:
+      </p>
+      $$\|A_i x + b_i\|_2 \le c_i^T x + d_i$$
+      <p>
+        Qualquer restrição quadrática convexa do tipo $x^T P x + q^T x + r \le 0$ ($P \succ 0$) é exatamente um corte plano em um cone de segunda ordem.
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: CONE DE LORENTZ E CORTES CÔNICOS SOCP -->
+    <div class="interactive-widget" id="lorentz-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🍦 Simulador Interativo: O Cone de Lorentz e Seções Cônicas SOCP</span>
+        </div>
+        <span class="widget-badge">Geometria Cônica 3D</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        O Cone de Segunda Ordem $\|x\|_2 = \sqrt{x_1^2 + x_2^2} \le t$ forma um "cone de sorvete" tridimensional. 
+        O plano de corte $t = \text{altura}$ define a seção transversal factível. 
+        Ajuste a <strong>altura $t$</strong> e a <strong>inclinação do plano</strong> para ver a transição entre elipses, parábolas e hipérboles!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1rem;">
+        <svg id="cone-svg" width="100%" height="280" viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- Eixo vertical T: centro em (250, 240) até (250, 30) -->
+          <line x1="250" y1="240" x2="250" y2="25" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="255" y="25" fill="#8b949e" font-size="11" font-family="monospace">t (Eixo do Cone)</text>
+
+          <!-- Geratrizes do Cone de Lorentz: Vértice em (250, 240) -->
+          <!-- Abertura de 45 graus: em t=200px de altura, raio = 150px -->
+          <polygon points="250,240 100,50 400,50" fill="rgba(88, 166, 255, 0.12)" stroke="#58a6ff" stroke-width="2"/>
+          <ellipse cx="250" cy="50" rx="150" ry="25" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+          <!-- Linha do Plano de Corte Dinâmico: t = h -->
+          <line id="plane-line" x1="80" y1="120" x2="420" y2="120" stroke="#f0883e" stroke-width="2.5"/>
+          <text id="plane-lbl" x="425" y="124" fill="#f0883e" font-size="11" font-weight="bold">Plano: t = 2.5</text>
+
+          <!-- Elipse da Seção Convexa Cortada no Cone -->
+          <ellipse id="cone-slice" cx="250" cy="120" rx="95" ry="18" 
+                   fill="rgba(240, 136, 62, 0.25)" stroke="#f0883e" stroke-width="2"/>
+
+          <circle cx="250" cy="240" r="4" fill="#fff"/>
+          <text x="250" y="255" fill="#8b949e" font-size="10" text-anchor="middle">Origem (0, 0, 0)</text>
+        </svg>
+
+        <div class="widget-status-bar success" id="cone-status">
+          <span>Seção Transversal: <strong>Elipse Fechada Convexa</strong> de raio r = 2.50. Representa a restrição ||x||₂ ≤ 2.50!</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%;">
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Altura do Corte ($t$)</span><span id="v-cone-t" style="color: #f0883e; font-weight: bold;">2.50</span></div>
+          <input type="range" class="interactive-slider" id="sl-cone-t" min="0.5" max="4.0" value="2.5" step="0.1">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Inclinação do Plano de Corte</span><span id="v-cone-tilt" style="color: var(--accent); font-weight: bold;">0° (Horizontal)</span></div>
+          <input type="range" class="interactive-slider" id="sl-cone-tilt" min="-30" max="30" value="0" step="5">
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: PROGRAMAÇÃO ROBUSTA -->
+    <section class="card-theory">
+      <h2>2. Otimização Robusta com Incerteza Elipsoidal</h2>
+      <p>
+        Em LPs reais, os coeficientes das restrições não são exatos: $a_i = \bar{a}_i + u$, onde $u$ é uma perturbação desconhecida contida em um conjunto de incerteza $\mathcal{U}$.
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Incerteza em Bola Euclidiana vira SOCP</div>
+        <p style="margin-bottom: 0;">
+          Se a incerteza for uma bola euclidiana $\|u\|_2 \le \rho$, a exigência de que a restrição seja respeitada para <em>todo</em> $u$ viável é:
+          $$\sup_{\|u\|_2 \le \rho} (\bar{a}_i + u)^T x \le b_i \iff \bar{a}_i^T x + \rho \|x\|_2 \le b_i$$
+          O termo $\rho \|x\|_2$ adiciona uma margem de segurança proporcional à norma de $x$. Essa restrição não linear é <strong>exatamente uma restrição de cone de segunda ordem (SOCP)</strong>!
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="O termo ||u||_2 <= rho gera rho * ||x||_2. Para rho = 0.5 e x = (3, 4), ||x||_2 = sqrt(3^2 + 4^2) = 5. A penalidade de robustez é 0.5 * 5 = 2.5. O valor máximo que a_i^T x pode atingir é a_bar^T x + 2.5. Com a_bar^T x = 10, o lado esquerdo vale 10 + 2.5 = 12.5.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Margem de Segurança Robusta</h3>
+      </div>
+      <div class="question-text">
+        Em uma restrição robusta $\bar{a}^T x + \rho \|x\|_2 \le b$, o valor nominal é $\bar{a}^T x = 10.0$ e a incerteza máxima é $\rho = 0.50$.<br>
+        O vetor de decisão atual é $x = (3, 4)$.<br><br>
+        Qual é o <strong>pior valor total possível do lado esquerdo</strong> ($\bar{a}^T x + \rho \|x\|_2$) sob a perturbação elipsoidal?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor total (ex: 12.5)" autocomplete="off">
+        <button class="action-btn">Verificar Margem</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 3: PROGRAMAÇÃO SEMIDEFINIDA E COMPLEMENTO DE SCHUR -->
+    <section class="card-theory">
+      <h2>3. Programação Semidefinida (SDP) e o Complemento de Schur</h2>
+      <p>
+        Uma <strong>Desigualdade Matricial Linear (LMI)</strong> restringe uma matriz afim ao cone semidefinido positivo:
+      </p>
+      $$F(x) = F_0 + \sum_{i=1}^m x_i F_i \succeq 0$$
+      <div class="callout definition">
+        <div class="callout-title">📌 Lema do Complemento de Schur</div>
+        <p style="margin-bottom: 0;">
+          Para $A \succ 0$, a matriz em blocos $\begin{bmatrix} A & B \\ B^T & C \end{bmatrix} \succeq 0$ se e somente se $C - B^T A^{-1} B \succeq 0$.<br>
+          Aplicando com $A = I$, obtemos a equivalência fundamental que converte SOCP em SDP:
+          $$\begin{bmatrix} I & x \\ x^T & t \end{bmatrix} \succeq 0 \iff \|x\|_2^2 \le t$$
+          Portanto, <strong>toda restrição cônica de segunda ordem pode ser escrita como uma LMI semidefinida</strong>!
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Hierarquia Estrutural entre SOCP e SDP</h3>
+      </div>
+      <div class="question-text">
+        O que o Lema do Complemento de Schur comprova sobre a relação entre problemas SOCP e SDP?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Pelo Complemento de Schur, qualquer restrição ||Ax + b||2 ≤ cᵀx + d pode ser representada como uma LMI 2x2 em blocos. Portanto, SOCP está estritamente contido em SDP (todo SOCP é um SDP).">
+          Todo problema SOCP pode ser formulado equivalentemente como um problema SDP.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a inclusão é no sentido oposto: SDP é uma classe muito mais ampla e expressiva que contém SOCP, e nem todo SDP pode ser reduzido a cones de segunda ordem.">
+          Todo problema SDP pode ser reduzido sem perda de informação a um problema SOCP.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: SOCP e SDP pertencem ambos à classe de problemas convexos com algoritmos de ponto interior eficientes em tempo polinomial.">
+          O SOCP é um problema não convexo NP-difícil, enquanto o SDP é convexo polinomial.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o Complemento de Schur é uma identidade matemática exata, sem exigir qualquer aproximação numérica.">
+          A equivalência entre SOCP e SDP é apenas assintótica para matrizes infinitas.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0010-qps-qcqps-e-portfolio-markowitz.html">← Lição Anterior: 0010 (QPs & Markowitz)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0012-programacao-convexa-e-hessiana.html">Próxima: Lição 0012 (Programação Convexa) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: 10 + 0.5 * 5 = 12.5
+      initInputExercise("ex1", ["12.5", "12,5"], "Pior valor: 10 + 0.5 * 5 = 12.5", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 12.5) < 0.01;
+      });
+
+      // Ex 2: SOCP contido em SDP
+      initMultipleChoice("ex2", "Complemento de Schur prova que todo SOCP pode ser escrito como SDP");
+
+      // ==========================================
+      // SIMULADOR DO CONE DE LORENTZ
+      // ==========================================
+      const slConeT = document.getElementById("sl-cone-t");
+      const slConeTilt = document.getElementById("sl-cone-tilt");
+      const vConeT = document.getElementById("v-cone-t");
+      const vConeTilt = document.getElementById("v-cone-tilt");
+      const planeLine = document.getElementById("plane-line");
+      const planeLbl = document.getElementById("plane-lbl");
+      const coneSlice = document.getElementById("cone-slice");
+      const coneStatus = document.getElementById("cone-status");
+
+      function updateCone() {
+        const tVal = parseFloat(slConeT.value);
+        const tilt = parseInt(slConeTilt.value);
+
+        vConeT.textContent = tVal.toFixed(2);
+        vConeTilt.textContent = `${tilt}° ${tilt === 0 ? "(Horizontal)" : ""}`;
+
+        // Altura tVal em [0.5, 4.0]: y = 240 - tVal * 47.5
+        const cy = 240 - tVal * 47.5;
+        // Raio r = tVal * 38 px
+        const rx = tVal * 38;
+        const ry = rx * 0.18;
+
+        const tiltRad = tilt * Math.PI / 180;
+        const dy = Math.tan(tiltRad) * 170;
+
+        planeLine.setAttribute("y1", cy + dy);
+        planeLine.setAttribute("y2", cy - dy);
+        planeLbl.setAttribute("y", cy - dy + 4);
+        planeLbl.textContent = `t = ${tVal.toFixed(1)}`;
+
+        coneSlice.setAttribute("cy", cy);
+        coneSlice.setAttribute("rx", rx);
+        coneSlice.setAttribute("ry", ry);
+
+        if (Math.abs(tilt) > 20) {
+          coneStatus.className = "widget-status-bar";
+          coneStatus.innerHTML = `<span>Plano Inclinado (θ = ${tilt}°): A seção transversal se deforma em elipse excêntrica ou parábola aberta.</span>`;
+        } else {
+          coneStatus.className = "widget-status-bar success";
+          coneStatus.innerHTML = `<span>Seção Transversal Convexa: <strong>Elipse Fechada</strong> de raio $\|x\|_2 \le ${tVal.toFixed(2)}$. Restrição SOCP perfeitamente satisfeita!</span>`;
+        }
+      }
+
+      slConeT.addEventListener("input", updateCone);
+      slConeTilt.addEventListener("input", updateCone);
+      updateCone();
+    });
+  </script>
+</body>
+</html>

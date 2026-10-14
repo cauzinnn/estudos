@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0016: Custos Fixos e a Técnica do Big-M — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0016 (Slide 19)</div>
+      <h1>Custos Fixos de Ativação e a Técnica do Big-M</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Linearização de custos descontínuos, variáveis binárias de ativação e a escolha do limitante $M$ mais justo possível.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0015-modelos-nao-convexos-e-arredondamento.html">← Lição Anterior</a>
+      <a href="0017-logica-booleana-e-condicionais.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: CUSTOS FIXOS DE ATIVAÇÃO -->
+    <section class="card-theory">
+      <h2>1. A Descontinuidade dos Custos Fixos (ClothCo)</h2>
+      <p>
+        Considere a fábrica de confecção <em>ClothCo</em>: produzir camisas gera lucro marginal unitário, mas ligar o maquinário exige um <strong>custo fixo de setup</strong> $K$:
+      </p>
+      $$\text{Custo Total}(x) = \begin{cases} c \cdot x + K, & \text{se } x > 0 \\ 0, & \text{se } x = 0 \end{cases}$$
+      <p>
+        Essa função possui um salto descontínuo na origem (não linear e não convexa). Para representá-la em Programação Linear Inteira Mista (MIP), introduzimos uma <strong>variável binária de ativação</strong> $z \in \{0, 1\}$ e uma constante $M$ grande o suficiente:
+      </p>
+      $$\min \quad c \cdot x + K \cdot z \quad \text{sujeito a:} \quad x \le M \cdot z, \quad x \ge 0, \quad z \in \{0, 1\}$$
+      <ul>
+        <li>Se $z = 0 \implies x \le 0 \implies x = 0$ (linha desligada, custo fixo nulo).</li>
+        <li>Se $z = 1 \implies x \le M$ (linha ligada, custo fixo $K$ é cobrado).</li>
+      </ul>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: CUSTOS FIXOS E BREAK-EVEN -->
+    <div class="interactive-widget" id="bigm-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🏭 Simulador: Custos Fixos de Ativação & Ponto de Equilíbrio</span>
+        </div>
+        <span class="widget-badge">Modelagem com Big-M</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Produzir camisas rende <strong>lucro bruto de $6/unidade</strong>, mas exige <strong>setup fixo de $K = $200</strong> ($z \in \{0, 1\}$). 
+        Arraste a quantidade produzida $x$ e veja a ativação automática da variável binária $z$ e o cálculo do lucro líquido!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 280px; padding: 1rem;">
+        <svg id="bigm-svg" width="100%" height="220" viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- Eixos: x in [0, 80], lucro in [-200, 300] -->
+          <line x1="60" y1="130" x2="450" y2="130" stroke="#8b949e" stroke-width="1.5"/>
+          <line x1="80" y1="200" x2="80" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="455" y="135" fill="#8b949e" font-size="11">x (Peças)</text>
+          <text x="70" y="20" fill="#8b949e" font-size="11">Lucro ($)</text>
+
+          <!-- Break-even line: 6x = 200 -> x = 33.3 peças -->
+          <!-- x=0 -> lucro=0; x>0 -> lucro = 6x - 200 -->
+          <line x1="80" y1="190" x2="400" y2="30" stroke="#58a6ff" stroke-width="2.5"/>
+          <circle cx="80" cy="130" r="5" fill="#3fb950"/>
+          <text x="70" y="120" fill="#3fb950" font-size="10">x=0, Lucro=$0</text>
+
+          <!-- Ponto de Break-Even (33.3, 0) -> cx=205, cy=130 -->
+          <circle cx="205" cy="130" r="5" fill="#f0883e"/>
+          <text x="205" y="148" fill="#f0883e" font-size="10" text-anchor="middle">Break-Even (34 peças)</text>
+
+          <!-- Cursor Atual -->
+          <circle id="bigm-cursor" cx="270" cy="98" r="7" fill="#8839ef" stroke="#fff" stroke-width="2"/>
+        </svg>
+
+        <div class="widget-status-bar success" id="bigm-status">
+          <span>Produção: x = 50 peças • Variável z = 1 (Linha Ligada) • Setup: -$200 • <strong>Lucro Líquido: +$100.00</strong></span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="gap: 1.5rem; justify-content: space-between;">
+        <div class="slider-control-group" style="flex: 2;">
+          <div class="slider-label">
+            <span>Volume de Produção ($x$)</span>
+            <span id="v-bigm-x" style="color: var(--accent); font-weight: bold;">50 peças</span>
+          </div>
+          <input type="range" class="interactive-slider" id="sl-bigm-x" min="0" max="80" value="50" step="1">
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: A ESCOLHA DO BIG-M CORRETO -->
+    <section class="card-theory">
+      <h2>2. A Escolha Crítica do Valor de $M$</h2>
+      <p>
+        Qual valor deve ter a constante $M$?
+      </p>
+      <ul>
+        <li><strong>Se $M$ for muito pequeno:</strong> Corta soluções perfeitamente viáveis e destrói o modelo (inviabilidade artificial).</li>
+        <li><strong>Se $M$ for absurdamente grande (ex: $10^9$):</strong> Causa severas instabilidades numéricas nos computadores e enfraquece a relaxação linear ($z$ assume frações minúsculas $x/M \approx 0.00001$), tornando a árvore de Branch & Bound centenas de vezes mais lenta!</li>
+      </ul>
+      <div class="callout definition">
+        <div class="callout-title">📌 Regra de Ouro do Big-M Justo</div>
+        <p style="margin-bottom: 0;">
+          Sempre escolha $M$ como o <strong>menor limitante superior rigoroso</strong> derivado da capacidade física dos recursos:
+          $$M = \min_{k} \left( \frac{\text{Capacidade do Recurso } k}{\text{Consumo Unitário } a_k} \right)$$
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="O tecido disponível é de 160 metros e cada calça consome 4 metros: M = 160 / 4 = 40. Não faz sentido colocar M maior que 40, pois é impossível produzir mais de 40 calças.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Cálculo do Big-M Mais Justo</h3>
+      </div>
+      <div class="question-text">
+        Uma fábrica dispõe de $160 \text{ metros}$ de tecido para produzir calças ($x$). Cada calça consome $4 \text{ metros}$ de tecido.<br>
+        Deseja-se impor a restrição de custo fixo $x \le M \cdot z$ com $z \in \{0, 1\}$.<br><br>
+        Qual é o <strong>menor valor numérico inteiro válido para $M$</strong> que não corta nenhuma solução fisicamente viável?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor ótimo de M (ex: 40)" autocomplete="off">
+        <button class="action-btn">Verificar Big-M</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0015-modelos-nao-convexos-e-arredondamento.html">← Lição Anterior: 0015 (Modelos Não Convexos)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0017-logica-booleana-e-condicionais.html">Próxima: Lição 0017 (Lógica Booleana) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: M = 160 / 4 = 40
+      initInputExercise("ex1", ["40"], "Menor M justo: 160 m / 4 m/peça = 40", (raw, clean) => {
+        return clean.trim() === "40";
+      });
+
+      // ==========================================
+      // SIMULADOR BIG-M
+      // ==========================================
+      const slX = document.getElementById("sl-bigm-x");
+      const vX = document.getElementById("v-bigm-x");
+      const cursor = document.getElementById("bigm-cursor");
+      const statusBox = document.getElementById("bigm-status");
+
+      function updateBigM() {
+        const x = parseInt(slX.value);
+        vX.textContent = `${x} peças`;
+
+        const z = x > 0 ? 1 : 0;
+        const profit = x > 0 ? (6 * x - 200) : 0;
+
+        // x in [0, 80] -> cx in [80, 400]
+        const cx = 80 + (x / 80) * 320;
+        // profit in [-200, 280] -> cy in [190, 40]
+        const cy = 190 - ((profit + 200) / 480) * 150;
+
+        cursor.setAttribute("cx", cx);
+        cursor.setAttribute("cy", cy);
+
+        if (x === 0) {
+          statusBox.className = "widget-status-bar";
+          statusBox.innerHTML = `<span>Produção x = 0 • Linha Desligada (z = 0) • Setup = $0 • <strong>Lucro = $0.00</strong></span>`;
+        } else if (profit < 0) {
+          statusBox.className = "widget-status-bar error";
+          statusBox.innerHTML = `<span>⚠️ Produção: x = ${x} peças • Linha Ligada (z = 1) • Setup: -$200 • <strong>Prejuízo: $${profit}.00</strong> (Abaixo do break-even de 34 peças!)</span>`;
+        } else {
+          statusBox.className = "widget-status-bar success";
+          statusBox.innerHTML = `<span>🏆 Produção: x = ${x} peças • Linha Ligada (z = 1) • Setup: -$200 • <strong>Lucro Líquido: +$${profit}.00</strong></span>`;
+        }
+      }
+
+      slX.addEventListener("input", updateBigM);
+      updateBigM();
+    });
+  </script>
+</body>
+</html>

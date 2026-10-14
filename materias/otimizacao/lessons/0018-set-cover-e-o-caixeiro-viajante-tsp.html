@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0018: Set Cover e o Caixeiro Viajante (TSP) — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0018 (Slide 21)</div>
+      <h1>Cobertura de Conjuntos (Set Cover) e o Caixeiro Viajante (TSP)</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Modelagem de cobertura territorial, o enigma dos subciclos desconectados no TSP e as formulações MTZ e DFJ.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0017-logica-booleana-e-condicionais.html">← Lição Anterior</a>
+      <a href="0019-qap-e-conjuntos-sos.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: SET COVER -->
+    <section class="card-theory">
+      <h2>1. O Problema da Cobertura de Conjuntos (Set Covering)</h2>
+      <p>
+        Dado um universo de elementos $M = \{1, \dots, m\}$ e uma coleção de subconjuntos elegíveis $S_1, \dots, S_k \subseteq M$, deseja-se selecionar a combinação de menor custo de modo que <strong>todo elemento seja coberto ao menos uma vez</strong>:
+      </p>
+      $$\min_{x} \quad \sum_{j=1}^k c_j x_j \quad \text{sujeito a:} \quad \sum_{j : i \in S_j} x_j \ge 1, \quad \forall i \in M, \quad x_j \in \{0, 1\}$$
+      <p>
+        Exemplo clássico: localização de quartéis de bombeiros em um condado, onde cada cidade deve estar a menos de 15 minutos de pelo menos um quartel.
+      </p>
+    </section>
+
+    <!-- SEÇÃO 2: O CAIXEIRO VIAJANTE E SUBCICLOS -->
+    <section class="card-theory">
+      <h2>2. O Problema do Caixeiro Viajante (TSP) e os Subciclos</h2>
+      <p>
+        O TSP busca o circuito de menor distância total que visita todas as $n$ cidades exatamente uma vez e retorna à origem. Impondo apenas as restrições de grau de entrada e saída:
+      </p>
+      $$\sum_{j=1}^n x_{ij} = 1, \quad \forall i \qquad \text{e} \qquad \sum_{i=1}^n x_{ij} = 1, \quad \forall j$$
+      <p>
+        O solver pode gerar <strong>subciclos desconectados</strong> (por exemplo, dois passeios fechados isolados). Para impedir isso:
+      </p>
+      <ul>
+        <li><strong>Formulação MTZ:</strong> Variáveis contínuas $u_i \in \mathbb{R}$ e $O(n^2)$ restrições $u_i - u_j + n x_{ij} \le n - 1$.</li>
+        <li><strong>Formulação DFJ:</strong> Restrições de corte para todo subconjunto $S \subset V$: $\sum_{i,j \in S} x_{ij} \le |S| - 1$.</li>
+      </ul>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: DETECTOR DE SUBCICLOS NO TSP -->
+    <div class="interactive-widget" id="tsp-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🗺️ Simulador Interativo: Detector e Eliminador de Subciclos no TSP</span>
+        </div>
+        <span class="widget-badge">Grafos & Algoritmos</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Alterne entre uma <strong>Atribuição Ingênua com Subciclos</strong> e o <strong>Tour Hamiltoniano Conectado</strong>. 
+        Observe como os subciclos violam o corte de subconjunto DFJ, acendendo o alerta de desconexão!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 280px; padding: 1rem;">
+        <svg id="tsp-svg" width="100%" height="240" viewBox="0 0 500 240" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- 5 Cidades: 1:(100, 80), 2:(100, 180), 3:(250, 40), 4:(400, 80), 5:(400, 180) -->
+          <!-- Arestas ativas dinâmicas -->
+          <g id="tsp-edges">
+            <!-- Inicialmente subciclo 1-2 e subciclo 3-4-5 -->
+          </g>
+
+          <!-- Nós das Cidades -->
+          <circle cx="100" cy="80" r="18" fill="#1f6feb" stroke="#fff" stroke-width="2"/>
+          <text x="100" y="85" font-family="monospace" font-weight="bold" font-size="12" fill="#fff" text-anchor="middle">1</text>
+
+          <circle cx="100" cy="180" r="18" fill="#1f6feb" stroke="#fff" stroke-width="2"/>
+          <text x="100" y="185" font-family="monospace" font-weight="bold" font-size="12" fill="#fff" text-anchor="middle">2</text>
+
+          <circle cx="250" cy="40" r="18" fill="#1f6feb" stroke="#fff" stroke-width="2"/>
+          <text x="250" y="45" font-family="monospace" font-weight="bold" font-size="12" fill="#fff" text-anchor="middle">3</text>
+
+          <circle cx="400" cy="80" r="18" fill="#1f6feb" stroke="#fff" stroke-width="2"/>
+          <text x="400" y="85" font-family="monospace" font-weight="bold" font-size="12" fill="#fff" text-anchor="middle">4</text>
+
+          <circle cx="400" cy="180" r="18" fill="#1f6feb" stroke="#fff" stroke-width="2"/>
+          <text x="400" y="185" font-family="monospace" font-weight="bold" font-size="12" fill="#fff" text-anchor="middle">5</text>
+        </svg>
+
+        <div class="widget-status-bar error" id="tsp-status">
+          <span>⚠️ <strong>Subciclos Detectados!</strong> A rede formou 2 circuitos desconectados (1⇄2 e 3→4→5→3). Violou o corte DFJ: x₁₂ + x₂₁ = 2 > |S|-1 = 1!</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="justify-content: center; gap: 0.5rem;">
+        <button class="widget-btn danger" id="btn-subtour">Atribuição com Subciclos (Inválido)</button>
+        <button class="widget-btn secondary" id="btn-valid-tour">🏆 Tour Hamiltoniano Válido (MTZ / DFJ)</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Número de Variáveis de Potencial MTZ</h3>
+      </div>
+      <div class="question-text">
+        Em uma instância do Caixeiro Viajante com $n = 20$ cidades formulada via Miller-Tucker-Zemlin (MTZ), fixamos a cidade 1 como origem ($u_1 = 1$).<br><br>
+        Quantas variáveis de potencial contínuo adicionais ($u_i$) são necessárias no modelo?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A cidade 1 é a raiz de referência, de modo que as variáveis de ordem de visita u_i são criadas para as cidades 2 até n. Para n = 20, temos exatamente n - 1 = 19 variáveis u!">
+          Exatamente n - 1 = 19 variáveis auxiliares ui.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: n² seria o número de arestas binárias xij, não o número de variáveis de potencial escalar ui.">
+          Exatamente n² = 400 variáveis auxiliares ui.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: como a cidade 1 é a âncora fixa de início, ela não necessita de variável ui livre.">
+          Exatamente n = 20 variáveis auxiliares ui.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: MTZ utiliza uma quantidade puramente linear de variáveis escalares ui, e não exponencial.">
+          Uma quantidade exponencial 2ⁿ de variáveis de potencial.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0017-logica-booleana-e-condicionais.html">← Lição Anterior: 0017 (Lógica Booleana)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0019-qap-e-conjuntos-sos.html">Próxima: Lição 0019 (QAP & SOS) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: n - 1 = 19 variáveis
+      initMultipleChoice("ex1", "Formulação MTZ utiliza exatamente n - 1 variáveis escalares de potencial");
+
+      // ==========================================
+      // SIMULADOR TSP SUBCICLOS
+      // ==========================================
+      const edgesG = document.getElementById("tsp-edges");
+      const statusBox = document.getElementById("tsp-status");
+      const btnSubtour = document.getElementById("btn-subtour");
+      const btnValid = document.getElementById("btn-valid-tour");
+
+      function setSubtour() {
+        edgesG.innerHTML = `
+          <!-- Subciclo 1: 1 <-> 2 -->
+          <line x1="100" y1="80" x2="100" y2="180" stroke="#c62828" stroke-width="4"/>
+          <!-- Subciclo 2: 3 -> 4 -> 5 -> 3 -->
+          <line x1="250" y1="40" x2="400" y2="80" stroke="#c62828" stroke-width="4"/>
+          <line x1="400" y1="80" x2="400" y2="180" stroke="#c62828" stroke-width="4"/>
+          <line x1="400" y1="180" x2="250" y2="40" stroke="#c62828" stroke-width="4"/>
+        `;
+        statusBox.className = "widget-status-bar error";
+        statusBox.innerHTML = `<span>⚠️ <strong>Subciclos Detectados!</strong> A rede formou 2 circuitos fechados desconectados (1⇄2 e 3→4→5→3). Viola o corte DFJ: x₁₂ + x₂₁ = 2 > |S|-1 = 1!</span>`;
+      }
+
+      function setValidTour() {
+        edgesG.innerHTML = `
+          <!-- Tour Único: 1 -> 3 -> 4 -> 5 -> 2 -> 1 -->
+          <line x1="100" y1="80" x2="250" y2="40" stroke="#3fb950" stroke-width="3.5"/>
+          <line x1="250" y1="40" x2="400" y2="80" stroke="#3fb950" stroke-width="3.5"/>
+          <line x1="400" y1="80" x2="400" y2="180" stroke="#3fb950" stroke-width="3.5"/>
+          <line x1="400" y1="180" x2="100" y2="180" stroke="#3fb950" stroke-width="3.5"/>
+          <line x1="100" y1="180" x2="100" y2="80" stroke="#3fb950" stroke-width="3.5"/>
+        `;
+        statusBox.className = "widget-status-bar success";
+        statusBox.innerHTML = `<span>🏆 <strong>Tour Hamiltoniano Conectado Válido!</strong> Circuito 1 → 3 → 4 → 5 → 2 → 1 visita todas as 5 cidades sem nenhum subciclo isolado!</span>`;
+      }
+
+      btnSubtour.addEventListener("click", () => {
+        btnSubtour.className = "widget-btn danger";
+        btnValid.className = "widget-btn secondary";
+        setSubtour();
+      });
+
+      btnValid.addEventListener("click", () => {
+        btnValid.className = "widget-btn success";
+        btnSubtour.className = "widget-btn secondary";
+        setValidTour();
+      });
+
+      setSubtour();
+    });
+  </script>
+</body>
+</html>

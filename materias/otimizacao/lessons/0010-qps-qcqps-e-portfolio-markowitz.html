@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0010: QPs, QCQPs e Portfólio de Markowitz — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 2 • Lição 0010 (Slide 12)</div>
+      <h1>Programação Quadrática (QP), QCQPs e Portfólio de Markowitz</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Formulação de QPs e QCQPs, condições estritas de convexidade ($P \succeq 0$), e a Fronteira Eficiente de Harry Markowitz.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0009-formas-quadraticas-e-elipsoides.html">← Lição Anterior</a>
+      <a href="0011-cones-socp-e-programacao-semidefinida-sdp.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: FORMULAÇÃO DE QPS E QCQPS -->
+    <section class="card-theory">
+      <h2>1. Classes de Otimização Quadrática: QP e QCQP</h2>
+      <p>
+        Um <strong>Programa Quadrático (QP)</strong> generaliza a Programação Linear ao introduzir curvatura na função objetivo:
+      </p>
+      $$\min_{x} \quad \frac{1}{2} x^T P x + q^T x + r \quad \text{sujeito a:} \quad A x \le b, \quad F x = g$$
+      <p>
+        Para ser um problema convexo e eficientemente solúvel em tempo polinomial, é <strong>estritamente obrigatório que $P \succeq 0$</strong> (positiva semidefinida). Se $P$ possuir autovalores negativos, o QP torna-se NP-difícil!
+      </p>
+      <p>
+        Se as próprias restrições envolverem termos quadráticos, obtemos um <strong>QCQP (Quadratically Constrained Quadratic Program)</strong>:
+      </p>
+      $$\min_x \frac{1}{2} x^T P_0 x + q_0^T x + r_0 \quad \text{s.a.} \quad \frac{1}{2} x^T P_i x + q_i^T x + r_i \le 0, \; i=1,\dots,m$$
+      <p>
+        A convexidade do QCQP exige que <em>todas</em> as matrizes $P_0, P_1, \dots, P_m$ sejam positivas semidefinidas ($\succeq 0$).
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Diagnóstico de Convexidade em Restrições Quadráticas</h3>
+      </div>
+      <div class="question-text">
+        Qual das seguintes restrições quadráticas torna um modelo de otimização <strong>NÃO convexo</strong> e computacionalmente intratável por algoritmos clássicos convexos?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="A restrição x1² + 2x2² ≤ 10 possui matriz P = diag(2, 4) ≻ 0 e desigualdade ≤, descrevendo o interior de um elipsoide perfeitamente convexo.">
+          x₁² + 2x₂² ≤ 10
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! A restrição 3x1² + 4x2² ≥ 12 descreve o exterior complementar de uma elipse. O conjunto resultante tem um buraco central vazio e viola a convexidade; o segmento entre (2, 0) e (-2, 0) passa pela origem, que viola a restrição!">
+          3x₁² + 4x₂² ≥ 12
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="A norma euclidiana ||Ax - b||2 ≤ c é sempre um conjunto convexo (elipsoide ou cilindro elíptico factível).">
+          ||A x - b||₂ ≤ 15
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Uma restrição puramente linear cᵀx ≤ d é um semiespaço convexo, compatível com QPs e QCQPs convexos.">
+          4x₁ - 5x₂ + 2x₃ ≤ 8
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 2: OTIMIZAÇÃO DE PORTFÓLIO DE MARKOWITZ -->
+    <section class="card-theory">
+      <h2>2. Otimização de Carteira de Investimentos (Harry Markowitz)</h2>
+      <p>
+        Como alocar capital entre $N$ ativos financeiros para maximizar o retorno esperado minimizando a volatilidade (risco)?
+      </p>
+      <ul>
+        <li>Vetor de retornos esperados: $\mu = [\mu_1, \dots, \mu_N]^T$.</li>
+        <li>Matriz de covariância dos ativos: $\Sigma \in \mathbb{R}^{N \times N}$ ($\Sigma \succeq 0$).</li>
+        <li>Vetor de pesos da carteira: $x \ge 0$ com $\sum_{i=1}^N x_i = \mathbf{1}^T x = 1$.</li>
+      </ul>
+      <p>
+        O retorno da carteira é $\mu_p = \mu^T x$ e o risco (variância) é $\sigma_p^2 = x^T \Sigma x$. O modelo clássico de Markowitz é um QP canônico:
+      </p>
+      $$\min_{x} \quad \frac{1}{2} x^T \Sigma x \quad \text{sujeito a:} \quad \mu^T x \ge R_{\text{alvo}}, \quad \mathbf{1}^T x = 1, \quad x \ge 0$$
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: FRONTEIRA EFICIENTE DE MARKOWITZ -->
+    <div class="interactive-widget" id="markowitz-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>📈 Simulador Interativo: Fronteira Eficiente de Markowitz</span>
+        </div>
+        <span class="widget-badge">Finanças Quantitativas</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Controle o <strong>Retorno Alvo Desejado ($R_{\text{alvo}}$)</strong>. 
+        O otimizador QP calcula em tempo real a alocação ótima entre Ações Tech ($A$), Renda Fixa ($B$) e Imóveis ($C$). 
+        Veja o ponto deslizar pela clássica <strong>curva bala da Fronteira Eficiente</strong> no plano Risco vs. Retorno!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1.25rem;">
+        <svg id="mark-svg" width="100%" height="260" viewBox="0 0 520 260" xmlns="http://www.w3.org/2000/svg" style="max-width: 520px;">
+          <!-- Eixos: X = Risco sigma [0, 25%]; Y = Retorno mu [0, 16%]. Scale X: 60 + s*18; Scale Y: 230 - r*12 -->
+          <line x1="50" y1="230" x2="480" y2="230" stroke="#8b949e" stroke-width="1.5"/>
+          <line x1="60" y1="240" x2="60" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="485" y="234" fill="#8b949e" font-size="11" font-family="monospace">Risco σ (%)</text>
+          <text x="50" y="18" fill="#8b949e" font-size="11" font-family="monospace">Retorno μ (%)</text>
+
+          <!-- Ticks X: 5%, 10%, 15%, 20% -->
+          <text x="150" y="246" fill="#8b949e" font-size="10" text-anchor="middle">5%</text>
+          <text x="240" y="246" fill="#8b949e" font-size="10" text-anchor="middle">10%</text>
+          <text x="330" y="246" fill="#8b949e" font-size="10" text-anchor="middle">15%</text>
+          <text x="420" y="246" fill="#8b949e" font-size="10" text-anchor="middle">20%</text>
+
+          <!-- Ativos Individuais -->
+          <!-- Ativo B: Renda Fixa (mu=6%, sigma=4%) -> (60+4*18=132, 230-6*12=158) -->
+          <circle cx="132" cy="158" r="6" fill="#8839ef"/>
+          <text x="142" y="162" fill="#8839ef" font-size="11" font-weight="bold">B (Renda Fixa 6%)</text>
+
+          <!-- Ativo C: FIIs (mu=10%, sigma=12%) -> (60+12*18=276, 230-10*12=110) -->
+          <circle cx="276" cy="110" r="6" fill="#0969da"/>
+          <text x="286" y="114" fill="#0969da" font-size="11" font-weight="bold">C (Imóveis 10%)</text>
+
+          <!-- Ativo A: Tech (mu=15%, sigma=22%) -> (60+22*18=456, 230-15*12=50) -->
+          <circle cx="456" cy="50" r="6" fill="#d20f39"/>
+          <text x="400" y="45" fill="#d20f39" font-size="11" font-weight="bold">A (Ações Tech 15%)</text>
+
+          <!-- Fronteira Eficiente Convexa de Markowitz -->
+          <path id="mark-frontier" d="M 120,175 Q 115,130 180,95 T 456,50" 
+                fill="none" stroke="#3fb950" stroke-width="3"/>
+
+          <!-- Ponto da Carteira Ótima Atual -->
+          <circle id="mark-dot" cx="180" cy="95" r="8" fill="#f0883e" stroke="#fff" stroke-width="2.5"/>
+          <line id="mark-dash-h" x1="60" y1="95" x2="180" y2="95" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <line id="mark-dash-v" x1="180" y1="230" x2="180" y2="95" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="3,3"/>
+        </svg>
+
+        <div class="widget-status-bar success" id="mark-status">
+          <span>Carteira Ótima: Retorno Alvo = 10.0% • <strong>Risco σ = 7.1%</strong> (Muito menor que os 12% do Ativo C isolado graças à diversificação!).</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="gap: 1.5rem; justify-content: space-between;">
+        <div class="slider-control-group" style="flex: 2;">
+          <div class="slider-label">
+            <span>Retorno Alvo Desejado ($R_{\text{alvo}}$)</span>
+            <span id="mark-r-val" style="color: var(--accent); font-weight: bold;">10.0%</span>
+          </div>
+          <input type="range" class="interactive-slider" id="sl-mark-r" min="6.0" max="15.0" value="10.0" step="0.2">
+        </div>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2" data-hint="Se os retornos dos dois ativos forem independentes (covariância zero, correlação rho = 0), a variância da carteira 50/50 é var = 0.5^2 * sigma1^2 + 0.5^2 * sigma2^2 = 0.25 * 100 + 0.25 * 100 = 25 + 25 = 50. O desvio-padrão é sqrt(50) ≈ 7.07% (menor que os 10% originais!).">
+      <div class="exercise-header">
+        <h3>Exercício 2: Active Recall Numérico — O Efeito da Diversificação de Risco</h3>
+      </div>
+      <div class="question-text">
+        Dois ativos não correlacionados possuem o mesmo risco individual $\sigma_1 = \sigma_2 = 10\%$ e retornos idênticos.<br>
+        Um investidor aloca $50\%$ do seu capital no Ativo 1 e $50\%$ no Ativo 2 ($x_1 = 0.5, x_2 = 0.5$).<br><br>
+        Qual é a <strong>variância percentual total da carteira</strong> ($\sigma_p^2 = x^T \Sigma x$)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a variância da carteira (ex: 50)" autocomplete="off">
+        <button class="action-btn">Calcular Variância</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0009-formas-quadraticas-e-elipsoides.html">← Lição Anterior: 0009 (Formas Quadráticas)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0011-cones-socp-e-programacao-semidefinida-sdp.html">Próxima: Lição 0011 (Cones & SDP) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Restrição não convexa
+      initMultipleChoice("ex1", "Inequações do tipo exterior de elipsoide criam regiões não convexas");
+
+      // Ex 2: Variância da carteira 50/50: 50
+      initInputExercise("ex2", ["50", "50.0", "50,0"], "Variância com covariância nula: 0.25*100 + 0.25*100 = 50", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 50) < 0.01;
+      });
+
+      // ==========================================
+      // SIMULADOR MARKOWITZ EFFICIENT FRONTIER
+      // ==========================================
+      const slR = document.getElementById("sl-mark-r");
+      const vR = document.getElementById("mark-r-val");
+      const markDot = document.getElementById("mark-dot");
+      const markDashH = document.getElementById("mark-dash-h");
+      const markDashV = document.getElementById("mark-dash-v");
+      const markStatus = document.getElementById("mark-status");
+
+      function updateMarkowitz() {
+        const rTarget = parseFloat(slR.value);
+        vR.textContent = `${rTarget.toFixed(1)}%`;
+
+        // Aproximação analítica da fronteira eficiente
+        // r in [6.0, 15.0]
+        // Risco sigma = sqrt( 12 + 1.8*(rTarget - 7.5)^2 )
+        const sigma = Math.sqrt(12 + 2.8 * Math.pow(rTarget - 7.2, 2));
+
+        // Mapeamento SVG: X = 60 + sigma*18; Y = 230 - r*12
+        const cx = 60 + sigma * 18;
+        const cy = 230 - rTarget * 12;
+
+        markDot.setAttribute("cx", cx);
+        markDot.setAttribute("cy", cy);
+
+        markDashH.setAttribute("y1", cy);
+        markDashH.setAttribute("x2", cx);
+        markDashH.setAttribute("y2", cy);
+
+        markDashV.setAttribute("x1", cx);
+        markDashV.setAttribute("x2", cx);
+        markDashV.setAttribute("y2", cy);
+
+        // Pesos aproximados
+        const wA = Math.max(0, (rTarget - 7) / 8);
+        const wB = Math.max(0, (14 - rTarget) / 8);
+        const wC = Math.max(0, 1 - wA - wB);
+
+        markStatus.className = "widget-status-bar success";
+        markStatus.innerHTML = `<span>Retorno Alvo: <strong>${rTarget.toFixed(1)}%</strong> • Risco Mínimo: <strong>σ = ${sigma.toFixed(1)}%</strong> • Alocação QP: Tech ${(wA*100).toFixed(0)}%, Renda Fixa ${(wB*100).toFixed(0)}%, FIIs ${(wC*100).toFixed(0)}%.</span>`;
+      }
+
+      slR.addEventListener("input", updateMarkowitz);
+      updateMarkowitz();
+    });
+  </script>
+</body>
+</html>

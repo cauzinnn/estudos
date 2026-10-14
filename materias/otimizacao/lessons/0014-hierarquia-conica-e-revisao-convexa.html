@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0014: Hierarquia Cônica e Revisão Convexa — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 2 • Lição 0014 (Slide 16)</div>
+      <h1>Hierarquia Cônica de Solvers e Revisão Convexa</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        A grande árvore de inclusão $\text{LP} \subset \text{QP} \subset \text{QCQP} \subset \text{SOCP} \subset \text{SDP}$, escalabilidade de solvers e seleção de modelos.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0013-dualidade-lagrangeana-slater-e-kkt.html">← Lição Anterior</a>
+      <a href="simulado-modulo-2-programacao-convexa.html">Simulado Módulo 2 &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: A HIERARQUIA CÔNICA -->
+    <section class="card-theory">
+      <h2>1. A Pirâmide de Expressividade e Complexidade</h2>
+      <p>
+        O panorama moderno da otimização contínua é estruturado pela relação de inclusão rigorosa:
+      </p>
+      $$\mathbf{LP} \subset \mathbf{QP} \subset \mathbf{QCQP} \subset \mathbf{SOCP} \subset \mathbf{SDP}$$
+      <p>
+        Modelos mais genéricos (como SDP) conseguem expressar qualquer problema dos níveis inferiores, mas pagam um preço computacional substancial:
+      </p>
+      <ul>
+        <li><strong>LP / QP:</strong> Solvers escalam para dezenas de milhões de variáveis com tempo quase linear em problemas esparsos.</li>
+        <li><strong>SOCP:</strong> Suporta centenas de milhares de restrições de cone euclidiano com grande robustez numérica.</li>
+        <li><strong>SDP:</strong> O custo por iteração cresce com $O(n^6)$ no pior caso denso, limitando-se tipicamente a matrizes de algumas centenas ou poucos milhares de dimensões.</li>
+      </ul>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: EXPLORADOR DA HIERARQUIA CÔNICA -->
+    <div class="interactive-widget" id="hierarchy-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🏛️ Navegador Interativo da Hierarquia Cônica de Solvers</span>
+        </div>
+        <span class="widget-badge">Taxonomia de Otimização</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        <strong>Clique nos blocos da pirâmide</strong> para inspecionar sua forma canônica, geometria do conjunto factível, escalabilidade e aplicações práticas típicas na indústria.
+      </p>
+
+      <div class="widget-canvas" style="min-height: 280px; padding: 1rem;">
+        <!-- Pirâmide SVG Interativa -->
+        <svg id="pyramid-svg" width="100%" height="240" viewBox="0 0 500 240" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px; cursor: pointer;">
+          <!-- Nível 5: SDP (Base mais larga) -->
+          <polygon id="tier-sdp" class="tier-poly" data-tier="sdp" points="40,220 460,220 420,175 80,175" fill="rgba(107, 33, 168, 0.2)" stroke="#8839ef" stroke-width="2"/>
+          <text x="250" y="202" fill="#8839ef" font-weight="bold" font-size="13" text-anchor="middle">5. SDP (Cone Semidefinido Positivo X ⪰ 0)</text>
+
+          <!-- Nível 4: SOCP -->
+          <polygon id="tier-socp" class="tier-poly" data-tier="socp" points="80,175 420,175 380,130 120,130" fill="rgba(9, 105, 218, 0.2)" stroke="#0969da" stroke-width="2"/>
+          <text x="250" y="157" fill="#0969da" font-weight="bold" font-size="13" text-anchor="middle">4. SOCP (Cone de Lorentz ||Ax+b||₂ ≤ cᵀx+d)</text>
+
+          <!-- Nível 3: QCQP -->
+          <polygon id="tier-qcqp" class="tier-poly" data-tier="qcqp" points="120,130 380,130 340,85 160,85" fill="rgba(46, 125, 50, 0.2)" stroke="#2ea043" stroke-width="2"/>
+          <text x="250" y="112" fill="#2ea043" font-weight="bold" font-size="13" text-anchor="middle">3. QCQP (Restrições Quadráticas Convexas P ⪰ 0)</text>
+
+          <!-- Nível 2: QP -->
+          <polygon id="tier-qp" class="tier-poly" data-tier="qp" points="160,85 340,85 300,45 200,45" fill="rgba(240, 136, 62, 0.2)" stroke="#f0883e" stroke-width="2"/>
+          <text x="250" y="70" fill="#f0883e" font-weight="bold" font-size="12" text-anchor="middle">2. QP (Objetivo Quadrático P ⪰ 0 + Ax ≤ b)</text>
+
+          <!-- Nível 1: LP (Topo mais simples) -->
+          <polygon id="tier-lp" class="tier-poly" data-tier="lp" points="200,45 300,45 250,10" fill="rgba(210, 15, 57, 0.2)" stroke="#d20f39" stroke-width="2"/>
+          <text x="250" y="32" fill="#d20f39" font-weight="bold" font-size="11" text-anchor="middle">1. LP</text>
+        </svg>
+
+        <div class="widget-status-bar success" id="tier-status">
+          <span><strong>Nível Selecionado: 1. LP (Linear Program)</strong> — Escalabilidade máxima (milhões de variáveis). Geometria de poliedros. Simplex e Pontos Interiores.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Seleção de Classe Mínima de Solver</h3>
+      </div>
+      <div class="question-text">
+        Deseja-se resolver o problema de ajuste robusto com incerteza em bola euclidiana sobre as restrições:
+        $$\min c^T x \quad \text{sujeito a:} \quad a_i^T x + \rho \|x\|_2 \le b_i, \quad i=1,\dots,m$$
+        Qual é a classe de menor complexidade computacional na hierarquia capaz de resolver esse modelo exatamente?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a restrição contém o termo não linear ||x||2 (norma euclidiana), o que impede sua representação como um LP comum sem perda de exatidão.">
+          LP (Programação Linear pura)
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: QPs admitem apenas restrições lineares afins Ax ≤ b. A presença de ||x||2 nas restrições exige cones de segunda ordem.">
+          QP (Programação Quadrática com restrições lineares)
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Perfeito! A restrição ||x||2 ≤ (bi - aiᵀx) / ρ é estritamente uma restrição de Cone de Segunda Ordem (Lorentz). A classe ótima mínima é exatamente SOCP!">
+          SOCP (Second-Order Cone Program)
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Embora o SDP possa resolver (pois SOCP ⊂ SDP), ele possui complexidade desnecessariamente muito mais alta. A classe mínima ótima é o SOCP.">
+          SDP (Programação Semidefinida pura)
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Regra de Ouro da Otimização Convexa</h3>
+      </div>
+      <div class="question-text">
+        Qual princípio de engenharia de software e pesquisa operacional deve guiar a formulação de problemas práticos na hierarquia cônica?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Sempre formule o problema na classe mais baixa e simples da hierarquia que atenda à física do problema. Isso garante ordens de magnitude a mais em velocidade e capacidade de escalar para milhões de dados.">
+          Formular sempre no nível mais simples da hierarquia (LP/QP antes de SOCP/SDP) para maximizar velocidade e escala.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: utilizar SDP para resolver problemas lineares ou quadráticos simples gera uma explosão de memória e tempo computacional inútil.">
+          Converter todos os problemas para SDP genérico para unificar o código em um único solver universal.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: relaxar modelos convexos para não convexos destrói as garantias de otimalidade global e eficiência polinomial.">
+          Evitar formulações convexas em prol de métodos heurísticos não convexos genéricos.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o Simplex é exclusivo de Programação Linear; classes superiores (SOCP/SDP) utilizam Métodos de Pontos Interiores Primais-Duais.">
+          Aplicar o algoritmo Simplex tabular diretamente em matrizes semidefinidas SDP.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0013-dualidade-lagrangeana-slater-e-kkt.html">← Lição Anterior: 0013 (Dualidade & KKT)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="simulado-modulo-2-programacao-convexa.html">Avançar para o Simulado do Módulo 2 &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Classe mínima SOCP
+      initMultipleChoice("ex1", "Incerteza elipsoidal na restrição é formulada minimamente como SOCP");
+
+      // Ex 2: Regra de ouro da hierarquia
+      initMultipleChoice("ex2", "Formular no nível mais baixo e simples da hierarquia para maximizar escala");
+
+      // ==========================================
+      // SIMULADOR DA HIERARQUIA CÔNICA
+      // ==========================================
+      const tiers = document.querySelectorAll(".tier-poly");
+      const statusBox = document.getElementById("tier-status");
+
+      const tierData = {
+        lp: {
+          title: "1. LP (Linear Program)",
+          desc: "Escalabilidade Máxima: 10⁷ variáveis. Custo afim, restrições afins Ax ≤ b. Solvers: Simplex e Pontos Interiores. Usado em planejamento e fluxos em redes."
+        },
+        qp: {
+          title: "2. QP (Quadratic Program)",
+          desc: "Alta Escalabilidade: 10⁶ variáveis. Custo quadrático convexo (P ⪰ 0), restrições lineares. Usado em Portfólio de Markowitz e SVM."
+        },
+        qcqp: {
+          title: "3. QCQP (Quadratically Constrained QP)",
+          desc: "Boa Escalabilidade: 10⁵ variáveis. Custo e restrições quadráticas convexas (P_i ⪰ 0, elipsoides). Usado em controle e engenharia elétrica."
+        },
+        socp: {
+          title: "4. SOCP (Second-Order Cone Program)",
+          desc: "Excelente Expressividade: 10⁵ restrições cônicas. Restrições de norma euclidiana ||Ax+b||₂ ≤ cᵀx+d. Usado em filtros robustos e trajetórias aeroespaciais."
+        },
+        sdp: {
+          title: "5. SDP (Semidefinite Program)",
+          desc: "Expressividade Universal Convexa: Matrizes X ⪰ 0. Custo computacional elevado (O(n⁶)). Usado em relaxações de corte máximo, controle LMI e teoria quântica."
+        }
+      };
+
+      tiers.forEach(t => {
+        t.addEventListener("click", () => {
+          const key = t.getAttribute("data-tier");
+          const info = tierData[key];
+          statusBox.className = "widget-status-bar success";
+          statusBox.innerHTML = `<span><strong>${info.title}:</strong> ${info.desc}</span>`;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Referência: Otimização Convexa, Cones e KKT — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Referência • Módulo 2</div>
+      <h1>Ficha Rápida: Programação Convexa, Cones e KKT</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Mínimos quadrados, regularização Ridge/Lasso, formas quadráticas, hierarquia cônica (QP, SOCP, SDP), dualidade e condições KKT.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0001-programacao-linear-e-dualidade.html">← Ficha Módulo 1 (PL)</a>
+      <a href="../lessons/0006-minimos-quadrados-e-projecao-ortogonal.html">Lição 0006: Mínimos Quadrados &rarr;</a>
+    </div>
+
+    <!-- 1. MÍNIMOS QUADRADOS E PROJEÇÃO -->
+    <section class="card-theory">
+      <h2>1. Mínimos Quadrados (Least Squares) e Projeção Ortogonal</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Caso do Sistema $Ax = b$</th>
+              <th>Formulação de Otimização</th>
+              <th>Solução Analítica Fechada</th>
+              <th>Propriedade Geométrica</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Sobredeterminado</strong> ($m > n$, matriz alta)</td>
+              <td>$$\min_x \|Ax - b\|_2^2$$</td>
+              <td>$$x^* = (A^T A)^{-1} A^T b$$</td>
+              <td>Projeção ortogonal no espaço coluna $\mathcal{R}(A)$; resíduo $r = Ax^* - b \perp \mathcal{R}(A)$</td>
+            </tr>
+            <tr>
+              <td><strong>Subdeterminado</strong> ($m < n$, matriz larga)</td>
+              <td>$$\min_x \|x\|_2^2 \quad \text{s.a.} \quad Ax = b$$</td>
+              <td>$$x^* = A^T (A A^T)^{-1} b$$</td>
+              <td>Solução de menor energia (norma euclidiana mínima) contida no espaço linha de $A$</td>
+            </tr>
+            <tr>
+              <td><strong>Com Restrições Lineares</strong></td>
+              <td>$$\min_x \|Ax - b\|_2^2 \quad \text{s.a.} \quad Cx = d$$</td>
+              <td>Sistema KKT bloco $2 \times 2$:<br>$$\begin{bmatrix} 2A^TA & C^T \\ C & 0 \end{bmatrix} \begin{bmatrix} x \\ \nu \end{bmatrix} = \begin{bmatrix} 2A^Tb \\ d \end{bmatrix}$$</td>
+              <td>Minimização convexa restrita a um subespaço afim</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. REGULARIZAÇÃO RIDGE VS LASSO -->
+    <section class="card-theory">
+      <h2>2. Regularização: Ridge ($\ell_2$) vs. Lasso ($\ell_1$)</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Propriedade</th>
+              <th>Regularização Ridge (Tikhonov / $\ell_2$)</th>
+              <th>Regularização Lasso ($\ell_1$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Formulação</strong></td>
+              <td>$$\min_x \|Ax - b\|_2^2 + \lambda \|x\|_2^2$$</td>
+              <td>$$\min_x \|Ax - b\|_2^2 + \gamma \|x\|_1$$</td>
+            </tr>
+            <tr>
+              <td><strong>Solução Fechada</strong></td>
+              <td>$$x^* = (A^TA + \lambda I)^{-1} A^T b$$ (sempre invertível para $\lambda > 0$)</td>
+              <td>Não possui forma analítica fechada (resolvido via QP ou subgradiente)</td>
+            </tr>
+            <tr>
+              <td><strong>Geometria da Bola de Restrição</strong></td>
+              <td>Esfera euclidiana suave e curvada ($\sum x_i^2 \le t$)</td>
+              <td>Politopo com vértices pontiagudos nos eixos coordenados ($\sum |x_i| \le t$)</td>
+            </tr>
+            <tr>
+              <td><strong>Esparsidade (Seleção de Variáveis)</strong></td>
+              <td>Encolhe os coeficientes sem zerá-los (não gera esparsidade)</td>
+              <td><strong>Zera exatamente muitos coeficientes</strong> (seleção automática de features)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. FORMAS QUADRÁTICAS E ELIPSOIDES -->
+    <section class="card-theory">
+      <h2>3. Formas Quadráticas e Geometria de Elipsoides</h2>
+      <p>
+        Toda função quadrática pura $f(x) = x^T Q x$ com $Q = Q^T \in \mathbb{R}^{n \times n}$ decompõe-se ortogonalmente em $Q = U \Lambda U^T$:
+      </p>
+      <ul>
+        <li><strong>Positiva Definida ($Q \succ 0$):</strong> Todos os autovalores $\lambda_i > 0$. Estritamente convexa; curvas de nível formam <strong>elipsoides</strong> compactos centrados na origem. Comprimento do semi-eixo $i$: $\frac{1}{\sqrt{\lambda_i}}$.</li>
+        <li><strong>Positiva Semidefinida ($Q \succeq 0$):</strong> $\lambda_i \ge 0$. Convexa, mas pode ter direções planas ($\lambda_i = 0$, cilindros elípticos).</li>
+        <li><strong>Indefinida:</strong> Possui autovalores positivos e negativos. Gera pontos de sela (não convexa).</li>
+      </ul>
+    </section>
+
+    <!-- 4. HIERARQUIA CÔNICA: LP -> QP -> QCQP -> SOCP -> SDP -->
+    <section class="card-theory">
+      <h2>4. Hierarquia Cônica de Complexidade Convexa</h2>
+      <div class="callout definition">
+        <div class="callout-title">📌 Inclusão Estrutural de Classes de Otimização</div>
+        <p style="margin-bottom: 0;">
+          $$\mathbf{LP} \subset \mathbf{QP} \subset \mathbf{QCQP} \subset \mathbf{SOCP} \subset \mathbf{SDP}$$
+        </p>
+      </div>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Classe</th>
+              <th>Função Objetivo</th>
+              <th>Formato Típico de Restrições</th>
+              <th>Aplicações Típicas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>LP</strong></td>
+              <td>Linear $c^Tx$</td>
+              <td>Lineares $Ax \le b$</td>
+              <td>Planejamento, Redes, Produção</td>
+            </tr>
+            <tr>
+              <td><strong>QP</strong></td>
+              <td>Quadrática convexa $\frac{1}{2}x^TQx + c^Tx$ ($Q \succeq 0$)</td>
+              <td>Lineares $Ax \le b$</td>
+              <td>Portfólio Markowitz, SVM Linear</td>
+            </tr>
+            <tr>
+              <td><strong>QCQP</strong></td>
+              <td>Quadrática convexa</td>
+              <td>Quadráticas convexas $x^T P_i x + q_i^T x + r_i \le 0$ ($P_i \succeq 0$)</td>
+              <td>Controle Robusto, Potência Elétrica</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>SOCP</strong></td>
+              <td>Linear $c^Tx$</td>
+              <td>Cones de 2ª Ordem (Lorentz): $\|A_i x + b_i\|_2 \le c_i^Tx + d_i$</td>
+              <td>Filtros Robustos, Antenas, Trajetórias</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>SDP</strong></td>
+              <td>Linear $\text{tr}(C X)$</td>
+              <td>Matriz Positiva Semidefinida: $F(x) = F_0 + \sum x_i F_i \succeq 0$</td>
+              <td>Relaxações Combinatórias, Controle LMI</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. TEOREMA KKT E DUALIDADE GERAL -->
+    <section class="card-theory">
+      <h2>5. Condições KKT e Teoria Geral da Dualidade Convexa</h2>
+      <p>
+        Para o problema geral $\min f_0(x)$ s.a. $f_i(x) \le 0$ ($i=1,\dots,m$) e $h_j(x) = 0$ ($j=1,\dots,p$):
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Condição de Qualificação de Slater (Dual Forte)</div>
+        <p style="margin-bottom: 0;">
+          Se o problema for convexo e existir ao menos um ponto viável estrito $x$ tal que $f_i(x) < 0$ para todas as restrições não afins, então o <strong>Dual Forte é garantido</strong>: o gap de dualidade é nulo ($p^* = d^*$) e os multiplicadores ótimos duais são atingíveis.
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 As 4 Condições de Karush-Kuhn-Tucker (KKT)</div>
+        <ol style="margin-bottom: 0;">
+          <li><strong>Estacionariedade do Gradiente da Lagrangiana:</strong>
+            $$\nabla f_0(x^*) + \sum_{i=1}^m \lambda_i^* \nabla f_i(x^*) + \sum_{j=1}^p \nu_j^* \nabla h_j(x^*) = \mathbf{0}$$
+          </li>
+          <li><strong>Factibilidade Primal:</strong> $f_i(x^*) \le 0$ e $h_j(x^*) = 0$ para todo $i, j$.</li>
+          <li><strong>Factibilidade Dual:</strong> $\lambda_i^* \ge 0$ para todo $i$.</li>
+          <li><strong>Folga Complementar:</strong> $\lambda_i^* \cdot f_i(x^*) = 0$ para todo $i = 1,\dots,m$.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Índice da Disciplina</a>
+      <a href="../lessons/0006-minimos-quadrados-e-projecao-ortogonal.html">Iniciar Lição 0006: Mínimos Quadrados &rarr;</a>
+    </div>
+
+  </div>
+</body>
+</html>

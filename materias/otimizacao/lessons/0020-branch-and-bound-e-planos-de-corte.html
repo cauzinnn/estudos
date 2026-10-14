@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0020: Branch and Bound e Planos de Corte — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 3 • Lição 0020 (Slide 23)</div>
+      <h1>Algoritmo Branch and Bound e Planos de Corte</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        A mecânica de ramificação e limitantes (B&B), regras universais de poda e cortes de Gomory.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0019-qap-e-conjuntos-sos.html">← Lição Anterior</a>
+      <a href="0021-programacao-nao-linear-e-minimos-locais.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: A FILOSOFIA DO BRANCH AND BOUND -->
+    <section class="card-theory">
+      <h2>1. A Filosofia de Ramificação e Poda (Branch and Bound)</h2>
+      <p>
+        O algoritmo de <strong>Branch and Bound (Land & Doig, 1960)</strong> evita a enumeração exaustiva de todas as combinações discretas ao particionar recursivamente o espaço de busca em uma árvore binária:
+      </p>
+      <ul>
+        <li><strong>Ramificação (Branching):</strong> Ao encontrar uma variável fracionária $x_j = 3.6$ no relaxamento LP, criamos dois nós filhos: $x_j \le 3$ e $x_j \ge 4$.</li>
+        <li><strong>Limitante (Bounding):</strong> Cada nó filho resolve um LP contínuo cujo valor objetivo fornece um teto (máximo) ou piso (mínimo) inultrapassável para todos os seus descendentes.</li>
+        <li><strong>Incumbente:</strong> É a melhor solução inteira viável conhecida até o momento ($z_{\text{incumbente}}$).</li>
+      </ul>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: NAVEGADOR DE ÁRVORE BRANCH AND BOUND -->
+    <div class="interactive-widget" id="bb-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🌳 Simulador Interativo: Árvore de Branch & Bound Passo a Passo</span>
+        </div>
+        <span class="widget-badge">Busca em Árvore</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Problema de <strong>maximização inteira</strong>. 
+        Clique no botão para avançar os passos da árvore de busca. 
+        Observe a criação dos nós filhos, o teste de integralidade e a execução automática das <strong>podas de ramos</strong>!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 280px; padding: 1rem; align-items: center;">
+        <svg id="bb-svg" width="100%" height="240" viewBox="0 0 500 240" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- Linhas conectoras da árvore -->
+          <!-- Nó 0 para Nó 1 e Nó 2 -->
+          <line id="bb-edge-01" x1="250" y1="40" x2="130" y2="120" stroke="#8b949e" stroke-width="2"/>
+          <text id="bb-lbl-01" x="175" y="75" fill="#f0883e" font-size="11" font-weight="bold">x₁ ≤ 3</text>
+
+          <line id="bb-edge-02" x1="250" y1="40" x2="370" y2="120" stroke="#8b949e" stroke-width="2"/>
+          <text id="bb-lbl-02" x="325" y="75" fill="#f0883e" font-size="11" font-weight="bold">x₁ ≥ 4</text>
+
+          <!-- Linhas Nó 2 para Nó 3 e Nó 4 -->
+          <line id="bb-edge-23" x1="370" y1="120" x2="310" y2="200" stroke="#8b949e" stroke-width="2" style="display: none;"/>
+          <line id="bb-edge-24" x1="370" y1="120" x2="430" y2="200" stroke="#8b949e" stroke-width="2" style="display: none;"/>
+
+          <!-- Nós -->
+          <!-- Nó 0 (Raiz) -->
+          <circle id="bb-node-0" cx="250" cy="40" r="22" fill="#1f6feb" stroke="#fff" stroke-width="2"/>
+          <text x="250" y="44" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">z=45.8</text>
+
+          <!-- Nó 1: x1 <= 3 -->
+          <circle id="bb-node-1" cx="130" cy="120" r="22" fill="#161b22" stroke="#8b949e" stroke-width="2"/>
+          <text id="bb-txt-1" x="130" y="124" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">z=41.0*</text>
+
+          <!-- Nó 2: x1 >= 4 -->
+          <circle id="bb-node-2" cx="370" cy="120" r="22" fill="#161b22" stroke="#8b949e" stroke-width="2"/>
+          <text id="bb-txt-2" x="370" y="124" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">z=44.2</text>
+
+          <!-- Nó 3 e Nó 4 -->
+          <circle id="bb-node-3" cx="310" cy="200" r="20" fill="#c62828" stroke="#fff" stroke-width="2" style="display: none;"/>
+          <text id="bb-txt-3" x="310" y="204" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle" style="display: none;">Inviável</text>
+
+          <circle id="bb-node-4" cx="430" cy="200" r="20" fill="#3fb950" stroke="#fff" stroke-width="2" style="display: none;"/>
+          <text id="bb-txt-4" x="430" y="204" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle" style="display: none;">z=43.0*</text>
+        </svg>
+
+        <div class="widget-status-bar success" id="bb-status">
+          <span>Passo 1: Relaxação da raiz z = 45.80 (x₁=3.6 fracionário). Ramifica em x₁ ≤ 3 e x₁ ≥ 4.</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: space-between; flex-wrap: wrap;">
+        <button class="widget-btn secondary" id="btn-bb-prev">⏮️ Passo Anterior</button>
+        <button class="widget-btn" id="btn-bb-next">⏭️ Avançar Branch & Bound</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: AS 3 REGRAS DE PODA -->
+    <section class="card-theory">
+      <h2>2. As Três Regras Universais de Poda (Fathom)</h2>
+      <p>
+        Um ramo da árvore é <strong>podado imediatamente (interrompido)</strong> quando:
+      </p>
+      <ol>
+        <li><strong>Poda por Inviabilidade:</strong> O relaxamento linear é infactível (não existe $x$ satisfazendo as restrições adicionadas).</li>
+        <li><strong>Poda por Limitante (Bound):</strong> O valor ótimo contínuo daquele nó $z_{\text{relax}} \le z_{\text{incumbente}}$ em maximização (aquele ramo nunca conseguirá bater o melhor inteiro já encontrado).</li>
+        <li><strong>Poda por Integralidade:</strong> Todas as variáveis discretas assumem valores inteiros válidos. O valor do nó atualiza a <strong>incumbente</strong> se for superior, e o nó é podado pois não há frações a ramificar!</li>
+      </ol>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Diagnóstico de Poda em Branch & Bound</h3>
+      </div>
+      <div class="question-text">
+        Em um problema de maximização inteira, a melhor solução inteira já encontrada (incumbente) possui lucro de $z_{\text{incumbente}} = 100$.<br>
+        Ao resolver a relaxação linear de um novo nó filho, obtém-se o valor ótimo contínuo $z_{\text{relax}} = 98.40$, com $x_1 = 4.2$ fracionário.<br><br>
+        O que o algoritmo de Branch & Bound deve fazer com esse nó?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como o teto máximo contínuo daquele ramo é 98.40, qualquer restrição adicional de integridade só poderá reduzir (piorar) esse valor. Como já conhecemos uma solução inteira viável de 100, esse nó é podado por limitante (bound) imediatamente!">
+          Podar o nó por limitante (bound), pois seu melhor teto (98.40) é inferior à incumbente conhecida (100).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: ramificar em x1 ≤ 4 e x1 ≥ 5 consumiria tempo computacional inútil, pois nenhum descendente superará 98.40.">
+          Ramificar em x₁ ≤ 4 e x₁ ≥ 5 para tentar encontrar números inteiros maiores.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: 98.40 não pode substituir 100 como incumbente por dois motivos: é fracionário e tem valor menor!">
+          Atualizar a solução incumbente para 98.40 e podar por integralidade.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o nó possui solução contínua factível (98.40), não sendo podado por inviabilidade.">
+          Declarar o modelo globalmente inviável e abortar a árvore inteira.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0019-qap-e-conjuntos-sos.html">← Lição Anterior: 0019 (QAP & SOS)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0021-programacao-nao-linear-e-minimos-locais.html">Próxima: Lição 0021 (Programação Não Linear) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Poda por bound
+      initMultipleChoice("ex1", "Nó com teto relaxado menor que a incumbente é podado por bound");
+
+      // ==========================================
+      // SIMULADOR BRANCH AND BOUND
+      // ==========================================
+      const btnNext = document.getElementById("btn-bb-next");
+      const btnPrev = document.getElementById("btn-bb-prev");
+      const statusBox = document.getElementById("bb-status");
+
+      const node1 = document.getElementById("bb-node-1");
+      const node2 = document.getElementById("bb-node-2");
+      const node3 = document.getElementById("bb-node-3");
+      const node4 = document.getElementById("bb-node-4");
+      const txt3 = document.getElementById("bb-txt-3");
+      const txt4 = document.getElementById("bb-txt-4");
+      const edge23 = document.getElementById("bb-edge-23");
+      const edge24 = document.getElementById("bb-edge-24");
+
+      let step = 0;
+
+      const stepsData = [
+        {
+          msg: "Passo 0: Relaxação na raiz (Nó 0): z = 45.80, x₁=3.6 (fracionário). Incumbente = -∞.",
+          render: () => {
+            node1.setAttribute("fill", "#161b22");
+            node2.setAttribute("fill", "#161b22");
+            edge23.style.display = "none";
+            edge24.style.display = "none";
+            node3.style.display = "none";
+            node4.style.display = "none";
+            txt3.style.display = "none";
+            txt4.style.display = "none";
+          }
+        },
+        {
+          msg: "Passo 1: Explora Nó 1 (x₁ ≤ 3): Solução inteira viável z = 41.00! Atualiza Incumbente = 41.00. Podado por integralidade!",
+          render: () => {
+            node1.setAttribute("fill", "#3fb950"); // Podado por integralidade
+            node2.setAttribute("fill", "#161b22");
+            edge23.style.display = "none";
+            edge24.style.display = "none";
+            node3.style.display = "none";
+            node4.style.display = "none";
+            txt3.style.display = "none";
+            txt4.style.display = "none";
+          }
+        },
+        {
+          msg: "Passo 2: Explora Nó 2 (x₁ ≥ 4): z = 44.20 > Incumbente (41.00). Não pode podar! Ramifica em x₂ ≤ 1 e x₂ ≥ 2.",
+          render: () => {
+            node1.setAttribute("fill", "#3fb950");
+            node2.setAttribute("fill", "#f0883e");
+            edge23.style.display = "block";
+            edge24.style.display = "block";
+            node3.style.display = "block";
+            node4.style.display = "block";
+            txt3.style.display = "block";
+            txt4.style.display = "block";
+          }
+        },
+        {
+          msg: "🏆 Passo 3: Nó 3 é INVIÁVEL (podado). Nó 4 atinge inteiro z = 43.00! Nova Incumbente Ótima = 43.00. Árvore concluída!",
+          render: () => {
+            node1.setAttribute("fill", "#8b949e");
+            node2.setAttribute("fill", "#8b949e");
+            edge23.style.display = "block";
+            edge24.style.display = "block";
+            node3.style.display = "block";
+            node4.style.display = "block";
+            txt3.style.display = "block";
+            txt4.style.display = "block";
+          }
+        }
+      ];
+
+      function updateBB(idx) {
+        step = idx;
+        const cur = stepsData[step];
+        cur.render();
+        statusBox.className = "widget-status-bar" + (step === 3 ? " success" : "");
+        statusBox.innerHTML = `<span>${cur.msg}</span>`;
+
+        btnPrev.disabled = step === 0;
+        btnNext.disabled = step === stepsData.length - 1;
+      }
+
+      btnNext.addEventListener("click", () => { if (step < stepsData.length - 1) updateBB(step + 1); });
+      btnPrev.addEventListener("click", () => { if (step > 0) updateBB(step - 1); });
+
+      updateBB(0);
+    });
+  </script>
+</body>
+</html>

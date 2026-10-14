@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0008: Regularização Ridge, Lasso e Esparsidade — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 2 • Lição 0008 (Slide 10)</div>
+      <h1>Regularização Ridge, Lasso e a Geometria da Esparsidade</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Penalidades normativas, a identidade de Tikhonov, a geometria das bolas de norma e a seleção automática de variáveis.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0007-restricoes-de-igualdade-e-tradeoffs.html">← Lição Anterior</a>
+      <a href="0009-formas-quadraticas-e-elipsoides.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: CONCEITO DE REGULARIZAÇÃO -->
+    <section class="card-theory">
+      <h2>1. Regularização e Condicionamento Numérico</h2>
+      <p>
+        Quando os dados sofrem de multicolinearidade ou a matriz $A$ é mal-condicionada, a inversão $(A^TA)^{-1}$ amplifica ruídos catastroficamente. A <strong>Regularização</strong> adiciona uma penalidade $R(x)$ para estabilizar a solução:
+      </p>
+      $$\min_{x} \quad \|Ax - b\|_2^2 + \lambda R(x)$$
+      <ul>
+        <li><strong>Regularização Ridge (Tikhonov / $\ell_2$):</strong> $R(x) = \|x\|_2^2 = \sum x_i^2$.
+          $$\hat{x}_{\text{ridge}} = (A^T A + \lambda I)^{-1} A^T b$$
+          Adicionar $\lambda I$ desloca todos os autovalores de $A^TA$ por $+\lambda$, tornando a matriz estritamente positiva definida e sempre invertível!
+        </li>
+        <li><strong>Regularização Lasso ($\ell_1$):</strong> $R(x) = \|x\|_1 = \sum |x_i|$.
+          Não possui fórmula fechada simples, mas possui a propriedade única de <strong>zerar exatamente coeficientes irrelevantes</strong>.
+        </li>
+      </ul>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: GEOMETRIA DE CONTATO RIDGE VS LASSO -->
+    <div class="interactive-widget" id="lasso-ridge-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>💎 Simulador Geométrico: Por Que o Lasso Gera Esparsidade?</span>
+        </div>
+        <span class="widget-badge">Geometria de Normas</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Compare a bola de norma $\ell_2$ (círculo suave) com a bola de norma $\ell_1$ (losango com vértices pontiagudos nos eixos). 
+        As elipses azuis são curvas de nível do erro quadrático. 
+        Alterne entre <strong>Lasso ($\ell_1$)</strong> e <strong>Ridge ($\ell_2$)</strong> e ajuste o raio $t$ para ver onde ocorre o ponto de primeiro contato!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1rem;">
+        <svg id="geom-svg" width="100%" height="280" viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- Eixos coordenados: centro em (200, 140). Scale: 45 px por unidade -->
+          <line x1="40" y1="140" x2="440" y2="140" stroke="#8b949e" stroke-width="1.5"/>
+          <line x1="200" y1="260" x2="200" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="445" y="144" fill="#8b949e" font-size="11" font-family="monospace">x₁</text>
+          <text x="195" y="18" fill="#8b949e" font-size="11" font-family="monospace">x₂</text>
+
+          <!-- Ticks -->
+          <text x="290" y="155" fill="#8b949e" font-size="10" text-anchor="middle">2</text>
+          <text x="380" y="155" fill="#8b949e" font-size="10" text-anchor="middle">4</text>
+          <text x="190" y="50" fill="#8b949e" font-size="10" text-anchor="end">2</text>
+
+          <!-- Curvas de Nível Elípticas do Erro Quadrático (centro em (3.2, 1.8) -> cx=344, cy=59) -->
+          <ellipse cx="344" cy="59" rx="130" ry="85" fill="none" stroke="#58a6ff" stroke-width="1.2" stroke-dasharray="4,4" opacity="0.4"/>
+          <ellipse cx="344" cy="59" rx="90" ry="60" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.6"/>
+          <ellipse cx="344" cy="59" rx="55" ry="38" fill="none" stroke="#58a6ff" stroke-width="1.8" stroke-dasharray="4,4" opacity="0.8"/>
+          <circle cx="344" cy="59" r="4" fill="#58a6ff"/>
+          <text x="352" y="55" fill="#58a6ff" font-size="10">Mínimo Não Restrito (x̂)</text>
+
+          <!-- Forma da Bola de Norma (Círculo ou Losango) -->
+          <!-- Lasso L1 Diamond: vertices em (+-t, 0) e (0, +-t) -->
+          <polygon id="norm-diamond" points="290,140 200,50 110,140 200,230" 
+                   fill="rgba(136, 57, 239, 0.15)" stroke="#8839ef" stroke-width="2.5"/>
+
+          <!-- Ridge L2 Circle -->
+          <circle id="norm-circle" cx="200" cy="140" r="90" 
+                  fill="rgba(46, 125, 50, 0.15)" stroke="#2ea043" stroke-width="2.5" style="display: none;"/>
+
+          <!-- Ponto de Contato Ótimo -->
+          <circle id="contact-dot" cx="290" cy="140" r="7" fill="#f0883e" stroke="#fff" stroke-width="2"/>
+          <text id="contact-lbl" x="295" y="130" fill="#f0883e" font-size="11" font-weight="bold">Contato em (2.0, 0.0)</text>
+        </svg>
+
+        <div class="widget-status-bar success" id="lasso-status">
+          <span>💎 <strong>Lasso (L1):</strong> Ponto de contato exatamente sobre o vértice no eixo horizontal: <strong>x₁* = 2.00, x₂* = 0.00</strong>. Variável x₂ eliminada (esparsa)!</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="widget-btn" id="btn-mode-lasso">Losango Lasso (Norma L1)</button>
+          <button class="widget-btn secondary" id="btn-mode-ridge">Círculo Ridge (Norma L2)</button>
+        </div>
+
+        <div class="slider-control-group" style="min-width: 200px; flex: 1;">
+          <div class="slider-label">
+            <span>Orçamento da Norma ($t$)</span>
+            <span id="norm-t-val" style="color: var(--accent); font-weight: bold;">2.0</span>
+          </div>
+          <input type="range" class="interactive-slider" id="sl-norm-t" min="1.0" max="3.0" value="2.0" step="0.1">
+        </div>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Mecanismo de Esparsidade do Lasso</h3>
+      </div>
+      <div class="question-text">
+        Por qual razão geométrica a regularização Lasso ($\ell_1$) tende a zerar exatamente coeficientes de regressão, enquanto a regularização Ridge ($\ell_2$) apenas os diminui sem zerá-los?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Brilhante! A bola de norma L1 é um politopo com vértices afiados situados exatamente sobre os eixos coordenados. As elipses de erro têm probabilidade quase total de tocar primeiro um desses cantos, forçando as outras coordenadas a zero!">
+          A bola de norma L1 possui vértices pontiagudos nos eixos onde as demais variáveis são exatamente nulas.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a norma L1 não é diferenciável nos cantos (exatamente onde ocorrem os zeros), de modo que o gradiente comum nem sequer existe nesse ponto (utiliza-se subgradiente).">
+          A norma L1 possui derivadas parciais nulas em todas as direções ortogonais aos dados.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: a matriz de covariância Aᵀ A é idêntica em ambos os problemas; a diferença provém exclusivamente da geometria da penalidade de norma.">
+          A penalidade Ridge altera os autovalores da matriz Aᵀ A tornando-os estritamente negativos.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o Lasso é um problema estritamente convexo, não contendo mínimos locais espúrios.">
+          O Lasso introduz pontos de sela não convexos que forçam o solver a truncar números pequenos.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 2: IDENTIDADE DE TIKHONOV -->
+    <section class="card-theory">
+      <h2>2. A Identidade Algébrica de Tikhonov e o Limite de Norma Mínima</h2>
+      <p>
+        Para uma matriz larga $A \in \mathbb{R}^{m \times n}$ ($m < n$) com posto linha pleno, a solução regularizada Ridge satisfaz uma identidade matricial fundamental:
+      </p>
+      $$(A^T A + \lambda I)^{-1} A^T = A^T (A A^T + \lambda I)^{-1}$$
+      <div class="callout definition">
+        <div class="callout-title">📌 Conexão Elegante entre Ridge e Norma Mínima</div>
+        <p style="margin-bottom: 0;">
+          Quando o parâmetro de regularização $\lambda \to 0^+$, a matriz quadrada $(A A^T + \lambda I)$ tende para $A A^T$, que é invertível ($m \times m$). Logo:
+          $$\lim_{\lambda \to 0^+} \hat{x}_{\text{ridge}} = A^T (A A^T)^{-1} b = \hat{x}_{\text{min-norm}}$$
+          A solução de norma mínima em matrizes largas é o <strong>limite exato da regularização Ridge quando a penalidade tende a zero</strong>!
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Pegadinha de Prova — Invertibilidade da Matriz Ridge</h3>
+      </div>
+      <div class="question-text">
+        Analise a seguinte questão de prova:<br>
+        <em>"Se uma matriz $A \in \mathbb{R}^{100 \times 10}$ contiver colunas duplicadas ou linearmente dependentes (de modo que $\text{posto}(A) < 10$), a matriz regularizada $(A^T A + \lambda I)$ ainda assim será estritamente invertível para qualquer $\lambda > 0$."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Exato! Como Aᵀ A é sempre positiva semidefinida (seus autovalores são ≥ 0), somar λ I desloca todos os autovalores para λ_i + λ ≥ λ > 0. A matriz resultante é estritamente positiva definida e perfeitamente invertível, mesmo com multicolinearidade severa!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Cuidado: a afirmação é VERDADEIRA! Esse é o grande propósito prático da regularização Ridge: garantir que a matriz seja invertível mesmo quando Aᵀ A for singular.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 3: ESTIMADORES POR NORMAS -->
+    <section class="card-theory">
+      <h2>3. Estimadores Estatísticos Fundamentais por Norma</h2>
+      <p>
+        Dado um conjunto de dados escalares $y_1 \le y_2 \le \dots \le y_m$, qual é o melhor valor central $c$ que minimiza o resíduo sob diferentes métricas normativas?
+      </p>
+      <ul>
+        <li><strong>Norma $\ell_2$ ($\min \sum (y_i - c)^2$):</strong> Solução única dada pela <strong>Média Amostral</strong> ($\frac{1}{m} \sum y_i$).</li>
+        <li><strong>Norma $\ell_1$ ($\min \sum |y_i - c|$):</strong> Solução dada pela <strong>Mediana Amostral</strong> (insensível a outliers extremos).</li>
+        <li><strong>Norma $\ell_\infty$ ($\min \max |y_i - c|$):</strong> Solução dada pelo <strong>Ponto Médio da Faixa</strong> ($\frac{y_{\min} + y_{\max}}{2}$).</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="Os dados ordenados são: 2, 4, 5, 9, 80. A mediana é o elemento central (3º elemento). A média é (2+4+5+9+80)/5 = 20. O estimador L1 é a mediana.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Active Recall Numérico — Estimador Robusto L1</h3>
+      </div>
+      <div class="question-text">
+        Considere a série com um outlier severo: $\{2, 4, 5, 9, 80\}$.<br><br>
+        Qual é o <strong>valor numérico do estimador ótimo $c^*$</strong> que minimiza o erro em norma $\ell_1$ ($\min_c \sum_{i=1}^5 |y_i - c|$)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor ótimo de c (ex: 5)" autocomplete="off">
+        <button class="action-btn">Verificar Estimador</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0007-restricoes-de-igualdade-e-tradeoffs.html">← Lição Anterior: 0007 (Restrições de Igualdade)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0009-formas-quadraticas-e-elipsoides.html">Próxima: Lição 0009 (Formas Quadráticas) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Geometria de esparsidade
+      initMultipleChoice("ex1", "Norma L1 possui vértices pontiagudos nos eixos que zeram coordenadas");
+
+      // Ex 2: Invertibilidade de Ridge
+      initTrueFalse("ex2", true, "Ridge garante invertibilidade deslocando autovalores por +λ",
+        "Exato! A matriz Aᵀ A + λ I é estritamente positiva definida para qualquer λ > 0.",
+        "Atenção: A afirmativa é verdadeira! O termo λ I garante posto completo.");
+
+      // Ex 3: Mediana amostral = 5
+      initInputExercise("ex3", ["5", "5.0", "5,0"], "Estimador ótimo L1 é a mediana: c* = 5", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 5) < 0.01;
+      });
+
+      // ==========================================
+      // SIMULADOR GEOMÉTRICO LASSO VS RIDGE
+      // ==========================================
+      const btnLasso = document.getElementById("btn-mode-lasso");
+      const btnRidge = document.getElementById("btn-mode-ridge");
+      const diamond = document.getElementById("norm-diamond");
+      const circle = document.getElementById("norm-circle");
+      const slT = document.getElementById("sl-norm-t");
+      const vT = document.getElementById("norm-t-val");
+      const contactDot = document.getElementById("contact-dot");
+      const contactLbl = document.getElementById("contact-lbl");
+      const statusBox = document.getElementById("lasso-status");
+
+      let currentMode = "lasso"; // "lasso" ou "ridge"
+
+      function updateGeom() {
+        const t = parseFloat(slT.value);
+        vT.textContent = t.toFixed(1);
+
+        const rPx = t * 45; // 45px por unidade, centro em (200, 140)
+
+        if (currentMode === "lasso") {
+          diamond.style.display = "block";
+          circle.style.display = "none";
+          diamond.setAttribute("points", `${200 + rPx},140 200,${140 - rPx} ${200 - rPx},140 200,${140 + rPx}`);
+
+          // Primeiro contato: vértice no eixo x1: (t, 0)
+          contactDot.setAttribute("cx", 200 + rPx);
+          contactDot.setAttribute("cy", 140);
+          contactLbl.setAttribute("x", 205 + rPx);
+          contactLbl.setAttribute("y", 130);
+          contactLbl.textContent = `Contato em (${t.toFixed(1)}, 0.0)`;
+
+          statusBox.className = "widget-status-bar success";
+          statusBox.innerHTML = `<span>💎 <strong>Lasso (Norma L1):</strong> Contato ocorre exatamente no vértice do eixo horizontal: <strong>x₁* = ${t.toFixed(1)}, x₂* = 0.00</strong>. A coordenada x₂ foi eliminada (esparsa)!</span>`;
+        } else {
+          diamond.style.display = "none";
+          circle.style.display = "block";
+          circle.setAttribute("r", rPx);
+
+          // Primeiro contato Ridge: ponto suave no círculo, ângulo ~ 30 graus
+          const rad = 28 * Math.PI / 180;
+          const cx1 = 200 + rPx * Math.cos(rad);
+          const cy1 = 140 - rPx * Math.sin(rad);
+
+          const x1Val = (t * Math.cos(rad)).toFixed(2);
+          const x2Val = (t * Math.sin(rad)).toFixed(2);
+
+          contactDot.setAttribute("cx", cx1);
+          contactDot.setAttribute("cy", cy1);
+          contactLbl.setAttribute("x", cx1 + 5);
+          contactLbl.setAttribute("y", cy1 - 5);
+          contactLbl.textContent = `Contato em (${x1Val}, ${x2Val})`;
+
+          statusBox.className = "widget-status-bar";
+          statusBox.innerHTML = `<span>🔵 <strong>Ridge (Norma L2):</strong> Contato ocorre na superfície curva suave: <strong>x₁* = ${x1Val}, x₂* = ${x2Val}</strong>. Ambas as variáveis permanecem ativas (sem esparsidade)!</span>`;
+        }
+      }
+
+      btnLasso.addEventListener("click", () => {
+        currentMode = "lasso";
+        btnLasso.className = "widget-btn";
+        btnRidge.className = "widget-btn secondary";
+        updateGeom();
+      });
+
+      btnRidge.addEventListener("click", () => {
+        currentMode = "ridge";
+        btnRidge.className = "widget-btn";
+        btnLasso.className = "widget-btn secondary";
+        updateGeom();
+      });
+
+      slT.addEventListener("input", updateGeom);
+      updateGeom();
+    });
+  </script>
+</body>
+</html>

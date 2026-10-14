@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0009: Formas Quadráticas e Elipsoides — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 2 • Lição 0009 (Slide 11)</div>
+      <h1>Formas Quadráticas, Decomposição Espectral e Elipsoides</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Matrizes simétricas, autovalores e autovetores, matrizes positivas definidas ($Q \succ 0$) e a geometria dos elipsoides.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0008-regularizacao-ridge-e-lasso.html">← Lição Anterior</a>
+      <a href="0010-qps-qcqps-e-portfolio-markowitz.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: FORMAS QUADRÁTICAS E SIMETRIA -->
+    <section class="card-theory">
+      <h2>1. Álgebra das Formas Quadráticas</h2>
+      <p>
+        Uma <strong>forma quadrática</strong> pura em $n$ variáveis é expressa como $f(x) = x^T Q x$. Sem perda de generalidade, a matriz $Q$ pode ser sempre assumida <strong>simétrica</strong> ($Q = Q^T$):
+      </p>
+      $$x^T R x = x^T \left( \frac{R + R^T}{2} \right) x = x^T Q x$$
+      <div class="callout definition">
+        <div class="callout-title">📌 Teorema Espectral para Matrizes Reais Simétricas</div>
+        <p style="margin-bottom: 0;">
+          Toda matriz simétrica $Q = Q^T \in \mathbb{R}^{n \times n}$ admite uma <strong>decomposição ortogonal</strong> $Q = U \Lambda U^T$, onde:
+          $$U^T U = I \quad \text{e} \quad \Lambda = \text{diag}(\lambda_1, \dots, \lambda_n)$$
+          As colunas $u_i$ de $U$ são autovetores mutuamente ortogonais de comprimento unitário, e $\lambda_i \in \mathbb{R}$ são os autovalores correspondentes.
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="Os termos cruzados 6xy são divididos igualmente entre Q12 e Q21: 6 / 2 = 3. Para -4yz, dividimos -4 / 2 = -2. Os coeficientes quadráticos x^2, y^2, z^2 ficam na diagonal principal.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Simetrização Canônica de Matriz Quadrática</h3>
+      </div>
+      <div class="question-text">
+        Dada a forma quadrática tridimensional:
+        $$f(x, y, z) = 5 x^2 + 8 y^2 + 2 z^2 + 6 x y - 4 y z$$
+        Qual é o valor numérico do elemento simétrico $Q_{12} = Q_{21}$ na matriz associada $f = v^T Q v$?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de Q12 (ex: 3)" autocomplete="off">
+        <button class="action-btn">Verificar Coeficiente</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 2: MATRIZES POSITIVAS DEFINIDAS E ELIPSOIDES -->
+    <section class="card-theory">
+      <h2>2. Classificação de Curvatura e Geometria dos Elipsoides</h2>
+      <p>
+        Para uma matriz simétrica $Q$, o sinal da forma quadrática define sua convexidade:
+      </p>
+      <ul>
+        <li><strong>Positiva Definida ($Q \succ 0$):</strong> Todos os $\lambda_i > 0$. A função é estritamente convexa com mínimo único na origem.</li>
+        <li><strong>Positiva Semidefinida ($Q \succeq 0$):</strong> Todos os $\lambda_i \ge 0$. Convexa (pode ter vale plano se algum $\lambda_i = 0$).</li>
+        <li><strong>Indefinida:</strong> Possui autovalores positivos e negativos. Forma um <em>ponto de sela</em> (não convexa).</li>
+      </ul>
+      <p>
+        Para $Q \succ 0$, a região $\{x \in \mathbb{R}^n \mid x^T Q x \le 1\}$ é um <strong>elipsoide</strong>. As direções dos eixos principais são os autovetores $u_i$, e o comprimento de cada semi-eixo é:
+      </p>
+      $$r_i = \frac{1}{\sqrt{\lambda_i}}$$
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: DECOMPOSIÇÃO ESPECTRAL E DEFORMADOR DE ELIPSOIDES -->
+    <div class="interactive-widget" id="ellipsoid-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🌀 Simulador Interativo: Autovalores e Geometria do Elipsoide</span>
+        </div>
+        <span class="widget-badge">Laboratório Espectral</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Explore a relação $r_i = 1/\sqrt{\lambda_i}$. 
+        Ajuste os <strong>autovalores $\lambda_1, \lambda_2$</strong> e o <strong>ângulo de rotação $\theta$</strong> dos autovetores. 
+        Observe como um autovalor menor faz o elipsoide se alongar naquela direção!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 320px; padding: 1rem;">
+        <svg id="ell-svg" width="100%" height="280" viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px;">
+          <!-- Eixos coordenados: centro em (250, 140) -->
+          <line x1="50" y1="140" x2="450" y2="140" stroke="#8b949e" stroke-width="1.5"/>
+          <line x1="250" y1="260" x2="250" y2="20" stroke="#8b949e" stroke-width="1.5"/>
+
+          <!-- Elipsoide SVG Dinâmico -->
+          <g id="ell-group" transform="translate(250, 140) rotate(30)">
+            <ellipse id="ell-body" cx="0" cy="0" rx="100" ry="60" 
+                     fill="rgba(88, 166, 255, 0.15)" stroke="#58a6ff" stroke-width="2.5"/>
+
+            <!-- Semi-eixos -->
+            <line id="ell-axis1" x1="0" y1="0" x2="100" y2="0" stroke="#f0883e" stroke-width="2" stroke-dasharray="3,3"/>
+            <text id="ell-lbl1" x="50" y="-8" fill="#f0883e" font-size="11" font-weight="bold">r₁ = 1/√λ₁</text>
+
+            <line id="ell-axis2" x1="0" y1="0" x2="0" y2="-60" stroke="#8839ef" stroke-width="2" stroke-dasharray="3,3"/>
+            <text id="ell-lbl2" x="8" y="-30" fill="#8839ef" font-size="11" font-weight="bold">r₂ = 1/√λ₂</text>
+          </g>
+
+          <circle cx="250" cy="140" r="4" fill="#fff" stroke="#8b949e" stroke-width="1.5"/>
+        </svg>
+
+        <div class="widget-status-bar success" id="ell-status">
+          <span>λ₁ = 1.00 (r₁ = 1.00) • λ₂ = 2.78 (r₂ = 0.60) • Matriz Q ≻ 0 (Estritamente Convexa).</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; width: 100%;">
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Autovalor $\lambda_1$</span><span id="v-l1" style="color: #f0883e; font-weight: bold;">1.00</span></div>
+          <input type="range" class="interactive-slider" id="sl-l1" min="0.2" max="4.0" value="1.0" step="0.1">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Autovalor $\lambda_2$</span><span id="v-l2" style="color: #8839ef; font-weight: bold;">2.78</span></div>
+          <input type="range" class="interactive-slider" id="sl-l2" min="0.2" max="4.0" value="2.78" step="0.1">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Rotação dos Autovetores ($\theta$)</span><span id="v-theta" style="color: var(--accent); font-weight: bold;">30°</span></div>
+          <input type="range" class="interactive-slider" id="sl-theta" min="0" max="180" value="30" step="5">
+        </div>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2" data-hint="O semi-eixo do elipsoide tem comprimento r = 1 / sqrt(lambda). Para lambda = 0.25, r = 1 / sqrt(0.25) = 1 / 0.5 = 2.0.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Active Recall Numérico — Comprimento do Semi-Eixo</h3>
+      </div>
+      <div class="question-text">
+        Seja o elipsoide $\{x \in \mathbb{R}^2 \mid x^T Q x \le 1\}$. O menor autovalor da matriz $Q$ é $\lambda_{\min} = 0.25$.<br><br>
+        Qual é o <strong>comprimento do maior semi-eixo</strong> desse elipsoide?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o semi-eixo (ex: 2.0)" autocomplete="off">
+        <button class="action-btn">Verificar Comprimento</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3">
+      <div class="exercise-header">
+        <h3>Exercício 3: Diagnóstico de Convexidade por Autovalores</h3>
+      </div>
+      <div class="question-text">
+        Uma matriz simétrica $Q \in \mathbb{R}^{3 \times 3}$ possui autovalores dados por $\lambda_1 = 8.5$, $\lambda_2 = 2.0$ e $\lambda_3 = -0.5$.<br><br>
+        Qual é a classificação da função quadrática $f(x) = x^T Q x$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como possui autovalores estritamente positivos (8.5, 2.0) e um autovalor negativo (-0.5), a matriz é INDEFINIDA. A função sobe em algumas direções e desce em outras, formando uma superfície de sela (não convexa).">
+          É uma função indefinida e não convexa com ponto de sela na origem.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a presença de qualquer autovalor estritamente negativo (-0.5) destrói a positividade semidefinida e a convexidade da função.">
+          É uma função positiva semidefinida, pois a soma dos autovalores é positiva (10.0 > 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: ter a maioria dos autovalores positivos não torna a função convexa; a convexidade exige que TODOS os autovalores sejam maiores ou iguais a zero.">
+          É uma função estritamente convexa pelo critério majoritário dos autovalores.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: funções com ponto de mínimo global finito e elipsoides de nível fechados exigem que todos os autovalores sejam estritamente positivos (Q ≻ 0).">
+          A função possui mínimo global finito com elipsoides de nível fechados.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0008-regularizacao-ridge-e-lasso.html">← Lição Anterior: 0008 (Ridge & Lasso)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0010-qps-qcqps-e-portfolio-markowitz.html">Próxima: Lição 0010 (QPs, QCQPs & Portfólio) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Termo simétrico cruzado Q12 = 6 / 2 = 3
+      initInputExercise("ex1", ["3", "3.0", "3,0"], "Termo simétrico Q12 = 6 / 2 = 3", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 3) < 0.01;
+      });
+
+      // Ex 2: Semi-eixo r = 1 / sqrt(0.25) = 2
+      initInputExercise("ex2", ["2", "2.0", "2,0"], "Semi-eixo r = 1 / sqrt(0.25) = 2.0", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 2) < 0.01;
+      });
+
+      // Ex 3: Indefinida e sela
+      initMultipleChoice("ex3", "Autovalores mistos geram matriz indefinida e superfície de sela não convexa");
+
+      // ==========================================
+      // SIMULADOR DE ELIPSOIDE
+      // ==========================================
+      const slL1 = document.getElementById("sl-l1");
+      const slL2 = document.getElementById("sl-l2");
+      const slTheta = document.getElementById("sl-theta");
+      const vL1 = document.getElementById("v-l1");
+      const vL2 = document.getElementById("v-l2");
+      const vTheta = document.getElementById("v-theta");
+
+      const ellGroup = document.getElementById("ell-group");
+      const ellBody = document.getElementById("ell-body");
+      const ellAxis1 = document.getElementById("ell-axis1");
+      const ellAxis2 = document.getElementById("ell-axis2");
+      const ellLbl1 = document.getElementById("ell-lbl1");
+      const ellLbl2 = document.getElementById("ell-lbl2");
+      const ellStatus = document.getElementById("ell-status");
+
+      function updateEllipsoid() {
+        const l1 = parseFloat(slL1.value);
+        const l2 = parseFloat(slL2.value);
+        const theta = parseInt(slTheta.value);
+
+        vL1.textContent = l1.toFixed(2);
+        vL2.textContent = l2.toFixed(2);
+        vTheta.textContent = `${theta}°`;
+
+        // Semi-eixos: r = 1 / sqrt(lambda) em pixels (escala de 100px para r=1)
+        const r1 = 1 / Math.sqrt(l1);
+        const r2 = 1 / Math.sqrt(l2);
+
+        const rxPx = r1 * 100;
+        const ryPx = r2 * 100;
+
+        ellGroup.setAttribute("transform", `translate(250, 140) rotate(${theta})`);
+        ellBody.setAttribute("rx", rxPx);
+        ellBody.setAttribute("ry", ryPx);
+
+        ellAxis1.setAttribute("x2", rxPx);
+        ellAxis2.setAttribute("y2", -ryPx);
+
+        ellLbl1.setAttribute("x", rxPx / 2);
+        ellLbl1.textContent = `r₁ = ${r1.toFixed(2)}`;
+
+        ellLbl2.setAttribute("y", -ryPx / 2);
+        ellLbl2.textContent = `r₂ = ${r2.toFixed(2)}`;
+
+        ellStatus.className = "widget-status-bar success";
+        ellStatus.innerHTML = `<span>λ₁ = ${l1.toFixed(2)} (r₁ = ${r1.toFixed(2)}) • λ₂ = ${l2.toFixed(2)} (r₂ = ${r2.toFixed(2)}) • Rotação θ = ${theta}° • <strong>Matriz Q ≻ 0 (Estritamente Convexa)</strong></span>`;
+      }
+
+      slL1.addEventListener("input", updateEllipsoid);
+      slL2.addEventListener("input", updateEllipsoid);
+      slTheta.addEventListener("input", updateEllipsoid);
+
+      updateEllipsoid();
+    });
+  </script>
+</body>
+</html>

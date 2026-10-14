@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0004: Dualidade em PL e Folga Complementar — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 1 • Lição 0004 (Slide 6)</div>
+      <h1>Teoria da Dualidade em PL e Folga Complementar</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Construção de limitantes superiores, teoremas de dualidade fraca e forte, preços-sombra e as condições KKT de folga complementar.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0003-fluxo-em-redes-e-unimodularidade.html">← Lição Anterior</a>
+      <a href="0005-simplex-tableau-e-fluxos-duais.html">Próxima Lição &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: A ORIGEM DA DUALIDADE -->
+    <section class="card-theory">
+      <h2>1. A Gênese da Dualidade: Como Estimar Limitantes Superiores</h2>
+      <p>
+        Considere o modelo Top Brass: $\max \; 12f + 9s$ sujeito a $4f + 2s \le 32$ (carpintaria) e $f + s \le 10$ (acabamento).
+      </p>
+      <p>
+        Para estimar uma cota superior rigorosa sobre o lucro sem resolver o modelo, ponderamos as restrições por multiplicadores não negativos $y_1, y_2 \ge 0$:
+      </p>
+      $$(4y_1 + y_2) f + (2y_1 + y_2) s \le 32 y_1 + 10 y_2$$
+      <p>
+        Se impusermos que a combinação cubra o lucro ($4y_1 + y_2 \ge 12$ e $2y_1 + y_2 \ge 9$), o lado direito $32y_1 + 10y_2$ fornece uma cota superior válida para qualquer produção factível! Minimizando essa cota, chegamos ao <strong>Problema Dual</strong>.
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: BALANÇA PRIMAL-DUAL E DUALITY GAP METER -->
+    <div class="interactive-widget" id="dual-gap-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⚖️ Simulador: Balança Primal-Dual & Duality Gap</span>
+        </div>
+        <span class="widget-badge">Laboratório Teórico Vivo</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Controle as variáveis primais $(f, s)$ à esquerda e os multiplicadores duais $(y_1, y_2)$ à direita. 
+        Pelo <strong>Teorema do Dual Fraco</strong>, temos sempre $z_{\text{primal}} \le w_{\text{dual}}$. 
+        Ajuste ambos até o <strong>Duality Gap zerar</strong>, comprovando o <strong>Teorema do Dual Forte</strong> e as Folgas Complementares!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 280px; padding: 1.25rem; gap: 1rem;">
+        <!-- Painel Duplo Lado a Lado -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%;">
+          <!-- Lado Primal -->
+          <div style="background-color: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem;">
+            <div style="font-weight: bold; color: #58a6ff; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.3rem;">
+              🔵 Primal: Maximizar Lucro
+            </div>
+            <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-main);">
+              <strong>Produção:</strong> f = <span id="disp-f" style="font-weight:bold;">6.0</span>, s = <span id="disp-s" style="font-weight:bold;">4.0</span><br>
+              <strong>Carpintaria:</strong> <span id="disp-carp">32/32 horas</span><br>
+              <strong>Acabamento:</strong> <span id="disp-acab">10/10 horas</span><br>
+              <div style="margin-top: 0.5rem; font-size: 1.1rem; font-weight: bold; color: #58a6ff;">
+                z(f, s) = $<span id="disp-primal-z">108.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lado Dual -->
+          <div style="background-color: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem;">
+            <div style="font-weight: bold; color: #a371f7; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.3rem;">
+              🟣 Dual: Minimizar Cota Superior
+            </div>
+            <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-main);">
+              <strong>Preços-Sombra:</strong> y₁ = <span id="disp-y1" style="font-weight:bold;">1.50</span>, y₂ = <span id="disp-y2" style="font-weight:bold;">6.00</span><br>
+              <strong>Cobertura F:</strong> <span id="disp-cov-f">12.0 ≥ 12 (OK)</span><br>
+              <strong>Cobertura S:</strong> <span id="disp-cov-s">9.0 ≥ 9 (OK)</span><br>
+              <div style="margin-top: 0.5rem; font-size: 1.1rem; font-weight: bold; color: #a371f7;">
+                w(y₁, y₂) = $<span id="disp-dual-w">108.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra Visual de Duality Gap -->
+        <div style="width: 100%;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.3rem;">
+            <span>Duality Gap = w(y) - z(x)</span>
+            <span id="disp-gap-val" style="color: #3fb950;">$0.00 (ÓTIMO GLOBAL!)</span>
+          </div>
+          <div class="bar-track" style="height: 24px;">
+            <div class="bar-fill" id="gap-bar-fill" style="width: 0%; background-color: #3fb950;"></div>
+          </div>
+        </div>
+
+        <div class="widget-status-bar success" id="dual-status-bar">
+          <span>🏆 <strong>Dual Forte Confirmado!</strong> Primal z* = Dual w* = $108.00. Folga Complementar satisfeita em todas as restrições!</span>
+        </div>
+      </div>
+
+      <!-- Sliders de Controle -->
+      <div class="game-controls" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; width: 100%;">
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Primal: Futebol (f)</span><span id="v-f">6.0</span></div>
+          <input type="range" class="interactive-slider" id="sl-f" min="0" max="7" value="6" step="0.2">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Primal: Sinuca (s)</span><span id="v-s">4.0</span></div>
+          <input type="range" class="interactive-slider" id="sl-s" min="0" max="6" value="4" step="0.2">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Dual: Sombra Carpintaria (y₁)</span><span id="v-y1">1.50</span></div>
+          <input type="range" class="interactive-slider" id="sl-y1" min="0" max="5" value="1.5" step="0.25">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Dual: Sombra Acabamento (y₂)</span><span id="v-y2">6.00</span></div>
+          <input type="range" class="interactive-slider" id="sl-y2" min="0" max="10" value="6.0" step="0.5">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button class="widget-btn secondary" id="btn-snap-dual-opt">🎯 Encaixar Par Ótimo Primal-Dual</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="Substitua os multiplicadores na função objetivo dual: Cota = 32*y1 + 10*y2. Com y1 = 1.5 e y2 = 6, temos Cota = 32(1.5) + 10(6).">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Avaliação de Cota Dual</h3>
+      </div>
+      <div class="question-text">
+        Seja o par de multiplicadores duais viáveis $y_1 = 1.5$ e $y_2 = 6.0$.<br>
+        Verifique que $4(1.5) + 6 = 12 \ge 12$ e $2(1.5) + 6 = 9 \ge 9$.<br><br>
+        Qual é a <strong>cota superior numérica sobre o lucro máximo</strong> fornecida por essa combinação dual ($32 y_1 + 10 y_2$)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a cota superior (ex: 108)" autocomplete="off">
+        <button class="action-btn">Calcular Cota</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 2: TEOREMAS DE DUALIDADE -->
+    <section class="card-theory">
+      <h2>2. Teoremas da Dualidade Fraca e Forte</h2>
+      <p>
+        Seja o par Primal-Dual Canônico:
+      </p>
+      $$\mathbf{(P)} \quad \max_{x \ge 0} \; c^T x \quad \text{s.a.} \quad Ax \le b \qquad \Longleftrightarrow \qquad \mathbf{(D)} \quad \min_{y \ge 0} \; b^T y \quad \text{s.a.} \quad A^T y \ge c$$
+      <div class="callout definition">
+        <div class="callout-title">📌 Teorema do Dual Fraco</div>
+        <p style="margin-bottom: 0;">
+          Para quaisquer $x$ viável em $(P)$ e $y$ viável em $(D)$:
+          $$c^T x \le y^T A x \le b^T y$$
+          A quantidade $(b^T y - c^T x) \ge 0$ é o <strong>Duality Gap</strong>. Se $c^T x^* = b^T y^*$, então $x^*$ e $y^*$ são simultaneamente <strong>ótimos globais</strong>!
+        </p>
+      </div>
+      <div class="callout definition">
+        <div class="callout-title">📌 Teorema do Dual Forte</div>
+        <p style="margin-bottom: 0;">
+          Se $(P)$ ou $(D)$ tem solução ótima finita, ambos têm solução ótima finita e $\max c^T x = \min b^T y$ (o gap de dualidade no ótimo é rigorosamente <strong>zero</strong>).
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Pegadinha de Prova — Inviabilidade Primal vs. Ilimitabilidade Dual</h3>
+      </div>
+      <div class="question-text">
+        Analise a seguinte questão teórica de exame:<br>
+        <em>"Se um problema de programação linear primal for comprovadamente inviável (não existir nenhum $x$ que satisfaça suas restrições), então o seu respectivo problema dual será obrigatoriamente ilimitado."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Atenção à armadilha clássica! Se o primal for ilimitado, o dual é necessariamente inviável. Porém, se o primal for INVIÁVEL, o dual pode ser ilimitado OU também INVIÁVEL! Existem pares em que ambos primal e dual são inviáveis simultaneamente.">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Correto! Se o primal é inviável, o dual pode ser ilimitado OU também inviável (exemplo: max 2x1 + x2 com x1 - x2 ≤ 1 e -x1 + x2 ≤ -2, onde ambos os poliedros primal e dual são vazios).">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 3: PREÇOS-SOMBRA -->
+    <section class="card-theory">
+      <h2>3. Preços-Sombra e Análise de Sensibilidade Marginal</h2>
+      <p>
+        As variáveis duais ótimas $y_i^*$ representam a derivada marginal da função objetivo em relação aos limites de recursos:
+      </p>
+      $$y_i^* = \frac{\partial z^*}{\partial b_i}$$
+      <p>
+        Se a capacidade de carpintaria aumentar em $\Delta b_1$ horas, o lucro ótimo aumentará aproximadamente em $y_1^* \cdot \Delta b_1$ dólares dentro da vizinhança de estabilidade da base ótima.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="Multiplique a quantidade de recurso adicional (4 horas) pelo preço-sombra unitário do recurso: Aumento = 4 * 1.5 = 6.0.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Active Recall Numérico — Impacto Marginal de Expansão</h3>
+      </div>
+      <div class="question-text">
+        No modelo Top Brass, o preço-sombra ótimo da restrição de horas de carpintaria é $y_1^* = 1.50$ \$/hora.<br><br>
+        Se a fábrica contratar $4$ horas adicionais de carpintaria (dentro da faixa de sensibilidade), em quantos <strong>dólares</strong> o lucro ótimo total da empresa aumentará?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o aumento em dólares (ex: 6)" autocomplete="off">
+        <button class="action-btn">Calcular Impacto</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 4: FOLGAS COMPLEMENTARES -->
+    <section class="card-theory">
+      <h2>4. Condições de Folga Complementar (Complementary Slackness)</h2>
+      <p>
+        Sejam $x^*$ viável primal e $y^*$ viável dual. Eles são soluções ótimas se e somente se:
+      </p>
+      <ul>
+        <li><strong>Folga na Restrição Primal:</strong>
+          $$y_i^* \cdot (b_i - A_{i\cdot} x^*) = 0, \quad \forall i = 1, \dots, m$$
+          Se há folga ($A_{i\cdot} x^* < b_i$), seu preço-sombra é <strong>obrigatoriamente zero</strong> ($y_i^* = 0$). O recurso não limita a produção!
+        </li>
+        <li><strong>Folga na Variável Primal:</strong>
+          $$x_j^* \cdot (A_{\cdot j}^T y^* - c_j) = 0, \quad \forall j = 1, \dots, n$$
+          Se uma atividade é produzida ($x_j^* > 0$), o custo imputado dos seus insumos coincide exatamente com seu lucro unitário ($A_{\cdot j}^T y^* = c_j$).
+        </li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4" data-hint="Se a produção é estritamente menor que o limite (f* = 6 < 7), há folga estrita (sobra). Pelo Teorema da Folga Complementar, o multiplicador dual associado a uma restrição frouxa deve ser nulo.">
+      <div class="exercise-header">
+        <h3>Exercício 4: Active Recall Numérico — Multiplicador Dual sob Folga Estrita</h3>
+      </div>
+      <div class="question-text">
+        No ponto ótimo da Top Brass, a produção de troféus de futebol é $f^* = 6$.<br>
+        A restrição de demanda máxima para esse troféu era $f \le 7$.<br><br>
+        Pelo Teorema das Folgas Complementares, qual é o <strong>valor numérico do multiplicador dual $y_3^*$</strong> associado a essa restrição limitante?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de y_3* (ex: 0)" autocomplete="off">
+        <button class="action-btn">Verificar Multiplicador</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Relação Estrutural — Igualdades Primais e Variáveis Duais</h3>
+      </div>
+      <div class="question-text">
+        Se a $k$-ésima restrição de um problema primal de maximização for uma <strong>equação de igualdade exata</strong> ($a_k^T x = b_k$), que tipo de condição de sinal se aplica à respectiva variável dual $y_k$ no problema dual de minimização?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Restrições de igualdade primal conferem flexibilidade completa à variável dual correspondente, tornando y_k livre de sinal (irrestrita, y_k ∈ ℝ).">
+          A variável dual y_k é livre de sinal (irrestrita em ℝ).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: variáveis duais não negativas (y_k ≥ 0) decorrem de desigualdades do tipo menor ou igual (≤ b_k) no primal de maximização.">
+          A variável dual y_k deve ser estritamente não negativa (y_k ≥ 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: variáveis duais não positivas (y_k ≤ 0) decorrem de desigualdades do tipo maior ou igual (≥ b_k) no primal de maximização.">
+          A variável dual y_k deve ser estritamente não positiva (y_k ≤ 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o valor de y_k só seria identicamente nulo se a restrição estivesse em folga, o que é impossível em uma restrição de igualdade exata.">
+          A variável dual y_k deve ser identicamente nula em qualquer solução factível.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0003-fluxo-em-redes-e-unimodularidade.html">← Lição Anterior: 0003 (Fluxo em Redes)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="0005-simplex-tableau-e-fluxos-duais.html">Próxima: Lição 0005 (Simplex & Algoritmos) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Cota dual
+      initInputExercise("ex1", ["108", "108.0", "108,0"], "Cota superior dual: 32(1.5) + 10(6) = 108", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 108) < 0.01;
+      });
+
+      // Ex 2: Inviável primal implica ilimitado dual? Falso!
+      initTrueFalse("ex2", false, "Primal inviável não garante dual ilimitado (ambos podem ser inviáveis)",
+        "Atenção: Se o primal for inviável, o dual pode ser ilimitado ou também inviável!",
+        "Correto! Primal inviável admite dual ilimitado ou simultaneamente inviável.");
+
+      // Ex 3: Preço-sombra
+      initInputExercise("ex3", ["6", "6.0", "6,0", "6.00", "6,00"], "Aumento de lucro: 4 * 1.50 = 6.00", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 6) < 0.01;
+      });
+
+      // Ex 4: Folga complementar
+      initInputExercise("ex4", ["0", "0.0", "0,0"], "Folga complementar: restrição frouxa implica multiplicador dual y3* = 0", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num) < 0.01;
+      });
+
+      // Ex 5: Igualdade primal gera variável dual livre
+      initMultipleChoice("ex5", "Restrições de igualdade geram variáveis duais livres em ℝ");
+
+      // ==========================================
+      // MOTOR DA BALANÇA PRIMAL-DUAL E DUALITY GAP
+      // ==========================================
+      const slF = document.getElementById("sl-f");
+      const slS = document.getElementById("sl-s");
+      const slY1 = document.getElementById("sl-y1");
+      const slY2 = document.getElementById("sl-y2");
+
+      const vF = document.getElementById("v-f");
+      const vS = document.getElementById("v-s");
+      const vY1 = document.getElementById("v-y1");
+      const vY2 = document.getElementById("v-y2");
+
+      const dispF = document.getElementById("disp-f");
+      const dispS = document.getElementById("disp-s");
+      const dispCarp = document.getElementById("disp-carp");
+      const dispAcab = document.getElementById("disp-acab");
+      const dispPrimalZ = document.getElementById("disp-primal-z");
+
+      const dispY1 = document.getElementById("disp-y1");
+      const dispY2 = document.getElementById("disp-y2");
+      const dispCovF = document.getElementById("disp-cov-f");
+      const dispCovS = document.getElementById("disp-cov-s");
+      const dispDualW = document.getElementById("disp-dual-w");
+
+      const dispGapVal = document.getElementById("disp-gap-val");
+      const gapBarFill = document.getElementById("gap-bar-fill");
+      const dualStatusBar = document.getElementById("dual-status-bar");
+
+      function updateDualBalance() {
+        const f = parseFloat(slF.value);
+        const s = parseFloat(slS.value);
+        const y1 = parseFloat(slY1.value);
+        const y2 = parseFloat(slY2.value);
+
+        vF.textContent = f.toFixed(1);
+        vS.textContent = s.toFixed(1);
+        vY1.textContent = y1.toFixed(2);
+        vY2.textContent = y2.toFixed(2);
+
+        dispF.textContent = f.toFixed(1);
+        dispS.textContent = s.toFixed(1);
+        dispY1.textContent = y1.toFixed(2);
+        dispY2.textContent = y2.toFixed(2);
+
+        // Primal Checks
+        const carp = 4 * f + 2 * s;
+        const acab = f + s;
+        const primalFeasible = carp <= 32.01 && acab <= 10.01 && f <= 7.01 && s <= 6.01;
+        const primalZ = 12 * f + 9 * s;
+
+        dispCarp.textContent = `${carp.toFixed(1)}/32 h ${carp > 32.01 ? "⚠️ (Violado)" : (Math.abs(carp - 32) < 0.1 ? "⭐ (Ativa)" : "ok")}`;
+        dispAcab.textContent = `${acab.toFixed(1)}/10 h ${acab > 10.01 ? "⚠️ (Violado)" : (Math.abs(acab - 10) < 0.1 ? "⭐ (Ativa)" : "ok")}`;
+        dispPrimalZ.textContent = primalZ.toFixed(2);
+
+        // Dual Checks
+        const covF = 4 * y1 + y2;
+        const covS = 2 * y1 + y2;
+        const dualFeasible = covF >= 11.99 && covS >= 8.99 && y1 >= 0 && y2 >= 0;
+        const dualW = 32 * y1 + 10 * y2;
+
+        dispCovF.textContent = `${covF.toFixed(2)} ≥ 12 ${covF < 11.99 ? "⚠️ (Inviável)" : "✓"}`;
+        dispCovS.textContent = `${covS.toFixed(2)} ≥ 9 ${covS < 8.99 ? "⚠️ (Inviável)" : "✓"}`;
+        dispDualW.textContent = dualW.toFixed(2);
+
+        // Gap
+        const gap = dualW - primalZ;
+
+        if (!primalFeasible || !dualFeasible) {
+          dualStatusBar.className = "widget-status-bar error";
+          dispGapVal.textContent = "INVIABILIDADE";
+          dispGapVal.style.color = "#c62828";
+          gapBarFill.style.width = "100%";
+          gapBarFill.style.backgroundColor = "#c62828";
+          let issues = [];
+          if (!primalFeasible) issues.push("Ponto Primal Infactível");
+          if (!dualFeasible) issues.push("Multiplicadores Duais Inválidos");
+          dualStatusBar.innerHTML = `<span>⚠️ <strong>Atenção:</strong> ${issues.join(" e ")}. O Teorema do Dual Fraco exige factibilidade de ambos os lados!</span>`;
+        } else {
+          // Both feasible! Weak duality guarantees gap >= 0
+          const clampedGap = Math.max(0, gap);
+          const gapPercent = Math.min(100, (clampedGap / 100) * 100);
+
+          gapBarFill.style.width = `${gapPercent}%`;
+
+          if (clampedGap < 0.2) {
+            gapBarFill.style.backgroundColor = "#3fb950";
+            dispGapVal.textContent = "$0.00 (ÓTIMO GLOBAL COM GAP ZERO!)";
+            dispGapVal.style.color = "#3fb950";
+            dualStatusBar.className = "widget-status-bar success";
+            dualStatusBar.innerHTML = `<span>🏆 <strong>Dual Forte Perfeito:</strong> z* = w* = $108.00! Preços-sombra ótimos y₁ = 1.50 e y₂ = 6.00 confirmam que as duas restrições ativas pagam exatamente o lucro!</span>`;
+          } else {
+            gapBarFill.style.backgroundColor = "#f0883e";
+            dispGapVal.textContent = `$${clampedGap.toFixed(2)} (Subótimo)`;
+            dispGapVal.style.color = "#f0883e";
+            dualStatusBar.className = "widget-status-bar";
+            dualStatusBar.innerHTML = `<span><strong>Dual Fraco Satisfeito:</strong> Primal ($${primalZ.toFixed(2)}) ≤ Dual ($${dualW.toFixed(2)}). Gap restante a fechar: <strong>$${clampedGap.toFixed(2)}</strong>.</span>`;
+          }
+        }
+      }
+
+      [slF, slS, slY1, slY2].forEach(sl => sl.addEventListener("input", updateDualBalance));
+
+      document.getElementById("btn-snap-dual-opt").addEventListener("click", () => {
+        slF.value = 6.0;
+        slS.value = 4.0;
+        slY1.value = 1.5;
+        slY2.value = 6.0;
+        updateDualBalance();
+      });
+
+      updateDualBalance();
+    });
+  </script>
+</body>
+</html>

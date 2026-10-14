@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Referência: Programação Linear e Dualidade — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Referência • Módulo 1</div>
+      <h1>Ficha Rápida: Programação Linear e Teoria da Dualidade</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Formas canônica e padrão, regras de conversão primal-dual, teoremas de dualidade, folga complementar e simplex.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../lessons/0001-programacao-linear-formas-e-geometria.html">Lição 0001: Formas e Geometria</a>
+      <a href="../lessons/0004-dualidade-lp-e-folga-complementar.html">Lição 0004: Dualidade e Folga</a>
+    </div>
+
+    <!-- 1. FORMAS DE PROGRAMAÇÃO LINEAR -->
+    <section class="card-theory">
+      <h2>1. Formas Fundamentais de Programação Linear</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Característica</th>
+              <th>Forma Canônica (Desigualdades)</th>
+              <th>Forma Padrão (Igualdades)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Objetivo Primário</strong></td>
+              <td>$$\max_{x} \; c^T x$$</td>
+              <td>$$\min_{x} \; c^T x$$</td>
+            </tr>
+            <tr>
+              <td><strong>Restrições Estruturais</strong></td>
+              <td>$$A x \le b$$</td>
+              <td>$$A x = b$$</td>
+            </tr>
+            <tr>
+              <td><strong>Condições de Sinal</strong></td>
+              <td>$$x \ge 0$$</td>
+              <td>$$x \ge 0$$</td>
+            </tr>
+            <tr>
+              <td><strong>Conversão de $\le$</strong></td>
+              <td>Mantém inequação original</td>
+              <td>Adiciona variável de folga: $a_i^T x + s_i = b_i, \; s_i \ge 0$</td>
+            </tr>
+            <tr>
+              <td><strong>Conversão de $\ge$</strong></td>
+              <td>Multiplica por $-1$: $-a_i^T x \le -b_i$</td>
+              <td>Subtrai variável de excesso: $a_i^T x - e_i = b_i, \; e_i \ge 0$</td>
+            </tr>
+            <tr>
+              <td><strong>Variável Livre ($x_j \in \mathbb{R}$)</strong></td>
+              <td>Substitui por $x_j = x_j^+ - x_j^-$ com $x_j^+, x_j^- \ge 0$</td>
+              <td>Substitui por $x_j = x_j^+ - x_j^-$ com $x_j^+, x_j^- \ge 0$</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. TABELA MESTRA DE DUALIDADE -->
+    <section class="card-theory">
+      <h2>2. Tabela Mestra de Correspondência Primal-Dual</h2>
+      <p>
+        Para um problema Primal de <strong>Maximização</strong> e seu Dual de <strong>Minimização</strong>:
+      </p>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Primal (Maximização)</th>
+              <th>Dual (Minimização)</th>
+              <th>Interpretação Econômica</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Restrição $i$-ésima: $\le b_i$ (recurso escasso)</td>
+              <td>Variável dual: $y_i \ge 0$</td>
+              <td>Preço-sombra não negativo (recurso tem valor marginal $\ge 0$)</td>
+            </tr>
+            <tr>
+              <td>Restrição $i$-ésima: $\ge b_i$ (requisito mínimo)</td>
+              <td>Variável dual: $y_i \le 0$</td>
+              <td>Penalidade / custo adicional de atender requisito</td>
+            </tr>
+            <tr>
+              <td>Restrição $i$-ésima: $= b_i$ (balanço exato)</td>
+              <td>Variável dual: $y_i \in \mathbb{R}$ (livre)</td>
+              <td>Impacto marginal pode ser positivo ou negativo</td>
+            </tr>
+            <tr>
+              <td>Variável primal: $x_j \ge 0$</td>
+              <td>Restrição $j$-ésima: $A_{\cdot j}^T y \ge c_j$</td>
+              <td>Custo implícito dos insumos deve cobrir o lucro unitário</td>
+            </tr>
+            <tr>
+              <td>Variável primal: $x_j \le 0$</td>
+              <td>Restrição $j$-ésima: $A_{\cdot j}^T y \le c_j$</td>
+              <td>Sentido invertido para atividades negativas</td>
+            </tr>
+            <tr>
+              <td>Variável primal: $x_j \in \mathbb{R}$ (livre)</td>
+              <td>Restrição $j$-ésima: $A_{\cdot j}^T y = c_j$</td>
+              <td>Equilíbrio exato de mercado para atividade sem limite de sinal</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. TEOREMAS DE DUALIDADE E FOLGA COMPLEMENTAR -->
+    <section class="card-theory">
+      <h2>3. Teoremas Fundamentais da Dualidade</h2>
+      <div class="callout definition">
+        <div class="callout-title">📌 Teorema do Dual Fraco</div>
+        <p style="margin-bottom: 0;">
+          Se $x$ é viável para o primal ($\max c^Tx$) e $y$ é viável para o dual ($\min b^Ty$), então:
+          $$c^T x \le b^T y$$
+          <strong>Corolário:</strong> A diferença $b^Ty - c^Tx \ge 0$ chama-se <em>duality gap</em>. Se para algum par viável $c^T x^* = b^T y^*$, então $x^*$ é ótimo primal e $y^*$ é ótimo dual!
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Teorema do Dual Forte</div>
+        <p style="margin-bottom: 0;">
+          Se o primal ou o dual possui uma solução viável ótima finita, então ambos possuem soluções ótimas finitas e:
+          $$\max c^T x = \min b^T y$$
+          <strong>Inviabilidade e Ilimitabilidade:</strong> Se o primal for ilimitado ($\to +\infty$), o dual é obrigatoriamente inviável. Se o primal for inviável, o dual pode ser ilimitado ou também inviável!
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Condições de Folga Complementar (Karush-Kuhn-Tucker para LP)</div>
+        <p>
+          Sejam $x$ e $y$ soluções viáveis do primal ($\max c^Tx, Ax \le b, x \ge 0$) e dual ($\min b^Ty, A^Ty \ge c, y \ge 0$). Elas são ambas ótimas se e somente se:
+        </p>
+        <ul style="margin-bottom: 0;">
+          <li>$$x_j \cdot (A_{\cdot j}^T y - c_j) = 0, \quad \forall j = 1, \dots, n$$
+            <em>(Se a atividade $x_j > 0$, seu custo de oportunidade dual é nulo: $A_{\cdot j}^T y = c_j$. Se o custo supera o lucro $A_{\cdot j}^T y > c_j$, então $x_j = 0$).</em>
+          </li>
+          <li>$$y_i \cdot (b_i - A_{i \cdot} x) = 0, \quad \forall i = 1, \dots, m$$
+            <em>(Se há sobra de recurso $A_{i \cdot} x < b_i$, seu preço-sombra é nulo $y_i = 0$. Se $y_i > 0$, o recurso está 100% saturado: $A_{i \cdot} x = b_i$).</em>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 4. EQUIVALÊNCIAS LINEARES E VARIÁVEIS EPÍGRAFE -->
+    <section class="card-theory">
+      <h2>4. Transformações Não Lineares Convexas em LP</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Problema Original</th>
+              <th>Transformação Linear Equivalente</th>
+              <th>Dimensão / Variáveis Adicionais</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Minimax:</strong><br>$$\min_x \max_{1 \le i \le k} (a_i^T x + b_i)$$</td>
+              <td>$$\min_{x, t} \; t \quad \text{s.a.} \quad t \ge a_i^T x + b_i, \; \forall i$$</td>
+              <td>$+1$ variável escalar $t$ (epígrafe)<br>$+k$ desigualdades lineares</td>
+            </tr>
+            <tr>
+              <td><strong>Norma $\ell_\infty$ (Chebyshev):</strong><br>$$\min_x \|Ax - b\|_\infty$$</td>
+              <td>$$\min_{x, t} \; t \quad \text{s.a.} \quad -t \mathbf{1} \le Ax - b \le t \mathbf{1}$$</td>
+              <td>$+1$ variável escalar $t$<br>$+2m$ desigualdades lineares</td>
+            </tr>
+            <tr>
+              <td><strong>Norma $\ell_1$ (Resíduos Absolutos):</strong><br>$$\min_x \|Ax - b\|_1 = \sum |a_i^T x - b_i|$$</td>
+              <td>$$\min_{x, u} \sum_{i=1}^m u_i \quad \text{s.a.} \quad -u_i \le a_i^T x - b_i \le u_i$$</td>
+              <td>$+m$ variáveis $u_i \ge 0$<br>$+2m$ desigualdades lineares</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. REDES E ALGORITMO SIMPLEX -->
+    <section class="card-theory">
+      <h2>5. Redes de Fluxo e Mecânica do Simplex</h2>
+      <div class="callout definition">
+        <div class="callout-title">📌 Unimodularidade Total em Fluxo em Redes</div>
+        <p style="margin-bottom: 0;">
+          A matriz de incidência nó-arco $A$ (com exatamente um $+1$ na cauda e um $-1$ na cabeça de cada coluna) é <strong>totalmente unimodular</strong> ($\det(B) \in \{-1, 0, 1\}$ para qualquer submatriz quadrada). Consequência: se as ofertas/demandas $b$ e capacidades $u$ forem inteiras, <strong>todas as soluções básicas factíveis são inteiras</strong>, sem necessidade de métodos inteiros discretos!
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Equações de Tableau Simplex</div>
+        <p>
+          Particionando variáveis em Básicas $x_B$ e Não-Básicas $x_N$ ($Ax = B x_B + N x_N = b$):
+        </p>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Solução Básica:</strong> $x_B = B^{-1} b$ e $x_N = 0$. Factível se $B^{-1} b \ge 0$.</li>
+          <li><strong>Vetor de Preços Multiplicadores:</strong> $\pi^T = c_B^T B^{-1}$.</li>
+          <li><strong>Custos Reduzidos:</strong> $\bar{c}_N = c_N^T - \pi^T N = c_N^T - c_B^T B^{-1} N$. Em minimização, a base é ótima quando $\bar{c}_N \ge 0$.</li>
+          <li><strong>Teste da Razão Mínima:</strong> Variável que sai da base: $r = \arg\min_{i: d_i > 0} \left( \frac{x_{Bi}}{d_i} \right)$, onde $d = B^{-1} A_{\cdot j}$ é a direção de transição.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Índice da Disciplina</a>
+      <a href="../lessons/0001-programacao-linear-formas-e-geometria.html">Iniciar Lição 0001: Formas e Geometria &rarr;</a>
+    </div>
+
+  </div>
+</body>
+</html>

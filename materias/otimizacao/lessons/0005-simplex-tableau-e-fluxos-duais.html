@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0005: Simplex, Tableau e Fluxos Duais — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 1 • Lição 0005 (Slide 7)</div>
+      <h1>Algoritmo Simplex, Pivoteamento de Tableau e Fluxos Duais</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Bases factíveis, custos reduzidos, teste da razão mínima, dualidade rede-corte (Max-Flow Min-Cut) e complexidade de solvers.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0004-dualidade-lp-e-folga-complementar.html">← Lição Anterior</a>
+      <a href="simulado-modulo-1-programacao-linear.html">Simulado Módulo 1 &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: A ESTRUTURA BÁSICA DO SIMPLEX -->
+    <section class="card-theory">
+      <h2>1. A Mecânica do Algoritmo Simplex (Dantzig, 1947)</h2>
+      <p>
+        Na forma padrão $\min c^T x$ com $A x = b$ ($A \in \mathbb{R}^{m \times n}$), particionamos as variáveis em:
+      </p>
+      <ul>
+        <li><strong>Básicas ($x_B \in \mathbb{R}^m$):</strong> Associadas às colunas da base invertível $B$. Valores: $x_B = B^{-1} b \ge 0$.</li>
+        <li><strong>Não Básicas ($x_N \in \mathbb{R}^{n-m}$):</strong> Fixadas estritamente em zero ($x_N = 0$).</li>
+      </ul>
+      <p>
+        O Simplex caminha de vértice em vértice por arestas do poliedro através de <strong>pivoteamentos</strong>: uma variável não básica entra na base (reduzindo o custo) e uma básica atinge zero e sai (mantendo a factibilidade).
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO 1: MÁQUINA DE TABLEAU SIMPLEX -->
+    <div class="interactive-widget" id="simplex-tableau-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⚙️ Máquina Interativa: Pivoteamento de Tableau Simplex</span>
+        </div>
+        <span class="widget-badge">Simulador Algorítmico</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Acompanhe a resolução passo a passo do modelo com variáveis de folga $s_1, s_2$. 
+        Analise a linha de <strong>custos reduzidos $\bar{c}$</strong>. 
+        Clique no botão para avançar cada iteração e ver a eliminação gaussiana e a troca de base ao vivo!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 260px; padding: 1rem; align-items: stretch;">
+        <div class="trace-table-container">
+          <table class="trace-table" id="tableau-table">
+            <thead>
+              <tr>
+                <th>Base</th>
+                <th>x₁ (Futebol)</th>
+                <th>x₂ (Sinuca)</th>
+                <th>s₁ (Folga Carp.)</th>
+                <th>s₂ (Folga Acab.)</th>
+                <th>Lado Direito (b)</th>
+                <th>Razão Mínima (b_i / d_i)</th>
+              </tr>
+            </thead>
+            <tbody id="tableau-body">
+              <!-- Conteúdo injetado dinamicamente via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="widget-status-bar" id="simplex-status" style="margin-top: 0.8rem;">
+          <span>Iteração 0: Base inicial {s₁, s₂}. Lucro atual: $0.00.</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: space-between; flex-wrap: wrap;">
+        <button class="widget-btn secondary" id="btn-prev-pivot">⏮️ Iteração Anterior</button>
+        <button class="widget-btn" id="btn-next-pivot">⏭️ Executar Próximo Pivô</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="O número de variáveis básicas xb em qualquer solução básica de PL na forma padrão Ax = b é sempre estritamente igual ao número de restrições m (linhas linearmente independentes).">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Dimensão da Base Simplex</h3>
+      </div>
+      <div class="question-text">
+        Um problema de otimização na forma padrão possui $m = 6$ restrições lineares de igualdade e $n = 15$ variáveis não negativas ($x \ge 0$).<br><br>
+        Em qualquer iteração do algoritmo Simplex, <strong>quantas variáveis serão fixadas em zero ($x_N = 0$)</strong> como não básicas?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o número de variáveis não básicas (ex: 9)" autocomplete="off">
+        <button class="action-btn">Verificar Dimensão</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 2: CUSTOS REDUZIDOS E RAZÃO MÍNIMA -->
+    <section class="card-theory">
+      <h2>2. Custos Reduzidos e Teste da Razão Mínima</h2>
+      <p>
+        O custo relativo (taxa marginal de variação do objetivo) ao aumentar uma variável não básica $x_j$ é o <strong>custo reduzido</strong> $\bar{c}_j$:
+      </p>
+      $$\bar{c}_N^T = c_N^T - c_B^T B^{-1} N = c_N^T - \pi^T N$$
+      <ul>
+        <li><strong>Otimalidade (Minimização):</strong> Se $\bar{c}_j \ge 0$ para toda variável não básica, o vértice atual é ótimo global!</li>
+        <li><strong>Variável Entrante:</strong> Escolhe-se quem tem $\bar{c}_j < 0$ (o mais negativo na regra de Dantzig).</li>
+        <li><strong>Variável que Sai (Razão Mínima):</strong> Para evitar que alguma variável básica caia abaixo de zero, calcula-se o limite máximo de avanço:
+          $$\theta^* = \min_{i : d_i > 0} \left( \frac{x_{Bi}}{d_i} \right)$$
+        </li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2" data-hint="Calcule as razões xBi / di para cada linha com di > 0: Linha 1: 18 / 3 = 6.0; Linha 2: 20 / 4 = 5.0. O limitante de subida é a menor razão.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Active Recall Numérico — Teste da Razão Mínima</h3>
+      </div>
+      <div class="question-text">
+        Em uma iteração de minimização, a variável $x_4$ foi selecionada para entrar na base.<br>
+        A base atual contém duas variáveis básicas:<br>
+        • $x_{B1} = 18$, com direção de atualização $d_1 = 3$<br>
+        • $x_{B2} = 20$, com direção de atualização $d_2 = 4$<br><br>
+        Qual é o <strong>valor numérico do passo máximo factível $\theta^*$</strong> permitido pelo teste da razão mínima?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o passo theta* (ex: 5.0)" autocomplete="off">
+        <button class="action-btn">Calcular Razão Mínima</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 3: DUALIDADE REDE-CORTE E SIMULADOR INTERATIVO -->
+    <section class="card-theory">
+      <h2>3. Dualidade em Redes: Teorema Max-Flow Min-Cut</h2>
+      <p>
+        Pelo Teorema do Dual Forte de LP, o <strong>fluxo máximo</strong> entre uma fonte $s$ e um sumidouro $t$ é rigorosamente idêntico à <strong>capacidade do corte mínimo $(S, T)$</strong> que separa a rede em dois subconjuntos disjuntos:
+      </p>
+      $$\max \; \text{Fluxo}(s \to t) = \min_{(S,T)} \; \text{Capacidade}(S, T) = \sum_{i \in S, j \in T, (i,j) \in E} u_{ij}$$
+    </section>
+
+    <!-- SIMULADOR INTERATIVO 2: EXPLORADOR DE CORTE MÍNIMO -->
+    <div class="interactive-widget" id="mincut-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>✂️ Laboratório: Particionamento de Corte Mínimo (Max-Flow Min-Cut)</span>
+        </div>
+        <span class="widget-badge">Explorador Gráfico</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        <strong>Clique nos nós</strong> para alternar seu pertencimento entre o conjunto da <strong>Fonte S (Azul)</strong> e o do <strong>Sumidouro T (Roxo)</strong>. 
+        As arestas que cruzam a fronteira de $S$ para $T$ acendem em dourado e têm suas capacidades somadas. 
+        Encontre a partição que produz a <strong>menor capacidade total</strong>!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 300px; padding: 1rem;">
+        <svg id="cut-svg" width="100%" height="260" viewBox="0 0 540 260" xmlns="http://www.w3.org/2000/svg" style="max-width: 540px;">
+          <defs>
+            <marker id="cut-arrow" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#8b949e"/>
+            </marker>
+          </defs>
+
+          <!-- Arestas da Rede (S, A, B, C, D, T) -->
+          <!-- S->A (cap 16), S->B (cap 13) -->
+          <line id="edge-SA" x1="80" y1="130" x2="200" y2="60" stroke="#8b949e" stroke-width="2.5" marker-end="url(#cut-arrow)"/>
+          <text id="lbl-SA" x="125" y="85" fill="#8b949e" font-size="11" font-weight="bold">cap 16</text>
+
+          <line id="edge-SB" x1="80" y1="130" x2="200" y2="200" stroke="#8b949e" stroke-width="2.5" marker-end="url(#cut-arrow)"/>
+          <text id="lbl-SB" x="125" y="180" fill="#8b949e" font-size="11" font-weight="bold">cap 13</text>
+
+          <!-- A->B (cap 4), A->C (cap 12) -->
+          <line id="edge-AB" x1="200" y1="60" x2="200" y2="200" stroke="#8b949e" stroke-width="2.5" marker-end="url(#cut-arrow)"/>
+          <text id="lbl-AB" x="208" y="130" fill="#8b949e" font-size="11" font-weight="bold">cap 4</text>
+
+          <line id="edge-AC" x1="200" y1="60" x2="340" y2="60" stroke="#8b949e" stroke-width="2.5" marker-end="url(#cut-arrow)"/>
+          <text id="lbl-AC" x="260" y="50" fill="#8b949e" font-size="11" font-weight="bold">cap 12</text>
+
+          <!-- B->D (cap 14) -->
+          <line id="edge-BD" x1="200" y1="200" x2="340" y2="200" stroke="#8b949e" stroke-width="2.5" marker-end="url(#cut-arrow)"/>
+          <text id="lbl-BD" x="260" y="220" fill="#8b949e" font-size="11" font-weight="bold">cap 14</text>
+
+          <!-- C->B (cap 9), C->T (cap 20), D->T (cap 4) -->
+          <line id="edge-CD" x1="340" y1="60" x2="340" y2="200" stroke="#8b949e" stroke-width="2.5" marker-end="url(#cut-arrow)"/>
+          <text id="lbl-CD" x="348" y="130" fill="#8b949e" font-size="11" font-weight="bold">cap 7</text>
+
+          <line id="edge-CT" x1="340" y1="60" x2="460" y2="130" stroke="#8b949e" stroke-width="2.5" marker-end="url(#cut-arrow)"/>
+          <text id="lbl-CT" x="410" y="85" fill="#8b949e" font-size="11" font-weight="bold">cap 20</text>
+
+          <line id="edge-DT" x1="340" y1="200" x2="460" y2="130" stroke="#8b949e" stroke-width="2.5" marker-end="url(#cut-arrow)"/>
+          <text id="lbl-DT" x="410" y="180" fill="#8b949e" font-size="11" font-weight="bold">cap 4</text>
+
+          <!-- Nós Clicáveis -->
+          <g style="cursor: pointer;">
+            <!-- Nó S (sempre S) -->
+            <circle id="n-S" cx="80" cy="130" r="22" fill="#1f6feb" stroke="#fff" stroke-width="2"/>
+            <text x="80" y="135" font-family="monospace" font-weight="bold" font-size="13" fill="#fff" text-anchor="middle">S</text>
+
+            <!-- Nó A -->
+            <circle id="n-A" data-node="A" class="cut-node" cx="200" cy="60" r="20" fill="#1f6feb" stroke="#fff" stroke-width="2"/>
+            <text x="200" y="65" font-family="monospace" font-weight="bold" font-size="13" fill="#fff" text-anchor="middle">A</text>
+
+            <!-- Nó B -->
+            <circle id="n-B" data-node="B" class="cut-node" cx="200" cy="200" r="20" fill="#1f6feb" stroke="#fff" stroke-width="2"/>
+            <text x="200" y="205" font-family="monospace" font-weight="bold" font-size="13" fill="#fff" text-anchor="middle">B</text>
+
+            <!-- Nó C -->
+            <circle id="n-C" data-node="C" class="cut-node" cx="340" cy="60" r="20" fill="#8250df" stroke="#fff" stroke-width="2"/>
+            <text x="340" y="65" font-family="monospace" font-weight="bold" font-size="13" fill="#fff" text-anchor="middle">C</text>
+
+            <!-- Nó D -->
+            <circle id="n-D" data-node="D" class="cut-node" cx="340" cy="200" r="20" fill="#8250df" stroke="#fff" stroke-width="2"/>
+            <text x="340" y="205" font-family="monospace" font-weight="bold" font-size="13" fill="#fff" text-anchor="middle">D</text>
+
+            <!-- Nó T (sempre T) -->
+            <circle id="n-T" cx="460" cy="130" r="22" fill="#8250df" stroke="#fff" stroke-width="2"/>
+            <text x="460" y="135" font-family="monospace" font-weight="bold" font-size="13" fill="#fff" text-anchor="middle">T</text>
+          </g>
+        </svg>
+
+        <div class="widget-status-bar" id="cut-status">
+          <span>Capacidade do Corte Atual: <strong>23 unidades</strong>.</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button class="widget-btn secondary" id="btn-snap-mincut">🎯 Mostrar Partição de Corte Mínimo</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="Some as capacidades dos arcos direcionados que cruzam do conjunto da fonte S para o conjunto do sumidouro T: Capacidade = 14 + 18 + 8 = 40.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Active Recall Numérico — Fluxo Máximo via Corte Mínimo</h3>
+      </div>
+      <div class="question-text">
+        Em uma rede de transmissão de dados, o corte gargalo de capacidade mínima $(S, T)$ que separa o servidor $s$ do cliente $t$ corta exatamente 3 links orientados de $S$ para $T$, com capacidades respectivas de $14 \text{ Gbps}$, $18 \text{ Gbps}$ e $8 \text{ Gbps}$.<br><br>
+        Pelo Teorema Max-Flow Min-Cut, qual é a <strong>taxa máxima de vazão de dados em Gbps</strong> que pode ser transmitida simultaneamente pela rede?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a vazão máxima em Gbps (ex: 40)" autocomplete="off">
+        <button class="action-btn">Verificar Vazão</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- SEÇÃO 4: COMPLEXIDADE DOS SOLVERS -->
+    <section class="card-theory">
+      <h2>4. Classes de Algoritmos e Complexidade Computacional</h2>
+      <p>
+        A pesquisa operacional moderna divide os métodos de solução de PL em três famílias essenciais:
+      </p>
+      <ul>
+        <li><strong>Simplex (Dantzig):</strong> Percorre vértices e arestas na fronteira do poliedro. Excepcional em problemas reais ($O(m)$ a $O(3m)$ pivôs), mas teoricamente exponencial no pior caso (Cubo de Klee-Minty).</li>
+        <li><strong>Pontos Interiores (Karmarkar):</strong> Atravessa o interior do poliedro com garantia estrita de complexidade de tempo polinomial $O(n^{3.5} L)$.</li>
+        <li><strong>Network Simplex:</strong> Especialização onde cada base é uma árvore geradora do grafo, tornando o pivoteamento quase instantâneo sem inversão explícita de matriz.</li>
+      </ul>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4">
+      <div class="exercise-header">
+        <h3>Exercício 4: Pegadinha de Teoria da Computação — Complexidade do Simplex</h3>
+      </div>
+      <div class="question-text">
+        Analise a seguinte questão conceitual clássica:<br>
+        <em>"O Algoritmo Simplex é classificado teoricamente como um algoritmo de tempo polinomial porque sua média empírica em problemas reais escala de forma linear com o número de restrições."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Cuidado com a confusão entre complexidade prática e complexidade teórica de pior caso! A classificação assintótica teórica é determinada pelo pior caso. O contraexemplo do hipercubo deformado de Klee-Minty força o Simplex a visitar todos os 2^n vértices, demonstrando complexidade de pior caso exponencial!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Correto! Teoricamente, o Simplex possui complexidade exponencial de pior caso O(2^n). A prova de que Programação Linear pertence à classe P (tempo polinomial) só foi estabelecida em 1979 com o Método dos Elipsoides de Khachiyan e consolidada em 1984 com os Pontos Interiores de Karmarkar.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5">
+      <div class="exercise-header">
+        <h3>Exercício 5: Rastreamento Operacional — Critério de Parada em Minimização</h3>
+      </div>
+      <div class="question-text">
+        Em um problema de <strong>minimização</strong> na forma padrão, a base atual é declarada ótima quando:
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Em problemas de minimização, o custo reduzido representa o gradiente de custo marginal. Se todos os custos reduzidos das variáveis não básicas forem não negativos (c̄_N ≥ 0), qualquer aumento em uma variável não básica aumentará (piorará) o custo total.">
+          Todos os custos reduzidos das variáveis não básicas forem maiores ou iguais a zero (c̄_N ≥ 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: custos reduzidos negativos (c̄_j < 0) em minimização indicam que aumentar aquela variável reduzirá ainda mais o valor objetivo, exigindo continuidade da busca.">
+          Pelo menos um custo reduzido de variável não básica for estritamente negativo (c̄_j < 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: todas as variáveis não básicas já são identicamente nulas por definição em qualquer solução básica (x_N = 0); isso não é um teste de otimalidade.">
+          Todas as variáveis não básicas assumirem valores rigorosamente iguais a zero (x_N = 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o vetor b ser estritamente positivo é apenas um requisito de não degenerescência da solução básica inicial, não o teste de otimalidade do vértice.">
+          O vetor do lado direito b for formado exclusivamente por valores inteiros positivos (b > 0).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="0004-dualidade-lp-e-folga-complementar.html">← Lição Anterior: 0004 (Dualidade em PL)</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="simulado-modulo-1-programacao-linear.html">Avançar para o Simulado do Módulo 1 &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Dimensão da base
+      initInputExercise("ex1", ["9"], "Variáveis não básicas fixadas em zero: n - m = 15 - 6 = 9", (raw, clean) => {
+        return clean.trim() === "9";
+      });
+
+      // Ex 2: Razão mínima
+      initInputExercise("ex2", ["5", "5.0", "5,0"], "Razão mínima theta* = min(18/3, 20/4) = 5", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 5) < 0.01;
+      });
+
+      // Ex 3: Corte mínimo
+      initInputExercise("ex3", ["40", "40.0", "40,0"], "Capacidade do corte mínimo = 14 + 18 + 8 = 40 Gbps", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 40) < 0.01;
+      });
+
+      // Ex 4: Klee-Minty e complexidade
+      initTrueFalse("ex4", false, "Simplex possui pior caso exponencial O(2^n), não polinomial",
+        "Atenção: A média empírica é polinomial, mas a complexidade teórica de pior caso é exponencial!",
+        "Correto! O pior caso do Simplex é exponencial devido a contraexemplos como Klee-Minty.");
+
+      // Ex 5: Critério de parada em minimização
+      initMultipleChoice("ex5", "Em minimização, a otimalidade ocorre com custos reduzidos não negativos c_N ≥ 0");
+
+      // ==========================================
+      // SIMULADOR 1: TABLEAU SIMPLEX PASSO A PASSO
+      // ==========================================
+      const tableBody = document.getElementById("tableau-body");
+      const simplexStatus = document.getElementById("simplex-status");
+      const btnNextPivot = document.getElementById("btn-next-pivot");
+      const btnPrevPivot = document.getElementById("btn-prev-pivot");
+
+      let currentStep = 0;
+
+      const steps = [
+        {
+          iter: 0,
+          rows: [
+            { base: "s₁", x1: "4", x2: "2", s1: "1", s2: "0", rhs: "32", ratio: "32 / 4 = 8.0" },
+            { base: "s₂", x1: "1", x2: "1", s1: "0", s2: "1", rhs: "10", ratio: "10 / 1 = 10.0" },
+            { base: "(-z)", x1: "-12", x2: "-9", s1: "0", s2: "0", rhs: "0", ratio: "—" }
+          ],
+          enterCol: "x₁",
+          leaveRow: "s₁",
+          msg: "Iteração 0: Base inicial {s₁, s₂}. Variável entrante x₁ (custo reduzido mais negativo: -12). Menor razão: 8.0 na linha de s₁ (s₁ sai da base)."
+        },
+        {
+          iter: 1,
+          rows: [
+            { base: "x₁", x1: "1", x2: "0.5", s1: "0.25", s2: "0", rhs: "8", ratio: "8 / 0.5 = 16.0" },
+            { base: "s₂", x1: "0", x2: "0.5", s1: "-0.25", s2: "1", rhs: "2", ratio: "2 / 0.5 = 4.0" },
+            { base: "(-z)", x1: "0", x2: "-3", s1: "3", s2: "0", rhs: "96", ratio: "—" }
+          ],
+          enterCol: "x₂",
+          leaveRow: "s₂",
+          msg: "Iteração 1: Base {x₁, s₂}. Lucro atual: $96. Variável entrante x₂ (custo reduzido -3 < 0). Menor razão: 4.0 na linha de s₂ (s₂ sai da base)."
+        },
+        {
+          iter: 2,
+          rows: [
+            { base: "x₁", x1: "1", x2: "0", s1: "0.5", s2: "-1", rhs: "6", ratio: "—" },
+            { base: "x₂", x1: "0", x2: "1", s1: "-0.5", s2: "2", rhs: "4", ratio: "—" },
+            { base: "(-z)", x1: "0", x2: "0", s1: "1.5", s2: "6", rhs: "108", ratio: "—" }
+          ],
+          enterCol: null,
+          leaveRow: null,
+          msg: "🏆 Iteração 2 (ÓTIMO ATINGIDO!): Base {x₁=6, x₂=4}. Custos reduzidos de folga s₁ e s₂ são 1.5 e 6.0 (preços-sombra!). Lucro ótimo = $108.00!"
+        }
+      ];
+
+      function renderTableau(stepIndex) {
+        const s = steps[stepIndex];
+        let html = "";
+        s.rows.forEach((r, idx) => {
+          const isZRow = r.base === "(-z)";
+          const isLeave = r.base === s.leaveRow;
+          html += `<tr class="${isZRow ? 'highlight-step' : ''}">
+            <td><strong>${r.base}</strong></td>
+            <td style="${s.enterCol === 'x₁' ? 'background-color: rgba(240, 136, 62, 0.2); font-weight:bold;' : ''}">${r.x1}</td>
+            <td style="${s.enterCol === 'x₂' ? 'background-color: rgba(240, 136, 62, 0.2); font-weight:bold;' : ''}">${r.x2}</td>
+            <td>${r.s1}</td>
+            <td>${r.s2}</td>
+            <td><strong>${r.rhs}</strong></td>
+            <td style="${isLeave ? 'color: #3fb950; font-weight: bold;' : ''}">${r.ratio}</td>
+          </tr>`;
+        });
+        tableBody.innerHTML = html;
+
+        simplexStatus.className = "widget-status-bar" + (stepIndex === 2 ? " success" : "");
+        simplexStatus.innerHTML = `<span>${s.msg}</span>`;
+
+        btnPrevPivot.disabled = stepIndex === 0;
+        btnNextPivot.disabled = stepIndex === 2;
+      }
+
+      btnNextPivot.addEventListener("click", () => {
+        if (currentStep < steps.length - 1) {
+          currentStep++;
+          renderTableau(currentStep);
+        }
+      });
+
+      btnPrevPivot.addEventListener("click", () => {
+        if (currentStep > 0) {
+          currentStep--;
+          renderTableau(currentStep);
+        }
+      });
+
+      renderTableau(0);
+
+      // ==========================================
+      // SIMULADOR 2: MAX-FLOW MIN-CUT EXPLORER
+      // ==========================================
+      // Nós: A, B, C, D (S é sempre S e T é sempre T)
+      const nodePartitions = { A: "S", B: "S", C: "T", D: "T" };
+      const cutNodes = document.querySelectorAll(".cut-node");
+      const cutStatus = document.getElementById("cut-status");
+
+      // Arcos direcionados e suas capacidades
+      const edges = [
+        { u: "S", v: "A", cap: 16, el: document.getElementById("edge-SA"), lbl: document.getElementById("lbl-SA") },
+        { u: "S", v: "B", cap: 13, el: document.getElementById("edge-SB"), lbl: document.getElementById("lbl-SB") },
+        { u: "A", v: "B", cap: 4,  el: document.getElementById("edge-AB"), lbl: document.getElementById("lbl-AB") },
+        { u: "A", v: "C", cap: 12, el: document.getElementById("edge-AC"), lbl: document.getElementById("lbl-AC") },
+        { u: "B", v: "D", cap: 14, el: document.getElementById("edge-BD"), lbl: document.getElementById("lbl-BD") },
+        { u: "C", v: "D", cap: 7,  el: document.getElementById("edge-CD"), lbl: document.getElementById("lbl-CD") },
+        { u: "C", v: "T", cap: 20, el: document.getElementById("edge-CT"), lbl: document.getElementById("lbl-CT") },
+        { u: "D", v: "T", cap: 4,  el: document.getElementById("edge-DT"), lbl: document.getElementById("lbl-DT") }
+      ];
+
+      function updateCut() {
+        let totalCutCap = 0;
+        let cutEdgesList = [];
+
+        edges.forEach(e => {
+          const partU = e.u === "S" ? "S" : (e.u === "T" ? "T" : nodePartitions[e.u]);
+          const partV = e.v === "S" ? "S" : (e.v === "T" ? "T" : nodePartitions[e.v]);
+
+          // Um arco cruza o corte se parte de S e chega em T
+          const isCross = partU === "S" && partV === "T";
+
+          if (isCross) {
+            totalCutCap += e.cap;
+            cutEdgesList.push(`${e.u}→${e.v}(${e.cap})`);
+            e.el.setAttribute("stroke", "#f0883e");
+            e.el.setAttribute("stroke-width", "4");
+            e.lbl.setAttribute("fill", "#f0883e");
+          } else {
+            e.el.setAttribute("stroke", "#8b949e");
+            e.el.setAttribute("stroke-width", "2.5");
+            e.lbl.setAttribute("fill", "#8b949e");
+          }
+        });
+
+        // Atualizar cores dos nós
+        cutNodes.forEach(n => {
+          const name = n.getAttribute("data-node");
+          const part = nodePartitions[name];
+          n.setAttribute("fill", part === "S" ? "#1f6feb" : "#8250df");
+        });
+
+        const isMinCut = totalCutCap === 23 && nodePartitions.A === "S" && nodePartitions.B === "S" && nodePartitions.C === "T" && nodePartitions.D === "T";
+
+        cutStatus.className = "widget-status-bar" + (isMinCut ? " success" : "");
+        cutStatus.innerHTML = `<span>${isMinCut ? "🏆 <strong>Corte Mínimo Global Encontrado!</strong> " : ""}Capacidade do Corte (S, T): <strong>${totalCutCap}</strong>. Arcos que cruzam o corte: [${cutEdgesList.join(", ")}]. Fluxo Máximo = 23!</span>`;
+      }
+
+      cutNodes.forEach(n => {
+        n.addEventListener("click", () => {
+          const name = n.getAttribute("data-node");
+          nodePartitions[name] = nodePartitions[name] === "S" ? "T" : "S";
+          updateCut();
+        });
+      });
+
+      document.getElementById("btn-snap-mincut").addEventListener("click", () => {
+        nodePartitions.A = "S";
+        nodePartitions.B = "S";
+        nodePartitions.C = "T";
+        nodePartitions.D = "T";
+        updateCut();
+      });
+
+      updateCut();
+    });
+  </script>
+</body>
+</html>
