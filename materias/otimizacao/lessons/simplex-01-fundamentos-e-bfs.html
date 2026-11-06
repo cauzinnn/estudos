@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simplex 1: Soluções Básicas Factíveis (BFS) e Álgebra da Base — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Trilha Simplex • Lição 1 de 6</div>
+      <h1>Soluções Básicas Factíveis (BFS) e Álgebra da Base</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Partição matricial $A = [B \mid N]$, cálculo analítico de $x_B = B^{-1}b$, soluções degeneradas e o número finito de bases possíveis.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="../reference/0004-guia-completo-metodo-simplex.html">Ficha Mestra do Simplex</a>
+      <a href="simplex-02-tableau-e-custos-reduzidos.html">Próxima Lição: Tableau & Custos Reduzidos &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: ÁLGEBRA DA BASE -->
+    <section class="card-theory">
+      <h2>1. O Conceito Fundamental de Base em Programação Linear</h2>
+      <p>
+        Na forma padrão com $m$ equações e $n$ variáveis não negativas ($A x = b, x \ge 0$, com $m < n$ e $\text{posto}(A) = m$):
+      </p>
+      <ul>
+        <li>Escolhemos $m$ colunas linearmente independentes de $A$ para formar a <strong>matriz básica quadrada</strong> $B \in \mathbb{R}^{m \times m}$.</li>
+        <li>As $n - m$ colunas restantes formam a <strong>matriz não básica</strong> $N \in \mathbb{R}^{m \times (n-m)}$.</li>
+        <li>Fixamos todas as variáveis não básicas em zero: $x_N = \mathbf{0}$.</li>
+      </ul>
+      <p>
+        O sistema linear reduz-se a $B x_B + N(\mathbf{0}) = b \implies B x_B = b$. Como $B$ é invertível:
+      </p>
+      $$x_B = B^{-1} b$$
+      <div class="callout definition">
+        <div class="callout-title">📌 Classificação Rigorosa de Soluções Básicas</div>
+        <ul>
+          <li><strong>Solução Básica Factível (BFS - Basic Feasible Solution):</strong> Se todas as variáveis básicas forem não negativas ($x_B \ge 0$). Toda BFS corresponde a um <strong>vértice (ponto extremo)</strong> do poliedro!</li>
+          <li><strong>Solução Básica Inviável:</strong> Se pelo menos uma componente básica for estritamente negativa ($x_{Bi} < 0$). É um ponto de interseção geométrica que fica fora do poliedro factível.</li>
+          <li><strong>Solução Degenerada:</strong> Uma BFS onde pelo menos uma variável básica é nula ($x_{Bi} = 0$).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: EXPLORADOR ALGÉBRICO DE BASES -->
+    <div class="interactive-widget" id="bfs-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🧮 Simulador: Calculadora de Bases e Soluções Básicas (x_B = B⁻¹ b)</span>
+        </div>
+        <span class="widget-badge">Álgebra Matricial</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Considere o sistema com $m = 2$ restrições e $n = 4$ variáveis ($x_1, x_2, s_1, s_2$):
+        $$\begin{bmatrix} 2 & 1 & 1 & 0 \\ 1 & 2 & 0 & 1 \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ s_1 \\ s_2 \end{bmatrix} = \begin{bmatrix} 8 \\ 7 \end{bmatrix}$$
+        <strong>Selecione 2 variáveis</strong> para formar a base $B$. O simulador inverte a submatriz $B$, calcula $x_B = B^{-1}b$ e classifica a factibilidade!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 240px; padding: 1.25rem;">
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem;">
+          <button class="chip active" id="btn-col-x1">Coluna x₁ = [2, 1]ᵀ</button>
+          <button class="chip active" id="btn-col-x2">Coluna x₂ = [1, 2]ᵀ</button>
+          <button class="chip" id="btn-col-s1">Coluna s₁ = [1, 0]ᵀ</button>
+          <button class="chip" id="btn-col-s2">Coluna s₂ = [0, 1]ᵀ</button>
+        </div>
+
+        <div style="background-color: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem; width: 100%; max-width: 480px; font-family: var(--font-mono); font-size: 0.9rem;">
+          <div><strong>Base Escolhida:</strong> <span id="bfs-chosen-base" style="color: var(--accent); font-weight: bold;">{x₁, x₂}</span></div>
+          <div><strong>Determinante det(B):</strong> <span id="bfs-det">3.00</span></div>
+          <div><strong>Inversa B⁻¹:</strong> <span id="bfs-inv">[[ 0.67, -0.33], [-0.33,  0.67]]</span></div>
+          <div style="margin-top: 0.5rem; font-size: 1.05rem; font-weight: bold; color: #58a6ff;">
+            Solução x_B = B⁻¹ b = <span id="bfs-sol">[3.00, 2.00]</span>
+          </div>
+        </div>
+
+        <div class="widget-status-bar success" id="bfs-status" style="margin-top: 1rem;">
+          <span>🏆 <strong>Solução Básica Factível (BFS)!</strong> Todas as variáveis básicas são não negativas: x₁ = 3.00 ≥ 0 e x₂ = 2.00 ≥ 0. Representa um vértice do poliedro!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: QUANTAS BASES EXISTEM? -->
+    <section class="card-theory">
+      <h2>2. O Número Máximo de Vértices e a Finitude do Simplex</h2>
+      <p>
+        Quantas soluções básicas distintas um problema de PL pode ter no máximo?
+      </p>
+      <p>
+        Como uma base consiste na escolha de $m$ colunas dentre as $n$ colunas totais de $A$, o número máximo de bases é o coeficiente binomial:
+      </p>
+      $$\binom{n}{m} = \frac{n!}{m! \, (n - m)!}$$
+      <p>
+        Embora $\binom{n}{m}$ seja um número finito (o que garante que o Simplex nunca visite infinitos vértices), esse valor cresce de forma combinatória astronômica para problemas de médio porte (ex: para $m = 20, n = 50$, temos mais de $4.7 \times 10^{13}$ bases!). É por isso que uma busca cega exaustiva é inviável, e o Simplex precisa da <strong>bússola inteligente dos custos reduzidos</strong> para navegar apenas pelas arestas que melhoram o lucro.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="Calcule a combinação de n elementos tomados m a m: C(6, 2) = 6! / (2! * 4!) = (6 * 5) / 2 = 15.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Total de Soluções Básicas Possíveis</h3>
+      </div>
+      <div class="question-text">
+        Um problema de programação linear possui $m = 2$ restrições estruturais de igualdade e $n = 6$ variáveis na forma padrão.<br><br>
+        Qual é o <strong>número máximo de soluções básicas distintas</strong> (factíveis ou inviáveis) que a matriz de restrições admite?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o número de bases (ex: 15)" autocomplete="off">
+        <button class="action-btn">Verificar Resposta</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Pegadinha de Exame — Degenerescência e Vértices</h3>
+      </div>
+      <div class="question-text">
+        Analise a seguinte afirmação conceitual sobre degenerescência:<br>
+        <em>"Se duas bases distintas $B_1$ e $B_2$ produzirem exatamente as mesmas coordenadas geométricas do vetor de decisão $x \in \mathbb{R}^n$, o problema é degenerado e ambas as bases representam o mesmo vértice físico do poliedro."</em><br><br>
+        Essa afirmação é <strong>Verdadeira</strong> ou <strong>Falsa</strong>?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Exato! A degenerescência ocorre exatamente quando mais de m hiperplanos de restrição cruzam o mesmo ponto no espaço. Isso gera múltiplas bases matriciais distintas que descrevem algebricamente o mesmíssimo vértice geométrico!">
+          Verdadeira
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Cuidado: a afirmativa é plenamente VERDADEIRA! Na presença de degenerescência, uma variável básica assume valor zero, permitindo que a base mude (pivote) sem que o vértice geométrico ou o valor de z se alterem.">
+          Falsa
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0004-guia-completo-metodo-simplex.html">Ficha Mestra do Simplex</a>
+      <a href="simplex-02-tableau-e-custos-reduzidos.html">Próxima: Lição Simplex 2 (Tableau & Custos Reduzidos) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: C(6, 2) = 15
+      initInputExercise("ex1", ["15"], "C(6, 2) = 6! / (2! * 4!) = 15 bases possíveis", (raw, clean) => {
+        return clean.trim() === "15";
+      });
+
+      // Ex 2: Verdadeira
+      initTrueFalse("ex2", true, "Degenerescência permite que múltiplas bases distintas representem o mesmo vértice",
+        "Exato! Múltiplas bases matriciais correspondem ao mesmo vértice geométrico na degenerescência.",
+        "Atenção: A afirmativa é verdadeira! Degenerescência causa redundância de representação básica.");
+
+      // ==========================================
+      // SIMULADOR DE BASES SIMPLEX
+      // ==========================================
+      const cols = {
+        x1: { name: "x₁", v: [2, 1] },
+        x2: { name: "x₂", v: [1, 2] },
+        s1: { name: "s₁", v: [1, 0] },
+        s2: { name: "s₂", v: [0, 1] }
+      };
+      const b = [8, 7];
+
+      let selectedCols = ["x1", "x2"];
+
+      const btnX1 = document.getElementById("btn-col-x1");
+      const btnX2 = document.getElementById("btn-col-x2");
+      const btnS1 = document.getElementById("btn-col-s1");
+      const btnS2 = document.getElementById("btn-col-s2");
+
+      const txtBase = document.getElementById("bfs-chosen-base");
+      const txtDet = document.getElementById("bfs-det");
+      const txtInv = document.getElementById("bfs-inv");
+      const txtSol = document.getElementById("bfs-sol");
+      const bStatus = document.getElementById("bfs-status");
+
+      function updateBFS() {
+        // Atualizar estado dos botões
+        btnX1.className = selectedCols.includes("x1") ? "chip active" : "chip";
+        btnX2.className = selectedCols.includes("x2") ? "chip active" : "chip";
+        btnS1.className = selectedCols.includes("x1") && selectedCols.includes("x2") ? "chip" : (selectedCols.includes("s1") ? "chip active" : "chip");
+        btnS2.className = selectedCols.includes("s2") ? "chip active" : "chip";
+
+        if (selectedCols.length !== 2) {
+          bStatus.className = "widget-status-bar error";
+          bStatus.innerHTML = `<span>Selecione exatamente 2 variáveis para formar uma base quadrada 2 × 2!</span>`;
+          return;
+        }
+
+        const c1 = cols[selectedCols[0]].v;
+        const c2 = cols[selectedCols[1]].v;
+        const name1 = cols[selectedCols[0]].name;
+        const name2 = cols[selectedCols[1]].name;
+
+        txtBase.textContent = `{${name1}, ${name2}}`;
+
+        // Matriz B: [ [c1[0], c2[0]], [c1[1], c2[1]] ]
+        const det = c1[0] * c2[1] - c1[1] * c2[0];
+        txtDet.textContent = det.toFixed(2);
+
+        if (Math.abs(det) < 0.0001) {
+          txtInv.textContent = "NÃO EXISTE (Matriz Singular, colunas LD)";
+          txtSol.textContent = "Indeterminado";
+          bStatus.className = "widget-status-bar error";
+          bStatus.innerHTML = `<span>⚠️ <strong>Matriz Singular!</strong> As colunas são linearmente dependentes (det = 0). Não formam uma base válida!</span>`;
+          return;
+        }
+
+        // B^-1 = 1/det * [ [c2[1], -c2[0]], [-c1[1], c1[0]] ]
+        const inv00 = c2[1] / det;
+        const inv01 = -c2[0] / det;
+        const inv10 = -c1[1] / det;
+        const inv11 = c1[0] / det;
+
+        txtInv.textContent = `[[${inv00.toFixed(2)}, ${inv01.toFixed(2)}], [${inv10.toFixed(2)}, ${inv11.toFixed(2)}]]`;
+
+        // x_B = B^-1 * b
+        const xB0 = inv00 * b[0] + inv01 * b[1];
+        const xB1 = inv10 * b[0] + inv11 * b[1];
+
+        txtSol.textContent = `[${name1} = ${xB0.toFixed(2)}, ${name2} = ${xB1.toFixed(2)}]`;
+
+        const isFeasible = xB0 >= -0.001 && xB1 >= -0.001;
+
+        if (isFeasible) {
+          bStatus.className = "widget-status-bar success";
+          bStatus.innerHTML = `<span>🏆 <strong>Solução Básica Factível (BFS)!</strong> ${name1} = ${xB0.toFixed(2)} ≥ 0 e ${name2} = ${xB1.toFixed(2)} ≥ 0. Representa um vértice físico real do poliedro!</span>`;
+        } else {
+          bStatus.className = "widget-status-bar error";
+          bStatus.innerHTML = `<span>⚠️ <strong>Solução Básica INVIÁVEL!</strong> Contém variável negativa (${xB0 < 0 ? name1 + ' = ' + xB0.toFixed(2) : name2 + ' = ' + xB1.toFixed(2)}). Ponto fora da região factível.</span>`;
+        }
+      }
+
+      function toggleCol(colKey) {
+        if (selectedCols.includes(colKey)) {
+          if (selectedCols.length > 1) {
+            selectedCols = selectedCols.filter(c => c !== colKey);
+          }
+        } else {
+          if (selectedCols.length >= 2) {
+            selectedCols.shift(); // remove a primeira
+          }
+          selectedCols.push(colKey);
+        }
+        updateBFS();
+      }
+
+      btnX1.addEventListener("click", () => toggleCol("x1"));
+      btnX2.addEventListener("click", () => toggleCol("x2"));
+      btnS1.addEventListener("click", () => toggleCol("s1"));
+      btnS2.addEventListener("click", () => toggleCol("s2"));
+
+      updateBFS();
+    });
+  </script>
+</body>
+</html>

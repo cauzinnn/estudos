@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Referência: O Guia Completo do Método Simplex — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Referência Especial • Método Simplex</div>
+      <h1>Ficha Mestra: O Guia Definitivo do Método Simplex</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Álgebra matricial da base, anatomia do tableau, teste da razão mínima, duas fases, Simplex Dual e regras anti-ciclagem de Bland.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0001-programacao-linear-e-dualidade.html">Ficha PL & Dualidade</a>
+      <a href="../lessons/simplex-01-fundamentos-e-bfs.html">Iniciar Trilha Simplex &rarr;</a>
+    </div>
+
+    <!-- 1. ESTRUTURA MATRICIAL DA BASE -->
+    <section class="card-theory">
+      <h2>1. Álgebra da Solução Básica Factível (BFS)</h2>
+      <p>
+        Na forma padrão $\min c^T x$ com $A x = b, x \ge 0$ ($A \in \mathbb{R}^{m \times n}, m < n$), particionamos as colunas em Básicas ($B \in \mathbb{R}^{m \times m}$ invertível) e Não Básicas ($N \in \mathbb{R}^{m \times (n-m)}$):
+      </p>
+      $$\begin{bmatrix} B & N \end{bmatrix} \begin{bmatrix} x_B \\ x_N \end{bmatrix} = B x_B + N x_N = b$$
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Componente</th>
+              <th>Fórmula Matemática</th>
+              <th>Propriedade Operacional</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Variáveis Não Básicas</strong></td>
+              <td>$$x_N = \mathbf{0}$$</td>
+              <td>Fixadas rigorosamente em zero ($n - m$ variáveis)</td>
+            </tr>
+            <tr>
+              <td><strong>Variáveis Básicas</strong></td>
+              <td>$$x_B = B^{-1} b$$</td>
+              <td>Factível se $x_B \ge 0$; Degenerada se algum $x_{Bi} = 0$</td>
+            </tr>
+            <tr>
+              <td><strong>Vetor Multiplicador Dual</strong></td>
+              <td>$$\pi^T = c_B^T B^{-1}$$</td>
+              <td>Preços-sombra associados à base atual</td>
+            </tr>
+            <tr>
+              <td><strong>Custos Reduzidos</strong></td>
+              <td>$$\bar{c}_N^T = c_N^T - c_B^T B^{-1} N = c_N^T - \pi^T N$$</td>
+              <td>Taxa marginal de variação de $z$ ao aumentar $x_j$</td>
+            </tr>
+            <tr>
+              <td><strong>Valor Atual da Função Objetivo</strong></td>
+              <td>$$z = c_B^T x_B = c_B^T B^{-1} b$$</td>
+              <td>Calculado exclusivamente pelas variáveis básicas</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. ANATOMIA MATRICIAL DO TABLEAU -->
+    <section class="card-theory">
+      <h2>2. Anatomia Canônica do Tableau Simplex</h2>
+      <p>
+        Multiplicando o sistema de restrições por $B^{-1}$ e eliminando $x_B$ da função objetivo ($z - c_B^T x_B = 0$):
+      </p>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Base</th>
+              <th>Variáveis Básicas ($x_B$)</th>
+              <th>Variáveis Não Básicas ($x_N$)</th>
+              <th>Lado Direito (RHS)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Linha das Restrições</strong></td>
+              <td>$$I$$</td>
+              <td>$$B^{-1} N$$</td>
+              <td>$$B^{-1} b$$</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>Linha de Custos (-z)</strong></td>
+              <td>$$\mathbf{0}^T$$</td>
+              <td>$$\bar{c}_N^T = c_N^T - c_B^T B^{-1} N$$</td>
+              <td>$$-z_0 = -c_B^T B^{-1} b$$</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. CRITÉRIOS DE DECISÃO -->
+    <section class="card-theory">
+      <h2>3. Critérios de Entrada, Saída e Parada</h2>
+      <div class="callout definition">
+        <div class="callout-title">📌 Teste de Otimalidade</div>
+        <p style="margin-bottom: 0;">
+          • <strong>Em Minimização:</strong> O tableau é ótimo se $\bar{c}_j \ge 0$ para todas as variáveis não básicas.<br>
+          • <strong>Em Maximização:</strong> O tableau é ótimo se $\bar{c}_j \le 0$ para todas as variáveis não básicas.
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Escolha da Variável Entrante (Coluna Pivô k)</div>
+        <p style="margin-bottom: 0;">
+          • <strong>Regra de Dantzig:</strong> Escolhe a de custo mais promissor: $k = \arg\min \bar{c}_j$ (em minimização).<br>
+          • <strong>Regra de Bland (Anti-ciclagem):</strong> Em caso de empate ou risco de ciclagem, escolhe o <strong>menor índice de variável</strong> $j$ com $\bar{c}_j < 0$.
+        </p>
+      </div>
+
+      <div class="callout definition">
+        <div class="callout-title">📌 Teste da Razão Mínima (Linha Pivô r que Sai)</div>
+        <p style="margin-bottom: 0;">
+          Para a coluna entrante $k$, seja a direção $d = B^{-1} A_{\cdot k}$. Apenas linhas com $d_i > 0$ competem:
+          $$\theta^* = \min_{i : d_i > 0} \left( \frac{x_{Bi}}{d_i} \right)$$
+          • <strong>Caso Ilimitado:</strong> Se $d_i \le 0$ para <u>todas</u> as linhas, a variável $x_k$ pode crescer ao infinito sem violar factibilidade: o problema é <strong>ILIMITADO</strong> ($z \to -\infty$ ou $+\infty$).
+        </p>
+      </div>
+    </section>
+
+    <!-- 4. OPERAÇÃO DE PIVOTEAMENTO -->
+    <section class="card-theory">
+      <h2>4. Mecânica de Pivoteamento de Gauss-Jordan</h2>
+      <p>
+        Identificado o elemento pivô $a_{rk} > 0$ na interseção da linha que sai ($r$) com a coluna que entra ($k$):
+      </p>
+      <ol>
+        <li><strong>Normalização da Linha Pivô:</strong> $\text{Linha}_r \leftarrow \frac{\text{Linha}_r}{a_{rk}}$ (o elemento pivô torna-se exatamente $1$).</li>
+        <li><strong>Eliminação nas Demais Linhas ($i \ne r$):</strong> $\text{Linha}_i \leftarrow \text{Linha}_i - a_{ik} \cdot \text{Linha}_r$ (zera todos os outros elementos da coluna $k$).</li>
+        <li><strong>Atualização da Linha de Custo:</strong> $\text{Linha}_0 \leftarrow \text{Linha}_0 - \bar{c}_k \cdot \text{Linha}_r$ (zera o custo reduzido da nova variável básica).</li>
+      </ol>
+    </section>
+
+    <!-- 5. DUAS FASES E SIMPLEX DUAL -->
+    <section class="card-theory">
+      <h2>5. Simplex em Duas Fases e Simplex Dual</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Método</th>
+              <th>Quando Usar?</th>
+              <th>Procedimento Operacional</th>
+              <th>Critério de Parada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Duas Fases (Two-Phase)</strong></td>
+              <td>Quando não há base inicial óbvia (restrições com $\ge$ ou $=$)</td>
+              <td><strong>Fase 1:</strong> Adiciona variáveis artificiais $a_i \ge 0$ e minimiza $W = \sum a_i$.<br><strong>Fase 2:</strong> Se $W^* = 0$, elimina $a_i$ e otimiza a função original.</td>
+              <td>Se na Fase 1 $W^* > 0$, o problema é <strong>INVIÁVEL</strong>!</td>
+            </tr>
+            <tr>
+              <td><strong>Simplex Dual</strong></td>
+              <td>Base ótima dual ($\bar{c} \ge 0$), mas inviável primal ($b_i < 0$)</td>
+              <td>1. Sai a linha mais negativa: $r = \arg\min b_i < 0$.<br>2. Entra pela razão dual: $k = \arg\min_{j: a_{rj} < 0} \frac{\bar{c}_j}{|a_{rj}|}$.</td>
+              <td>Todos os $b_i \ge 0$ (atinge a factibilidade primal mantendo otimalidade dual).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../lessons/simplex-01-fundamentos-e-bfs.html">Iniciar Lição Simplex 1: BFS & Álgebra da Base &rarr;</a>
+    </div>
+
+  </div>
+</body>
+</html>

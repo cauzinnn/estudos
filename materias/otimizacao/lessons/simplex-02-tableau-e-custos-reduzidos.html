@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simplex 2: Tableau e Custos Reduzidos — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Trilha Simplex • Lição 2 de 6</div>
+      <h1>A Anatomia do Tableau, Custos Reduzidos e Variável Entrante</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Dedução de $\bar{c}_j = c_j - \pi^T A_j$, interpretação econômica de lucros marginais e o critério de entrada de Dantzig.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="simplex-01-fundamentos-e-bfs.html">← Lição 1: Fundamentos & BFS</a>
+      <a href="simplex-03-razao-minima-e-pivoteamento.html">Próxima Lição: Razão Mínima & Pivoteamento &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: CUSTOS REDUZIDOS -->
+    <section class="card-theory">
+      <h2>1. A Equação Mestra dos Custos Reduzidos</h2>
+      <p>
+        Ao avaliar se vale a pena trazer uma variável não básica $x_j$ para a base, calculamos seu <strong>custo reduzido</strong> $\bar{c}_j$:
+      </p>
+      $$\bar{c}_j = c_j - c_B^T B^{-1} A_{\cdot j} = c_j - \pi^T A_{\cdot j}$$
+      <div class="callout definition">
+        <div class="callout-title">📌 Interpretação Econômica de Mercado</div>
+        <ul>
+          <li>$c_j$: É o custo direto unitário da atividade $j$.</li>
+          <li>$\pi^T A_{\cdot j}$: É o <strong>custo de oportunidade imputado</strong> (preço-sombra $\pi = c_B^T B^{-1}$ multiplicado pela quantidade de insumos $A_{\cdot j}$ consumidos por essa atividade).</li>
+          <li><strong>Regra de Minimização:</strong> Se $\bar{c}_j < 0$, o custo direto é menor que o valor dos insumos consumidos. Trazer $x_j$ para a base reduzirá o custo global!</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: CALCULADOR DE CUSTOS REDUZIDOS -->
+    <div class="interactive-widget" id="rc-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>📊 Simulador Interativo: Linha de Custos Reduzidos e Variável Entrante</span>
+        </div>
+        <span class="widget-badge">Pricing Simplex</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Problema de <strong>minimização</strong> com base atual $\{s_1, s_2\}$. 
+        Altere os custos das atividades $x_1$ e $x_2$. 
+        Veja o vetor dual $\pi$ e os custos reduzidos $\bar{c}_1, \bar{c}_2$ serem recalculados, destacando a coluna que deve entrar na base pela regra de Dantzig!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 260px; padding: 1.25rem;">
+        <div class="trace-table-container" style="width: 100%;">
+          <table class="trace-table">
+            <thead>
+              <tr>
+                <th>Variável</th>
+                <th>x₁</th>
+                <th>x₂</th>
+                <th>s₁ (Básica)</th>
+                <th>s₂ (Básica)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Custo Original ($c_j$)</strong></td>
+                <td id="rc-c1">-12.0</td>
+                <td id="rc-c2">-9.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+              </tr>
+              <tr>
+                <td><strong>Custo Imputado ($\pi^T A_j$)</strong></td>
+                <td id="rc-pi1">0.0</td>
+                <td id="rc-pi2">0.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+              </tr>
+              <tr class="highlight-step">
+                <td><strong>Custo Reduzido ($\bar{c}_j$)</strong></td>
+                <td id="rc-bar1" style="font-weight: bold; font-size: 1.1rem; color: #f0883e;">-12.0</td>
+                <td id="rc-bar2" style="font-weight: bold; font-size: 1.1rem;">-9.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="widget-status-bar error" id="rc-status" style="margin-top: 1rem;">
+          <span>Coluna Candidata a Entrar: <strong>x₁ (com c̄₁ = -12.0 mais negativo)</strong>. A base atual NÃO é ótima!</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%;">
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Custo Original $c_1$</span><span id="v-rc-c1" style="color: var(--accent); font-weight: bold;">-12.0</span></div>
+          <input type="range" class="interactive-slider" id="sl-rc-c1" min="-25" max="15" value="-12" step="1">
+        </div>
+        <div class="slider-control-group">
+          <div class="slider-label"><span>Custo Original $c_2$</span><span id="v-rc-c2" style="color: var(--accent); font-weight: bold;">-9.0</span></div>
+          <input type="range" class="interactive-slider" id="sl-rc-c2" min="-25" max="15" value="-9" step="1">
+        </div>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="A fórmula é c_bar_j = c_j - pi^T A_j. Com c_j = 8, pi = [2, 3]^T e A_j = [1, 4]^T: pi^T A_j = 2*(1) + 3*(4) = 2 + 12 = 14. c_bar_j = 8 - 14 = -6.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Cálculo de Custo Reduzido</h3>
+      </div>
+      <div class="question-text">
+        Em uma iteração de minimização, o vetor multiplicador dual da base é $\pi = [2, 3]^T$.<br>
+        Uma variável não básica $x_3$ possui custo original $c_3 = 8$ e coluna de coeficientes $A_{\cdot 3} = [1, 4]^T$.<br><br>
+        Calcule o <strong>valor numérico do custo reduzido $\bar{c}_3$</strong> dessa variável:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de c_bar_3 (ex: -6)" autocomplete="off">
+        <button class="action-btn">Verificar Custo Reduzido</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Custos Reduzidos das Próprias Variáveis Básicas</h3>
+      </div>
+      <div class="question-text">
+        Qual é o valor matemático rigoroso do custo reduzido $\bar{c}_i$ para qualquer variável que <strong>já pertença à base atual</strong> ($x_i \in x_B$)?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Como B⁻¹ B = I, temos c̄_B = c_Bᵀ - c_Bᵀ B⁻¹ B = c_Bᵀ - c_Bᵀ I = 0. O custo reduzido de qualquer variável básica é identicamente nulo em qualquer iteração do Simplex!">
+          É identicamente igual a zero em qualquer iteração (c̄_Bi = 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a variável básica tem c̄ = 0 sempre, pois o custo de oportunidade de usar a variável já compensa exatamente seu valor de base.">
+          É estritamente positivo para garantir que ela não saia da base.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o custo original c_i é modificado ao subtrair o termo piᵀ A_i, resultando exatamente em zero para colunas básicas.">
+          É igual ao custo unitário original c_i sem qualquer modificação.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o custo reduzido básico não depende do lado direito b nem assume valores infinitos.">
+          É inversamente proporcional ao valor do lado direito b_i.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="simplex-01-fundamentos-e-bfs.html">← Lição 1: Fundamentos & BFS</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="simplex-03-razao-minima-e-pivoteamento.html">Próxima: Lição Simplex 3 (Razão Mínima & Pivô) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: 8 - 14 = -6
+      initInputExercise("ex1", ["-6", "-6.0", "-6,0"], "c_bar_3 = 8 - (2*1 + 3*4) = 8 - 14 = -6", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - (-6)) < 0.01;
+      });
+
+      // Ex 2: Custo reduzido básico = 0
+      initMultipleChoice("ex2", "Custo reduzido de qualquer variável básica é identicamente nulo: c_bar_B = 0");
+
+      // ==========================================
+      // SIMULADOR DE CUSTOS REDUZIDOS
+      // ==========================================
+      const slC1 = document.getElementById("sl-rc-c1");
+      const slC2 = document.getElementById("sl-rc-c2");
+      const vC1 = document.getElementById("v-rc-c1");
+      const vC2 = document.getElementById("v-rc-c2");
+
+      const rcC1 = document.getElementById("rc-c1");
+      const rcC2 = document.getElementById("rc-c2");
+      const rcBar1 = document.getElementById("rc-bar1");
+      const rcBar2 = document.getElementById("rc-bar2");
+      const rcStatus = document.getElementById("rc-status");
+
+      function updateRC() {
+        const c1 = parseFloat(slC1.value);
+        const c2 = parseFloat(slC2.value);
+
+        vC1.textContent = c1.toFixed(1);
+        vC2.textContent = c2.toFixed(1);
+
+        rcC1.textContent = c1.toFixed(1);
+        rcC2.textContent = c2.toFixed(1);
+
+        // Base atual {s1, s2} -> c_B = [0, 0] -> pi = [0, 0]
+        // c_bar_j = c_j
+        rcBar1.textContent = c1.toFixed(1);
+        rcBar2.textContent = c2.toFixed(1);
+
+        const isOpt = c1 >= 0 && c2 >= 0;
+
+        if (isOpt) {
+          rcStatus.className = "widget-status-bar success";
+          rcStatus.innerHTML = `<span>🏆 <strong>Tableau Ótimo Atingido!</strong> Todos os custos reduzidos são não negativos (c̄₁ = ${c1.toFixed(1)} ≥ 0 e c̄₂ = ${c2.toFixed(1)} ≥ 0). Nenhuma variável reduz o custo ao entrar!</span>`;
+        } else {
+          const enterVar = c1 <= c2 ? "x₁" : "x₂";
+          const minVal = Math.min(c1, c2).toFixed(1);
+          rcStatus.className = "widget-status-bar error";
+          rcStatus.innerHTML = `<span>Coluna Candidata a Entrar (Regra de Dantzig): <strong>${enterVar} (c̄ = ${minVal} mais negativo)</strong>. Aumentar ${enterVar} reduzirá a função objetivo!</span>`;
+        }
+      }
+
+      slC1.addEventListener("input", updateRC);
+      slC2.addEventListener("input", updateRC);
+
+      updateRC();
+    });
+  </script>
+</body>
+</html>

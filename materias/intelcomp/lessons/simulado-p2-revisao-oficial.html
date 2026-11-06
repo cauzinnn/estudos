@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulado Oficial P2: Lógica Fuzzy, TSK, Regras e Soma-Produto — intelcomp</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Simulado Especial • Revisão Oficial P2</div>
+      <h1>Simulado Oficial P2: Inteligência Computacional</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Treinamento intensivo cobrindo todos os 5 tópicos da lista do professor: Inferência Fuzzy Completa, Desfuzzificação (MoMax/MedMax/MaMax/Centróide), Sistemas TSK, Encadeamento Lógico e Inferência Soma-Produto com Normalização.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="simulado-sistemas-especialistas.html">Simulado 2: Sistemas Especialistas</a>
+      <a href="../reference/0003-sistemas-especialistas-fuzzy-guia-rapido.html">Ficha: Guia Rápido</a>
+    </div>
+
+    <!-- PAINEL GUIA DE REGRAS DE OURO -->
+    <section class="card-theory">
+      <h2>Regras de Ouro e Operadores Canônicos</h2>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Método / Sistema</th>
+              <th>Conjunção (E / $\wedge$)</th>
+              <th>Disjunção (OU / $\vee$)</th>
+              <th>Negação (NÃO / $\sim$)</th>
+              <th>Ponderação da Regra</th>
+              <th>Agregação dos Termos</th>
+              <th>Saída Final</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mamdani Max-Min</strong></td>
+              <td>$\min(a, b)$</td>
+              <td>$\max(a, b)$</td>
+              <td>$1 - a$</td>
+              <td>$\mu_{\text{ant}} \times \text{peso}$</td>
+              <td>$\max(\mu_1, \mu_2, \dots)$</td>
+              <td>Conjunto Fuzzy Agregado</td>
+            </tr>
+            <tr>
+              <td><strong>Soma-Produto ($\Sigma-\Pi$)</strong></td>
+              <td>$a \times b$ (Produto)</td>
+              <td>$\max(a, b)$</td>
+              <td>$1 - a$</td>
+              <td>$\mu_{\text{ant}} \times \text{peso}$</td>
+              <td>$\sum \mu_i$ (Soma)</td>
+              <td>$\frac{S_{\text{termo}}}{\sum S_k}$ (Normalização)</td>
+            </tr>
+            <tr>
+              <td><strong>Takagi-Sugeno-Kang (TSK)</strong></td>
+              <td>$\min$ ou $\times$</td>
+              <td>$\max$</td>
+              <td>$1 - a$</td>
+              <td>Grau $GR_i$</td>
+              <td>Média Ponderada</td>
+              <td>$Y = \frac{\sum (GR_i \cdot y_i)}{\sum GR_i}$</td>
+            </tr>
+            <tr>
+              <td><strong>Encadeamento de Regras</strong></td>
+              <td>Todas verdadeiras</td>
+              <td>Pelo menos 1 verdadeira</td>
+              <td>Falsidade comprovada</td>
+              <td>Modus Ponens</td>
+              <td>União de Fatos ($BF$)</td>
+              <td>Meta provada (Válida)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 1: INFERÊNCIA FUZZY COMPLETA        -->
+    <!-- ========================================== -->
+    <section class="card-theory">
+      <h2>Módulo 1: Inferência Fuzzy Completa (Base de Prova)</h2>
+      <p>Considere o sistema fuzzy com pesos de regras e variável intermediária $v_4$:</p>
+      <div style="background: var(--bg-card-hover); border: 1px solid var(--border-subtle); padding: 0.85rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6;">
+        <strong>R1:</strong> Se $v_1$ é A ou B e $v_2$ é C ou D e $v_3$ não é F $\to$ prova é fácil $(0{,}82)$<br>
+        <strong>R2:</strong> Se $v_1$ não é B e $v_3$ é F $\to$ prova é difícil $(0{,}92)$<br>
+        <strong>R3:</strong> Se $v_2$ é C e $v_3$ é G $\to$ prova é equilibrada $(0{,}75)$<br>
+        <strong>R4:</strong> Se $v_1$ é B ou $v_2$ é E $\to$ $v_4$ é X $(0{,}94)$ <em>(Variável Intermediária)</em><br>
+        <strong>R5:</strong> Se $v_3$ é D e $v_4$ é X $\to$ prova é difícil $(0{,}85)$<br>
+        <strong>R6:</strong> Se $v_1$ é A e $v_2$ é D ou $v_4$ não é X $\to$ prova é fácil $(0{,}88)$<br><br>
+        <strong>Tabela de Fuzzificação das Entradas:</strong><br>
+        • $v_1$: $A=0{,}65$, $B=0{,}52$<br>
+        • $v_2$: $C=0{,}68$, $D=0{,}44$, $E=0{,}16$<br>
+        • $v_3$: $D=0{,}14$, $E=0{,}36$, $F=0{,}80$, $G=0{,}60$
+      </div>
+    </section>
+
+    <!-- QUESTÃO 1 -->
+    <section class="card-exercise" id="q1" data-hint="Na regra R4: max(μ_B(v1), μ_E(v2)) * 0.94 = max(0.52, 0.16) * 0.94 = 0.52 * 0.94 = 0.4888.">
+      <div class="exercise-header">
+        <h3>Questão 1: Ativação da Variável Intermediária (R4)</h3>
+      </div>
+      <div class="question-text">
+        Calcule o grau de pertinência derivado para a variável intermediária $\mu_X(v_4)$ produzido pela regra <strong>R4</strong>, considerando a ponderação do peso $(0{,}94)$.
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.4888" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 2 -->
+    <section class="card-exercise" id="q2" data-hint="Precedência: max(min(A, D), 1 - μ_X(v4)) * 0.88. min(0.65; 0.44) = 0.44. 1 - 0.4888 = 0.5112. max(0.44; 0.5112) * 0.88 = 0.5112 * 0.88 ≈ 0.45.">
+      <div class="exercise-header">
+        <h3>Questão 2: Avaliação com Precedência e Negação (R6)</h3>
+      </div>
+      <div class="question-text">
+        Na regra <strong>R6</strong> ($v_1 \text{ é } A \wedge v_2 \text{ é } D \vee \sim(v_4 \text{ é } X)$ com peso $0{,}88$), sabendo que a conjunção tem precedência sobre a disjunção:<br><br>
+        <strong>Qual é o grau de pertinência final $\mu_{R6}(\text{fácil})$ gerado por essa regra?</strong> (Arredonde para 2 ou 4 casas decimais).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.45" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 3 -->
+    <section class="card-exercise" id="q3">
+      <div class="exercise-header">
+        <h3>Questão 3: Agregação Mamdani para a Resposta Fuzzy</h3>
+      </div>
+      <div class="question-text">
+        No sistema Mamdani Max-Min, quando múltiplas regras concluem o mesmo termo linguístico de saída (por exemplo, R1 e R6 concluem que a prova é "fácil"), como é calculado o grau de pertinência final agregado $\mu(\text{fácil})$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: A soma dos graus é realizada no método Soma-Produto (Σ-Π), não no modelo canônico de Mamdani.">
+          Pela soma direta dos graus de ativação: $\mu(\text{fácil}) = \mu_{R1} + \mu_{R6} = 0{,}164 + 0{,}45 = 0{,}614$.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! No modelo de Mamdani, a agregação de termos idênticos é a união dos conjuntos truncados, calculada pelo operador máximo: max(0.164, 0.45) = 0.45.">
+          Pelo operador de máximo (união): $\mu(\text{fácil}) = \max(\mu_{R1}, \mu_{R6}) = \max(0{,}164; 0{,}45) = \mathbf{0{,}45}$.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A média aritmética dilui o valor máximo da evidência, não sendo a norma de união fuzzy de Mamdani.">
+          Pela média simples dos graus: $\mu(\text{fácil}) = \frac{0{,}164 + 0{,}45}{2} = 0{,}307$.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A multiplicação é utilizada na conjunção t-norma probabilística, não na agregação disjuntiva.">
+          Pela multiplicação dos graus: $\mu(\text{fácil}) = 0{,}164 \times 0{,}45 = 0{,}0738$.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 2: DESFUZZIFICAÇÃO E MÁXIMOS        -->
+    <!-- ========================================== -->
+    <section class="card-theory">
+      <h2>Módulo 2: Desfuzzificação (Métodos dos Máximos e Média Ponderada)</h2>
+      <p>
+        Considere a curva fuzzy resultante da inferência cuja pertinência máxima absoluta é $\mu_{\max} = 0{,}9$, ocorrendo no platô contínuo entre os pontos $x = 25$ e $x = 62$.
+      </p>
+    </section>
+
+    <!-- QUESTÃO 4 -->
+    <section class="card-exercise" id="q4" data-hint="MoMax (Menor dos Máximos) corresponde ao menor ponto do platô máximo (onde a curva atinge o patamar mais alto). Digite 25.">
+      <div class="exercise-header">
+        <h3>Questão 4: Menor dos Máximos (MoMax)</h3>
+      </div>
+      <div class="question-text">
+        Qual é o valor nítido (crisp) de saída obtido pelo método <strong>MoMax</strong> (Menor dos Máximos / First of Maxima)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 25" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 5 -->
+    <section class="card-exercise" id="q5" data-hint="MedMax = (x_min + x_max) / 2 = (25 + 62) / 2 = 87 / 2 = 43.5.">
+      <div class="exercise-header">
+        <h3>Questão 5: Mediano dos Máximos (MedMax / MOM)</h3>
+      </div>
+      <div class="question-text">
+        Qual é o valor de saída gerado pelo método <strong>MedMax</strong> (Mediano dos Máximos / Middle of Maxima), calculado como o ponto médio do platô $[25, 62]$?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 43.5" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 6 -->
+    <section class="card-exercise" id="q6" data-hint="MaMax (Maior dos Máximos) corresponde ao extremo superior do platô máximo. Digite 62.">
+      <div class="exercise-header">
+        <h3>Questão 6: Maior dos Máximos (MaMax)</h3>
+      </div>
+      <div class="question-text">
+        Qual é o valor nítido obtido pelo método <strong>MaMax</strong> (Maior dos Máximos / Last of Maxima)?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 62" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 7 -->
+    <section class="card-exercise" id="q7" data-hint="Soma(x_i * μ_i) = 10*0.5 + 30*0.9 + 50*0.9 + 80*0.3 + 95*0.7 = 5 + 27 + 45 + 24 + 66.5 = 167.5. Soma(μ_i) = 0.5 + 0.9 + 0.9 + 0.3 + 0.7 = 3.3. 167.5 / 3.3 ≈ 50.76.">
+      <div class="exercise-header">
+        <h3>Questão 7: Média Ponderada Discreta (Centróide Amostrado)</h3>
+      </div>
+      <div class="question-text">
+        Para os 5 pontos amostrados com seus respectivos graus de pertinência:
+        $$(10, 0{,}5), \quad (30, 0{,}9), \quad (50, 0{,}9), \quad (80, 0{,}3), \quad (95, 0{,}7)$$
+        Calcule a <strong>Média Ponderada</strong> $\frac{\sum x_i \cdot \mu_i}{\sum \mu_i}$.
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 50.76" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 3: SISTEMA TAKAGI-SUGENO-KANG (TSK) -->
+    <!-- ========================================== -->
+    <section class="card-theory">
+      <h2>Módulo 3: Sistemas Fuzzy Takagi-Sugeno-Kang (TSK)</h2>
+      <p>
+        Em um sistema TSK de ordem zero, a saída global é a média ponderada pelas pertinências:
+        $$Y = \frac{\sum_{i=1}^R GR_i \cdot y_i}{\sum_{i=1}^R GR_i}$$
+      </p>
+    </section>
+
+    <!-- QUESTÃO 8 -->
+    <section class="card-exercise" id="q8" data-hint="Y = 50. Soma(GR) = 0.6+0.8+0.5+0.3 = 2.2. Numerador = 0.6*30 + 0.8*40 + 0.5*20 + 0.3*x = 18 + 32 + 10 + 0.3x = 60 + 0.3x. 50 * 2.2 = 110 = 60 + 0.3x -> 0.3x = 50 -> x = 166.67.">
+      <div class="exercise-header">
+        <h3>Questão 8: Problema Inverso TSK (Saída da Regra Desconhecida)</h3>
+      </div>
+      <div class="question-text">
+        A saída global do sistema TSK foi $Y_{\text{final}} = 50$. Os graus de relevância ($GR$) e as saídas individuais ($y$) são:<br><br>
+        • R1: $GR_1 = 0{,}6$, $y_1 = 30$<br>
+        • R2: $GR_2 = 0{,}8$, $y_2 = 40$<br>
+        • R3: $GR_3 = 0{,}5$, $y_3 = 20$<br>
+        • R4: $GR_4 = 0{,}3$, $y_4 = x$<br><br>
+        <strong>Qual é o valor exato da saída $x$ da regra R4?</strong>
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 166.67" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 9 -->
+    <section class="card-exercise" id="q9" data-hint="Y = (0.4*10 + 0.6*20 + 1.0*50) / (0.4 + 0.6 + 1.0) = (4 + 12 + 50) / 2.0 = 66 / 2 = 33.">
+      <div class="exercise-header">
+        <h3>Questão 9: Cálculo Direto TSK de Ordem 0</h3>
+      </div>
+      <div class="question-text">
+        Um sistema TSK possui três regras com os seguintes parâmetros:<br>
+        • R1: $GR_1 = 0{,}4$, $y_1 = 10$<br>
+        • R2: $GR_2 = 0{,}6$, $y_2 = 20$<br>
+        • R3: $GR_3 = 1{,}0$, $y_3 = 50$<br><br>
+        <strong>Qual é a saída global $Y_{\text{final}}$ do sistema?</strong>
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 33" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 4: ENCADEAMENTO EM BASE DE REGRAS   -->
+    <!-- ========================================== -->
+    <section class="card-theory">
+      <h2>Módulo 4: Encadeamento de Regras (Sistemas Especialistas)</h2>
+      <div style="background: var(--bg-card-hover); border: 1px solid var(--border-subtle); padding: 0.85rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6;">
+        <strong>Base de Regras:</strong><br>
+        <strong>R1:</strong> $d \wedge e \wedge c \to b \wedge s$<br>
+        <strong>R2:</strong> $f \vee \sim c \to r \vee p$<br>
+        <strong>R3:</strong> $\sim i \vee \sim g \to \sim l \vee m \wedge o$<br>
+        <strong>R4:</strong> $a \vee \sim b \wedge c \to e \wedge f \wedge \sim g$<br>
+        <strong>R5:</strong> $b \wedge h \wedge j \to m \wedge \sim i$<br>
+        <strong>R6:</strong> $d \wedge \sim j \to l \wedge n \wedge r$<br>
+        <strong>R7:</strong> $h \wedge g \vee d \to c$<br><br>
+        <strong>Fatos Iniciais:</strong> $BF = \{a, d, h\}$ &nbsp;|&nbsp; <strong>Meta:</strong> $r \wedge e \wedge m$
+      </div>
+    </section>
+
+    <!-- QUESTÃO 10 -->
+    <section class="card-exercise" id="q10" data-hint="R7 possui premissa (h ∧ g) ∨ d. Como d é fato inicial, a premissa é imediatamente verdadeira e conclui 'c'. Digite c.">
+      <div class="exercise-header">
+        <h3>Questão 10: Primeiro Novo Fato Derivado no Encadeamento Progressivo</h3>
+      </div>
+      <div class="question-text">
+        Partindo dos fatos iniciais $\{a, d, h\}$, a regra <strong>R7</strong> tem premissa $(h \wedge g) \vee d$. Como o fato $d$ é primitivo e verdadeiro, qual é o <strong>literal</strong> que R7 permite adicionar à Base de Fatos?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: c" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 11 -->
+    <section class="card-exercise" id="q11">
+      <div class="exercise-header">
+        <h3>Questão 11: Satisfação da Premissa de R4</h3>
+      </div>
+      <div class="question-text">
+        A regra <strong>R4</strong> possui o antecedente $a \vee (\sim b \wedge c)$. Por que ela é disparada com sucesso no ciclo de inferência?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como 'a' é um fato inicial da base BF, a disjunção a ∨ (premissa) é satisfeita imediatamente, dispensando o cálculo de ~b ∧ c!">
+          Porque o literal 'a' é um fato inicial conhecido (verdadeiro), tornando toda a disjunção $a \vee (\dots)$ verdadeira.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Não foi necessário avaliar ~b ∧ c, pois o disjunto 'a' já torna a expressão logicamente verdadeira.">
+          Porque a conjunção $\sim b \wedge c$ foi provada como verdadeira antes de 'a'.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: A regra R1 não dispara inicialmente pois depende de 'e' (que é gerado apenas depois por R4).">
+          Porque a regra R1 forneceu os dados necessários para validar o disjunto direito.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Disjunção lógica exige que apenas pelo menos um dos lados seja verdadeiro.">
+          Porque ambos os lados da disjunção precisam ser estritamente verdadeiros para o disparo.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 12 -->
+    <section class="card-exercise" id="q12" data-hint="Após R7 provar c, R4 prova e, f, ~g. R3 usa ~g para provar m. R2 ou R6 provam r. Logo r, e, m são todos verdadeiros. Digite 'valida' ou 'sim'.">
+      <div class="exercise-header">
+        <h3>Questão 12: Validação da Meta Composta r ∧ e ∧ m</h3>
+      </div>
+      <div class="question-text">
+        A meta composta $r \wedge e \wedge m$ é <strong>VÁLIDA</strong> ou <strong>INVÁLIDA</strong> a partir dos fatos iniciais $\{a, d, h\}$?
+      </div>
+      <div class="options-list" style="flex-direction: row; gap: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; justify-content: center;" data-feedback="Correto! O sistema prova e por R4, m por R3 e r por R2/R6. Todas as submetas da conjunção são provadas!">
+          Válida
+        </button>
+        <button class="option-btn btn-false" style="flex: 1; justify-content: center;" data-feedback="Incorreto: A meta é perfeitamente válida e demonstrada no encadeamento passo a passo.">
+          Inválida
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 5: INFERÊNCIA SOMA-PRODUTO (Σ-Π)    -->
+    <!-- ========================================== -->
+    <section class="card-theory">
+      <h2>Módulo 5: Inferência Soma-Produto e Normalização</h2>
+      <div style="background: var(--bg-card-hover); border: 1px solid var(--border-subtle); padding: 0.85rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6;">
+        <strong>Regras e Pesos:</strong><br>
+        <strong>R1:</strong> $a \wedge \sim b \vee c \to \text{six } (0{,}75)$<br>
+        <strong>R2:</strong> $b \vee d \wedge \sim a \to \text{seven } (0{,}80)$<br>
+        <strong>R3:</strong> $b \wedge c \to \text{seven } (0{,}90)$<br>
+        <strong>R4:</strong> $\sim d \wedge \sim a \to \text{six } (0{,}85)$<br><br>
+        <strong>Valores de Entrada:</strong><br>
+        • $a = 0{,}25 \implies \sim a = 0{,}75$<br>
+        • $b = 0{,}70 \implies \sim b = 0{,}30$<br>
+        • $c = 0{,}80 \implies \sim c = 0{,}20$<br>
+        • $d = 0{,}40 \implies \sim d = 0{,}60$
+      </div>
+    </section>
+
+    <!-- QUESTÃO 13 -->
+    <section class="card-exercise" id="q13" data-hint="a ∧ ~b = 0.25 * 0.30 = 0.075. Disjunção com c: max(0.075; 0.80) = 0.80. Ponderação: 0.80 * 0.75 = 0.60.">
+      <div class="exercise-header">
+        <h3>Questão 13: Ativação Ponderada de R1 (Soma-Produto)</h3>
+      </div>
+      <div class="question-text">
+        Na inferência Soma-Produto, onde E ($\wedge$) é o produto e OU ($\vee$) é o máximo:<br><br>
+        <strong>Qual é o grau de ativação ponderado $\mu_{R1}(\text{six})$ gerado pela regra R1?</strong>
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.60" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 14 -->
+    <section class="card-exercise" id="q14" data-hint="Termo d ∧ ~a = 0.40 * 0.75 = 0.30. Disjunção com b: max(0.70; 0.30) = 0.70. Ponderação: 0.70 * 0.80 = 0.56.">
+      <div class="exercise-header">
+        <h3>Questão 14: Ativação Ponderada de R2 (Soma-Produto)</h3>
+      </div>
+      <div class="question-text">
+        Considerando a precedência do operador $\wedge$ sobre $\vee$ em R2 ($b \vee (d \wedge \sim a)$ com peso $0{,}80$):<br><br>
+        <strong>Qual é o grau de ativação ponderado $\mu_{R2}(\text{seven})$ gerado pela regra R2?</strong>
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 0.56" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 15 -->
+    <section class="card-exercise" id="q15" data-hint="μ_R2(seven) = 0.56 e μ_R3(seven) = (0.70 * 0.80) * 0.90 = 0.56 * 0.90 = 0.504. Agregação por SOMA: 0.56 + 0.504 = 1.064.">
+      <div class="exercise-header">
+        <h3>Questão 15: Agregação por Soma dos Termos 'seven'</h3>
+      </div>
+      <div class="question-text">
+        No método Soma-Produto, as regras que produzem o mesmo consequente têm seus graus <strong>SOMADOS</strong>.<br><br>
+        Sabendo que $\mu_{R2}(\text{seven}) = 0{,}56$ e $\mu_{R3}(\text{seven}) = 0{,}504$, qual é a soma total acumulada $S_{\text{seven}}$?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 1.064" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 16 -->
+    <section class="card-exercise" id="q16" data-hint="S_total = S_six + S_seven = 0.9825 + 1.064 = 2.0465. seven_norm = 1.064 / 2.0465 ≈ 0.52 (ou 52%).">
+      <div class="exercise-header">
+        <h3>Questão 16: Normalização Final do Consequente 'seven'</h3>
+      </div>
+      <div class="question-text">
+        Com $S_{\text{six}} = 0{,}9825$ e $S_{\text{seven}} = 1{,}064$, a soma total de ativação é $S_{\text{total}} = 2{,}0465$.<br><br>
+        <strong>Qual é a porcentagem normalizada final da saída 'seven'?</strong> (Digite no formato decimal como 0.52 ou percentual como 52%).
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Ex: 52%" autocomplete="off" spellcheck="false">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <div class="lesson-nav">
+      <a href="simulado-sistemas-especialistas.html">← Simulado 2: Sistemas Especialistas</a>
+      <a href="../index.html">Painel da Disciplina &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Q1: R4 variável intermediária (0.4888)
+      initInputExercise("q1", ["0.4888", "0,4888", "0.49", "0,49"], "μ_X(v4) = max(0.52; 0.16) * 0.94 = 0.4888");
+
+      // Q2: R6 Mamdani (0.45 ou 0.4498)
+      initInputExercise("q2", ["0.45", "0,45", "0.4498", "0,4498", "0.449856"], "R6 = max(min(0.65; 0.44), 1 - 0.4888) * 0.88 ≈ 0.45");
+
+      // Q3: Agregação Mamdani por Máximo
+      initMultipleChoice("q3", "Mamdani agrega regras com mesmo termo utilizando o operador máximo");
+
+      // Q4: MoMax (25)
+      initInputExercise("q4", ["25"], "MoMax é o ponto inicial do platô máximo: 25");
+
+      // Q5: MedMax (43.5)
+      initInputExercise("q5", ["43.5", "43,5"], "MedMax é o ponto médio do platô: (25 + 62)/2 = 43.5");
+
+      // Q6: MaMax (62)
+      initInputExercise("q6", ["62"], "MaMax é o ponto final do platô máximo: 62");
+
+      // Q7: Média Ponderada (50.76)
+      initInputExercise("q7", ["50.76", "50,76"], "Média Ponderada = 167.5 / 3.3 ≈ 50.76");
+
+      // Q8: Inverso TSK (166.67)
+      initInputExercise("q8", ["166.67", "166,67", "166.7", "166,7", "166.66"], "TSK inverso: (110 - 60) / 0.3 ≈ 166.67");
+
+      // Q9: Direto TSK (33)
+      initInputExercise("q9", ["33"], "TSK direto: (4 + 12 + 50) / 2.0 = 33");
+
+      // Q10: R7 conclui c
+      initInputExercise("q10", ["c", "C"], "R7 conclui o literal 'c'");
+
+      // Q11: R4 premissa a é fato
+      initMultipleChoice("q11", "Literal 'a' é fato inicial verdadeiro tornando a disjunção verdadeira");
+
+      // Q12: Meta válida
+      initTrueFalse("q12", true, "Meta r ∧ e ∧ m é comprovadamente válida",
+        "Correto! Todas as submetas r, e e m foram inferidas pelas regras R4, R3 e R2/R6.",
+        "Incorreto: A meta r ∧ e ∧ m é plenamente demonstrável pelos fatos iniciais.");
+
+      // Q13: Soma-Produto R1 (0.60)
+      initInputExercise("q13", ["0.60", "0,60", "0.6", "0,6"], "R1 = max(0.25*0.30, 0.80) * 0.75 = 0.60");
+
+      // Q14: Soma-Produto R2 (0.56)
+      initInputExercise("q14", ["0.56", "0,56"], "R2 = max(0.70, 0.40*0.75) * 0.80 = 0.56");
+
+      // Q15: Agregação seven (1.064)
+      initInputExercise("q15", ["1.064", "1,064"], "S_seven = 0.56 + 0.504 = 1.064");
+
+      // Q16: Normalização seven (52% ou 0.52)
+      initInputExercise("q16", ["52%", "52", "0.52", "0,52", "52.00%", "52%"], "Normalização seven = 1.064 / 2.0465 ≈ 52%");
+    });
+  </script>
+</body>
+</html>

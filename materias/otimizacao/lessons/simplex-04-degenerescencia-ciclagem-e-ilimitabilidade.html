@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simplex 4: Degenerescência, Ciclagem e Regra de Bland — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Trilha Simplex • Lição 4 de 6</div>
+      <h1>Degenerescência, Ciclagem, Regra de Bland e Ótimos Múltiplos</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Passos nulos ($\theta^* = 0$), o contraexemplo de Beale, a garantia anti-ciclagem de Bland e a descoberta de soluções ótimas alternativas.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="simplex-03-razao-minima-e-pivoteamento.html">← Lição 3: Razão Mínima & Pivô</a>
+      <a href="simplex-05-metodo-duas-fases-e-big-m.html">Próxima Lição: Duas Fases & Big-M &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: DEGENERESCÊNCIA E CICLAGEM -->
+    <section class="card-theory">
+      <h2>1. Degenerescência e o Fenômeno da Ciclagem</h2>
+      <p>
+        Uma solução básica é <strong>degenerada</strong> quando pelo menos uma variável básica é identicamente nula ($x_{Bi} = 0$).
+      </p>
+      <ul>
+        <li>No teste da razão mínima, se a linha $r$ tem $x_{Br} = 0$, o passo máximo torna-se <strong>$\theta^* = 0 / d_r = 0$</strong>.</li>
+        <li>O algoritmo realiza a troca de base normalmente, mas o valor da função objetivo e as coordenadas físicas do vértice <strong>não se movem</strong> ($\Delta z = 0$).</li>
+        <li><strong>Ciclagem (Cycling):</strong> Se ocorrer uma sucessão de pivôs degenerados sem progresso objetivo, o Simplex pode retornar a uma base previamente visitada, entrando em um loop infinito fatal!</li>
+      </ul>
+      <div class="callout definition">
+        <div class="callout-title">📌 Regra Anti-ciclagem de Bland (1977)</div>
+        <p style="margin-bottom: 0;">
+          Para garantir matematicamente que o Simplex <strong>NUNCA entre em ciclagem</strong>, adota-se a regra do <strong>menor índice</strong> em caso de empate:<br>
+          1. <strong>Variável que entra:</strong> Em caso de empate entre custos reduzidos negativos, escolha a de <strong>menor índice de subscrito $j$</strong>.<br>
+          2. <strong>Variável que sai:</strong> Em caso de empate na razão mínima $\theta^*$, escolha a de <strong>menor índice de subscrito $i$</strong>.
+        </p>
+      </div>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: MÚLTIPLOS ÓTIMOS NO SIMPLEX -->
+    <div class="interactive-widget" id="alt-opt-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⭐ Simulador Interativo: Detecção e Descoberta de Soluções Ótimas Alternativas</span>
+        </div>
+        <span class="widget-badge">Múltiplos Ótimos</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        O tableau abaixo já atingiu a otimalidade ($\bar{c} \ge 0$). No entanto, a variável não básica <strong>$x_2$ possui custo reduzido exatamente igual a ZERO ($\bar{c}_2 = 0$)</strong>! 
+        Clique no botão para pivotear em $x_2$ e revelar o <strong>segundo vértice ótimo alternativo</strong> com o mesmo lucro máximo!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 260px; padding: 1rem;">
+        <div class="trace-table-container" style="width: 100%;">
+          <table class="trace-table">
+            <thead>
+              <tr>
+                <th>Base</th>
+                <th>x₁</th>
+                <th>x₂ (Não Básica com c̄=0)</th>
+                <th>s₁</th>
+                <th>s₂</th>
+                <th>RHS (b)</th>
+              </tr>
+            </thead>
+            <tbody id="alt-body">
+              <tr>
+                <td><strong>x₁</strong></td>
+                <td>1.0</td>
+                <td style="background-color: rgba(63, 185, 80, 0.2); font-weight:bold;">0.5</td>
+                <td>0.25</td>
+                <td>0.0</td>
+                <td><strong>8.0</strong></td>
+              </tr>
+              <tr>
+                <td><strong>s₂</strong></td>
+                <td>0.0</td>
+                <td style="background-color: rgba(63, 185, 80, 0.2); font-weight:bold;">0.5</td>
+                <td>-0.25</td>
+                <td>1.0</td>
+                <td><strong>2.0</strong></td>
+              </tr>
+              <tr class="highlight-step">
+                <td><strong>(-z)</strong></td>
+                <td>0.0</td>
+                <td style="color: #3fb950; font-weight: bold; font-size: 1.15rem;">0.0</td>
+                <td>3.0</td>
+                <td>0.0</td>
+                <td><strong>96.0</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="widget-status-bar success" id="alt-status" style="margin-top: 1rem;">
+          <span>Vértice Ótimo 1: Base {x₁=8, s₂=2, x₂=0}. Lucro z* = <strong>$96.00</strong>. Custo reduzido de x₂ é zero (sinal de múltiplos ótimos!).</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: center;">
+        <button class="widget-btn" id="btn-pivot-alt">🔄 Pivotear em x₂ para Encontrar o 2º Vértice Ótimo</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Diagnóstico de Soluções Ótimas Múltiplas</h3>
+      </div>
+      <div class="question-text">
+        Como um engenheiro identifica no tableau final do Simplex que um problema de programação linear possui infinitas soluções ótimas alternativas ao longo de uma aresta ou face inteira?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Se todos os custos reduzidos forem maiores ou iguais a zero (otimalidade) E pelo menos uma variável NÃO BÁSICA tiver custo reduzido estritamente igual a zero (c̄_j = 0), pivotear nela gera outro vértice ótimo com o mesmíssimo valor de z*!">
+          O tableau é ótimo e existe pelo menos uma variável não básica com custo reduzido igual a zero (c̄_j = 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: variáveis básicas SEMPRE têm c̄ = 0 em qualquer tableau; a condição de múltiplos ótimos exige que uma variável NÃO BÁSICA tenha c̄ = 0.">
+          Todas as variáveis básicas possuem custo reduzido identicamente nulo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: b_i = 0 indica degenerescência, não múltiplos ótimos.">
+          O vetor do lado direito possui pelo menos uma componente nula (b_i = 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: ter todos os coeficientes negativos na coluna é o sintoma de problema ilimitado, não de múltiplos ótimos.">
+          Todos os elementos da coluna pivô são estritamente negativos.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: O Propósito Matemático da Regra de Bland</h3>
+      </div>
+      <div class="question-text">
+        Qual é a garantia matemática fornecida pela adoção estrita da <strong>Regra de Bland</strong> em um problema de programação linear degenerado?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Robert Bland provou formalmente em 1977 que a regra do menor índice impede de forma determinística que o Simplex repita uma base anteriormente visitada, eliminando 100% o risco de ciclagem infinita!">
+          Garante a terminação finita do algoritmo Simplex, eliminando a possibilidade de ciclagem infinita.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a regra de Bland não garante convergência polinomial; o pior caso continua sendo exponencial no cubo de Klee-Minty.">
+          Garante que o número de iterações do Simplex será estritamente polinomial O(n²).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: Bland não converte variáveis fracionárias em inteiras; essa é a função do Branch and Bound.">
+          Garante que a solução básica obtida será obrigatoriamente formada por números inteiros.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a regra de Bland não altera o valor ótimo final; ela atua apenas como critério de desempate de índices.">
+          Garante que o valor da função objetivo dobre a cada pivoteamento realizado.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="simplex-03-razao-minima-e-pivoteamento.html">← Lição 3: Razão Mínima & Pivô</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="simplex-05-metodo-duas-fases-e-big-m.html">Próxima: Lição Simplex 5 (Duas Fases & Big-M) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: Múltiplos ótimos c_bar = 0 em não básica
+      initMultipleChoice("ex1", "Variável não básica com custo reduzido nulo indica existência de múltiplos ótimos");
+
+      // Ex 2: Regra de Bland elimina ciclagem
+      initMultipleChoice("ex2", "Regra de Bland assegura terminação finita e impede ciclagem infinita");
+
+      // ==========================================
+      // SIMULADOR DE MÚLTIPLOS ÓTIMOS
+      // ==========================================
+      const btnPivot = document.getElementById("btn-pivot-alt");
+      const altBody = document.getElementById("alt-body");
+      const altStatus = document.getElementById("alt-status");
+
+      let currentAlt = 1;
+
+      btnPivot.addEventListener("click", () => {
+        if (currentAlt === 1) {
+          // Pivoteia em x2: linha 2 (s2) tem razão 2 / 0.5 = 4 (menor que 8 / 0.5 = 16)
+          // s2 sai, x2 entra!
+          altBody.innerHTML = `
+            <tr>
+              <td><strong>x₁</strong></td>
+              <td>1.0</td>
+              <td>0.0</td>
+              <td>0.5</td>
+              <td>-1.0</td>
+              <td><strong>6.0</strong></td>
+            </tr>
+            <tr>
+              <td><strong>x₂</strong></td>
+              <td>0.0</td>
+              <td>1.0</td>
+              <td>-0.5</td>
+              <td>2.0</td>
+              <td><strong>4.0</strong></td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>(-z)</strong></td>
+              <td>0.0</td>
+              <td>0.0</td>
+              <td>3.0</td>
+              <td>0.0</td>
+              <td><strong>96.0</strong></td>
+            </tr>
+          `;
+          altStatus.className = "widget-status-bar success";
+          altStatus.innerHTML = `<span>🏆 <strong>Vértice Ótimo Alternativo 2:</strong> Base {x₁ = 6.0, x₂ = 4.0}! O lucro z* continua rigorosamente em <strong>$96.00</strong>. Toda a aresta entre (8, 0) e (6, 4) é 100% ótima!</span>`;
+          btnPivot.textContent = "🔄 Voltar ao Vértice Ótimo 1";
+          currentAlt = 2;
+        } else {
+          // Volta para o Vértice 1
+          altBody.innerHTML = `
+            <tr>
+              <td><strong>x₁</strong></td>
+              <td>1.0</td>
+              <td style="background-color: rgba(63, 185, 80, 0.2); font-weight:bold;">0.5</td>
+              <td>0.25</td>
+              <td>0.0</td>
+              <td><strong>8.0</strong></td>
+            </tr>
+            <tr>
+              <td><strong>s₂</strong></td>
+              <td>0.0</td>
+              <td style="background-color: rgba(63, 185, 80, 0.2); font-weight:bold;">0.5</td>
+              <td>-0.25</td>
+              <td>1.0</td>
+              <td><strong>2.0</strong></td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>(-z)</strong></td>
+              <td>0.0</td>
+              <td style="color: #3fb950; font-weight: bold; font-size: 1.15rem;">0.0</td>
+              <td>3.0</td>
+              <td>0.0</td>
+              <td><strong>96.0</strong></td>
+            </tr>
+          `;
+          altStatus.className = "widget-status-bar success";
+          altStatus.innerHTML = `<span>Vértice Ótimo 1: Base {x₁=8, s₂=2, x₂=0}. Lucro z* = <strong>$96.00</strong>. Custo reduzido de x₂ é zero (sinal de múltiplos ótimos!).</span>`;
+          btnPivot.textContent = "🔄 Pivotear em x₂ para Encontrar o 2º Vértice Ótimo";
+          currentAlt = 1;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

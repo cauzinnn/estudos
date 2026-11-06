@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intensivo Simplex: Maratona Prática de Questões — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Intensivo Prático • Método Simplex</div>
+      <h1>Maratona Intensiva: 20 Questões do Método Simplex</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Exame diagnóstico exaustivo cobrindo cálculo de bases, custos reduzidos, pivoteamento Gauss-Jordan, degenerescência, Duas Fases e Simplex Dual.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0004-guia-completo-metodo-simplex.html">Ficha Mestra do Simplex</a>
+      <a href="simplex-01-fundamentos-e-bfs.html">Trilha de Lições Simplex</a>
+    </div>
+
+    <!-- HUD INTERATIVO DO INTENSIVO (20 QUESTÕES) -->
+    <div class="interactive-widget" id="simplex-marathon-hud" style="position: sticky; top: 1rem; z-index: 99; margin: 1rem 0; box-shadow: 0 6px 20px rgba(0,0,0,0.08);">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🎯 HUD da Maratona de Simplex</span>
+        </div>
+        <span class="widget-badge" id="hud-spx-badge">0 / 20 Respondidas (0 Acertos)</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div class="bar-track" style="height: 18px;">
+          <div class="bar-fill success" id="hud-spx-bar" style="width: 0%;"></div>
+        </div>
+
+        <!-- Grade de Chips 1 a 20 -->
+        <div class="chips-container" style="justify-content: center; gap: 0.35rem;">
+          <a href="#sq1" class="chip" id="chip-sq1">Q1</a>
+          <a href="#sq2" class="chip" id="chip-sq2">Q2</a>
+          <a href="#sq3" class="chip" id="chip-sq3">Q3</a>
+          <a href="#sq4" class="chip" id="chip-sq4">Q4</a>
+          <a href="#sq5" class="chip" id="chip-sq5">Q5</a>
+          <a href="#sq6" class="chip" id="chip-sq6">Q6</a>
+          <a href="#sq7" class="chip" id="chip-sq7">Q7</a>
+          <a href="#sq8" class="chip" id="chip-sq8">Q8</a>
+          <a href="#sq9" class="chip" id="chip-sq9">Q9</a>
+          <a href="#sq10" class="chip" id="chip-sq10">Q10</a>
+          <a href="#sq11" class="chip" id="chip-sq11">Q11</a>
+          <a href="#sq12" class="chip" id="chip-sq12">Q12</a>
+          <a href="#sq13" class="chip" id="chip-sq13">Q13</a>
+          <a href="#sq14" class="chip" id="chip-sq14">Q14</a>
+          <a href="#sq15" class="chip" id="chip-sq15">Q15</a>
+          <a href="#sq16" class="chip" id="chip-sq16">Q16</a>
+          <a href="#sq17" class="chip" id="chip-sq17">Q17</a>
+          <a href="#sq18" class="chip" id="chip-sq18">Q18</a>
+          <a href="#sq19" class="chip" id="chip-sq19">Q19</a>
+          <a href="#sq20" class="chip" id="chip-sq20">Q20</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTÃO 1: DIMENSÃO DE BASE -->
+    <section class="card-exercise" id="sq1" data-hint="O número de variáveis básicas xb é exatamente igual ao número de restrições de igualdade m = 4. As variáveis não básicas fixadas em zero são n - m = 11 - 4 = 7.">
+      <div class="exercise-header">
+        <h3>Questão 1: Variáveis Não Básicas Fixadas</h3>
+      </div>
+      <div class="question-text">
+        Um modelo de PL na forma padrão possui $m = 4$ restrições lineares e $n = 11$ variáveis ($x \ge 0$).<br><br>
+        Quantas variáveis de decisão são <strong>fixadas rigorosamente em zero ($x_N = 0$)</strong> em qualquer iteração do algoritmo Simplex?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o número de variáveis não básicas (ex: 7)" autocomplete="off">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 2: CÁLCULO DE x_B -->
+    <section class="card-exercise" id="sq2" data-hint="Multiplique B^-1 por b: x_B = [[0.5, 0], [-1.0, 1.0]] * [10, 18]^T -> x_B1 = 0.5*10 + 0*18 = 5; x_B2 = -1*10 + 1*18 = 8.">
+      <div class="exercise-header">
+        <h3>Questão 2: Active Recall — Vetor de Solução Básica</h3>
+      </div>
+      <div class="question-text">
+        Uma base $B$ possui inversa dada por $B^{-1} = \begin{bmatrix} 0.5 & 0 \\ -1.0 & 1.0 \end{bmatrix}$ e o lado direito é $b = \begin{bmatrix} 10 \\ 18 \end{bmatrix}$.<br><br>
+        Qual é o <strong>valor da segunda variável básica ($x_{B2}$)</strong>?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de x_B2 (ex: 8)" autocomplete="off">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 3: FACTIBILIDADE BÁSICA -->
+    <section class="card-exercise" id="sq3">
+      <div class="exercise-header">
+        <h3>Questão 3: Critério de Factibilidade de Solução Básica</h3>
+      </div>
+      <div class="question-text">
+        Ao inverter uma matriz de base $B$ e calcular $x_B = B^{-1}b$, obtém-se o vetor $x_B = [12.0, -0.5, 4.0]^T$.<br><br>
+        Como essa solução básica é classificada?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como contém uma componente estritamente negativa (x_B2 = -0.5 < 0), a solução viola a não negatividade (x ≥ 0), sendo classificada como Solução Básica INVIÁVEL.">
+          Solução Básica Inviável (não pertence à região factível do poliedro).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: para ser factível (BFS), todas as componentes devem ser maiores ou iguais a zero.">
+          Solução Básica Factível (BFS).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: degenerescência exige que uma componente seja exatamente zero; aqui temos um valor negativo.">
+          Solução Básica Degenerada Ótima.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o determinante de B é diferente de zero (B é invertível), logo a solução existe algebricamente.">
+          Solução Singular Indeterminada.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 4: PREÇOS MULTIPLICADORES DUAIS -->
+    <section class="card-exercise" id="sq4" data-hint="pi^T = c_B^T * B^-1. Com c_B = [4, 6] e B^-1 = [[1, 2], [0, 1]]: pi_1 = 4*(1) + 6*(0) = 4; pi_2 = 4*(2) + 6*(1) = 8 + 6 = 14.">
+      <div class="exercise-header">
+        <h3>Questão 4: Active Recall — Vetor de Multiplicadores Duais</h3>
+      </div>
+      <div class="question-text">
+        Os custos das variáveis básicas são $c_B = [4, 6]$ e a matriz inversa da base é $B^{-1} = \begin{bmatrix} 1 & 2 \\ 0 & 1 \end{bmatrix}$.<br><br>
+        Qual é o <strong>valor da segunda componente do vetor multiplicador dual ($\pi_2$)</strong>?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de pi_2 (ex: 14)" autocomplete="off">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 5: CUSTO REDUZIDO -->
+    <section class="card-exercise" id="sq5" data-hint="c_bar_j = c_j - pi^T * A_j. Com c_j = 15, pi = [4, 14]^T e A_j = [2, 1]^T: pi^T A_j = 4*(2) + 14*(1) = 8 + 14 = 22. c_bar_j = 15 - 22 = -7.">
+      <div class="exercise-header">
+        <h3>Questão 5: Active Recall — Custo Reduzido em Minimização</h3>
+      </div>
+      <div class="question-text">
+        Para uma variável não básica $x_4$, seu custo original é $c_4 = 15$. O vetor dual é $\pi = [4, 14]^T$ e sua coluna de restrições é $A_{\cdot 4} = [2, 1]^T$.<br><br>
+        Calcule o <strong>valor numérico do custo reduzido $\bar{c}_4$</strong>:
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o custo reduzido c_bar_4 (ex: -7)" autocomplete="off">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 6: REGRA DE DANTZIG -->
+    <section class="card-exercise" id="sq6">
+      <div class="exercise-header">
+        <h3>Questão 6: Regra de Seleção de Dantzig</h3>
+      </div>
+      <div class="question-text">
+        Em um problema de <strong>minimização</strong>, as variáveis não básicas possuem os seguintes custos reduzidos:
+        $$\bar{c}_1 = -3.2, \quad \bar{c}_2 = -7.5, \quad \bar{c}_3 = 0.0, \quad \bar{c}_4 = 2.1$$
+        Pela clássica Regra de Dantzig, qual variável deve entrar na base?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! A regra de Dantzig em minimização seleciona a variável com o custo reduzido mais negativo (mais promissor): c̄₂ = -7.5!">
+          Variável x₂ (pois possui o custo reduzido mais negativo: -7.5).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: -3.2 é negativo, mas -7.5 oferece uma taxa de redução de custo marginal muito superior.">
+          Variável x₁ (pois tem menor valor absoluto de custo negativo).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: c̄₃ = 0 não reduz o valor da função objetivo.">
+          Variável x₃ (pois possui custo reduzido nulo).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: c̄₄ = +2.1 aumentaria o custo se entrasse na base em um problema de minimização.">
+          Variável x₄ (pois possui o maior custo positivo).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 7: RAZÃO MÍNIMA -->
+    <section class="card-exercise" id="sq7" data-hint="Linha 1: 20 / 4 = 5.0. Linha 2: 15 / 0 -> desconsiderada (divisão por zero). Linha 3: 18 / 6 = 3.0. Menor razão = 3.0.">
+      <div class="exercise-header">
+        <h3>Questão 7: Active Recall — Passo do Teste da Razão Mínima</h3>
+      </div>
+      <div class="question-text">
+        As variáveis básicas atuais são $x_{B1} = 20, x_{B2} = 15, x_{B3} = 18$ e a coluna pivô entrante possui coeficientes $d = [4, 0, 6]^T$.<br><br>
+        Qual é o <strong>valor numérico do passo $\theta^*$</strong> permitido pelo teste da razão mínima?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o passo theta* (ex: 3.0)" autocomplete="off">
+        <button class="action-btn">Calcular Passo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 8: NORMALIZAÇÃO DE LINHA PIVÔ -->
+    <section class="card-exercise" id="sq8" data-hint="A linha pivô é [5, 10, 0, 15 | 35] com elemento pivô 5. Dividindo por 5: 35 / 5 = 7.">
+      <div class="exercise-header">
+        <h3>Questão 8: Active Recall — Normalização de Linha Pivô</h3>
+      </div>
+      <div class="question-text">
+        A linha pivô selecionada para sair possui elemento pivô igual a $5.0$ e lado direito atual $b_r = 35.0$.<br><br>
+        Após a operação elementar de normalização da linha pivô ($\text{Linha}_r \leftarrow \text{Linha}_r / a_{rk}$), qual será o <strong>novo valor do lado direito ($b_r$)</strong>?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o novo valor de br (ex: 7.0)" autocomplete="off">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 9: ZERAMENTO DE GAUSS -->
+    <section class="card-exercise" id="sq9" data-hint="L2_nova = L2_velha - a2k * Lr_normalizada = 14 - 2 * (7) = 14 - 14 = 0.">
+      <div class="exercise-header">
+        <h3>Questão 9: Active Recall — Eliminação de Linha em Gauss-Jordan</h3>
+      </div>
+      <div class="question-text">
+        A linha normalizada de pivô possui lado direito $b_{\text{pivô}} = 7.0$.<br>
+        A Linha 2 possui lado direito atual $b_2 = 20.0$ e coeficiente na coluna pivô igual a $a_{2k} = 2.0$.<br><br>
+        Após executar a eliminação gaussiana ($\text{Linha}_2 \leftarrow \text{Linha}_2 - a_{2k} \cdot \text{Linha}_{\text{pivô}}$), qual será o <strong>novo lado direito $b_2$</strong>?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o novo b2 (ex: 6.0)" autocomplete="off">
+        <button class="action-btn">Calcular Eliminação</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 10: DEGENERESCÊNCIA -->
+    <section class="card-exercise" id="sq10">
+      <div class="exercise-header">
+        <h3>Questão 10: Geometria da Degenerescência</h3>
+      </div>
+      <div class="question-text">
+        O que caracteriza geometricamente um vértice degenerado no espaço $\mathbb{R}^n$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Um vértice é degenerado quando mais de n hiperplanos delimitadores cruzam o mesmo ponto físico no espaço (superdeterminação geométrica do vértice).">
+          Mais de n hiperplanos de restrição interceptam-se exatamente no mesmo ponto.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: ter menos hiperplanos geraria um raio ou face aberta, não um vértice isolado.">
+          Menos de n hiperplanos interceptam-se naquele ponto.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o poliedro não precisa ser ilimitado para conter vértices degenerados.">
+          O poliedro factível é necessariamente ilimitado naquela direção.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a função objetivo não determina a geometria dos vértices do poliedro.">
+          O gradiente da função objetivo é ortogonal a todas as faces.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 11: ILIMITABILIDADE -->
+    <section class="card-exercise" id="sq11">
+      <div class="exercise-header">
+        <h3>Questão 11: Diagnóstico de Ilimitabilidade</h3>
+      </div>
+      <div class="question-text">
+        Em uma iteração do Simplex de maximização, a variável $x_5$ possui custo reduzido $\bar{c}_5 = +10.0 > 0$. Todos os coeficientes de sua coluna de direção são não positivos ($d_1 = -2, d_2 = 0, d_3 = -1$).<br><br>
+        O que o solver declara?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Como todos os coeficientes são ≤ 0, a variável x5 pode crescer indefinidamente sem violar nenhuma restrição básica, fazendo a maximização tender a +∞!">
+          O problema de programação linear é ILIMITADO (z → +∞).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a base atual é factível; o problema é que não existe teto superior para o lucro.">
+          O problema é estritamente INVIÁVEL.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: não é ótimo finito; o lucro pode crescer arbitrariamente ao infinito.">
+          A base atual é uma solução ótima finita de valor nulo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: não há ciclagem; o algoritmo termina imediatamente reportando modelo ilimitado.">
+          Ocorreu ciclagem que exige reiniciar o tableau.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 12: MÚLTIPLOS ÓTIMOS -->
+    <section class="card-exercise" id="sq12">
+      <div class="exercise-header">
+        <h3>Questão 12: Condição de Múltiplos Ótimos</h3>
+      </div>
+      <div class="question-text">
+        O tableau Simplex atingiu a condição de parada ótima. Qual condição garante que existe outro vértice ótimo alternativo?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Se pelo menos uma variável NÃO básica tiver custo reduzido igual a zero (c̄_j = 0), pivotear nela levará a outro vértice com o mesmo lucro ótimo!">
+          Pelo menos uma variável não básica possui custo reduzido estritamente igual a zero (c̄_j = 0).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: variáveis básicas sempre têm c̄ = 0 em qualquer iteração; o teste é sobre não básicas.">
+          Todas as variáveis básicas possuem custo reduzido nulo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o lado direito b ser positivo indica apenas não degenerescência.">
+          Todos os valores do lado direito b são estritamente positivos.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: ter todos os c̄ > 0 garante que o ótimo é ÚNICO e estritamente isolado! Múltiplos ótimos exigem c̄ = 0.">
+          Todos os custos reduzidos não básicos são estritamente maiores que zero (c̄_j > 0).
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 13: REGRA DE BLAND -->
+    <section class="card-exercise" id="sq13">
+      <div class="exercise-header">
+        <h3>Questão 13: Desempate pela Regra de Bland</h3>
+      </div>
+      <div class="question-text">
+        Em um passo degenerado com risco de ciclagem, há empate no teste da razão mínima entre a Linha 1 (variável básica $x_4$) e a Linha 2 (variável básica $x_2$), ambas com razão $\theta = 0$.<br><br>
+        Pela <strong>Regra de Bland</strong>, qual variável deve sair da base?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! A regra de Bland desempata escolhendo a variável de menor subscrito numérico: entre x4 e x2, a variável de menor índice é x2!">
+          A variável x₂ (pois possui o menor índice numérico entre as empatadas).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: x4 tem índice 4 > 2; Bland prioriza rigorosamente o menor índice.">
+          A variável x₄ (pois está na primeira linha do tableau).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: Bland é determinística, nunca sorteando aleatoriamente.">
+          Sorteia-se aleatoriamente entre x₂ e x₄ com probabilidade 50%.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: ambas saírem violaria a dimensão da base (que precisa manter m variáveis).">
+          Ambas as variáveis x₂ e x₄ devem sair da base simultaneamente.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 14: EXCESSO VS ARTIFICIAL -->
+    <section class="card-exercise" id="sq14">
+      <div class="exercise-header">
+        <h3>Questão 14: Conversão de Desigualdade Maior ou Igual</h3>
+      </div>
+      <div class="question-text">
+        Dada a restrição $2x_1 + 3x_2 \ge 12$. Ao prepará-la para o método Simplex em Duas Fases, qual é a formulação canônica com variáveis de excesso ($e \ge 0$) e artificial ($a \ge 0$)?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Subtrai-se a variável de excesso real (- e) e soma-se a variável artificial (+ a) para compor a base inicial: 2x1 + 3x2 - e + a = 12.">
+          2x₁ + 3x₂ - e + a = 12, com e ≥ 0 e a ≥ 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: somar o excesso (+ e) é a regra para menor ou igual (folga), não para maior ou igual.">
+          2x₁ + 3x₂ + e + a = 12, com e ≥ 0 e a ≥ 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: subtrair a variável artificial (- a) faria ela assumir valor negativo na origem, violando a factibilidade.">
+          2x₁ + 3x₂ - e - a = 12, com e ≥ 0 e a ≥ 0.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: variáveis de excesso não podem ser livres em sinal.">
+          2x₁ + 3x₂ - e = 12, com e livre em ℝ.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 15: OBJETIVO FASE 1 -->
+    <section class="card-exercise" id="sq15">
+      <div class="exercise-header">
+        <h3>Questão 15: Função Objetivo da Fase 1</h3>
+      </div>
+      <div class="question-text">
+        Qual é a função objetivo auxiliar a ser minimizada na Fase 1 do método Simplex para um modelo com duas variáveis artificiais $a_1$ e $a_2$?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! A Fase 1 busca exclusivamente eliminar a artificialidade somando todas as variáveis artificiais: min W = a1 + a2.">
+          Minimizar W = a₁ + a₂.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a função objetivo original cᵀx é temporariamente pausada durante toda a Fase 1.">
+          Minimizar cᵀx + a₁ + a₂.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: maximizar as artificiais as afastaria de zero, tornando o problema infactível.">
+          Maximizar W = a₁ + a₂.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a Fase 1 não minimiza variáveis de folga s_i, apenas as artificiais a_i.">
+          Minimizar s₁ + s₂ + a₁ + a₂.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 16: INVIABILIDADE FASE 1 -->
+    <section class="card-exercise" id="sq16">
+      <div class="exercise-header">
+        <h3>Questão 16: Certificado de Inviabilidade da Fase 1</h3>
+      </div>
+      <div class="question-text">
+        Se o valor ótimo da função objetivo da Fase 1 for $W^* = 0.00$, o que o algoritmo garante?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! W* = 0 significa que todas as variáveis artificiais zeraram (a = 0). O ponto encontrado é uma BFS autêntica do problema original, permitindo avançar para a Fase 2!">
+          Encontrou-se uma Solução Básica Factível autêntica do problema original, podendo iniciar a Fase 2.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: W* = 0 é a prova de FACTIBILIDADE, não de inviabilidade.">
+          O problema original é comprovadamente inviável.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: a Fase 1 atesta apenas factibilidade; o valor ótimo real só é descoberto na Fase 2.">
+          O valor ótimo do problema original é necessariamente zero.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: W* = 0 não implica modelo ilimitado.">
+          O problema original é ilimitado.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 17: PURGAÇÃO DE ARTIFICIAIS -->
+    <section class="card-exercise" id="sq17">
+      <div class="exercise-header">
+        <h3>Questão 17: Transição da Fase 1 para a Fase 2</h3>
+      </div>
+      <div class="question-text">
+        O que deve ser feito com as colunas associadas às variáveis artificiais $a_i$ ao iniciar a Fase 2?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Como as variáveis artificiais cumpriram sua missão de encontrar a base inicial, suas colunas são purgadas (eliminadas) do tableau para que nunca mais reentrem na base durante a Fase 2.">
+          São eliminadas definitivamente do tableau Simplex.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: mantê-las com custo zero permitiria que elas reentrassem na base gerando soluções inviáveis no problema real.">
+          Permanecem no tableau com custos originais iguais a zero.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: transformá-las em básicas violaria a factibilidade original conquistada.">
+          São forçadas a permanecer na base até o término da Fase 2.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: elas não são variáveis de folga; são purgadas do modelo.">
+          São renomeadas como variáveis de folga padrão.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 18: SIMPLEX DUAL LINHA QUE SAI -->
+    <section class="card-exercise" id="sq18">
+      <div class="exercise-header">
+        <h3>Questão 18: Critério de Saída no Simplex Dual</h3>
+      </div>
+      <div class="question-text">
+        Em um tableau com custos reduzidos ótimos ($\bar{c} \ge 0$), os valores do lado direito são $b_1 = 5, b_2 = -8, b_3 = -2$.<br><br>
+        Qual linha deve ser selecionada para sair da base no <strong>Algoritmo Simplex Dual</strong>?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! No Simplex Dual, a linha que sai da base é a mais negativa no lado direito: Linha 2 com b2 = -8!">
+          Linha 2 (pois possui o valor mais negativo no lado direito: -8).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: Linha 1 tem b1 = 5 > 0 (é factível); o Simplex Dual elimina as variáveis inviáveis negativas.">
+          Linha 1 (pois possui o maior valor positivo: 5).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: -2 é negativo, mas -8 é o mais severamente inviável (mais negativo).">
+          Linha 3 (pois possui o menor valor absoluto negativo: -2).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: no Simplex Dual a linha que sai é escolhida antes da coluna que entra.">
+          Nenhuma linha sai antes de determinar a coluna de menor custo.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 19: RAZÃO DUAL -->
+    <section class="card-exercise" id="sq19" data-hint="Na linha que sai (b2 = -8), os elementos negativos sao a_21 = -4 e a_23 = -2. Custos reduzidos: c_bar_1 = 12 e c_bar_3 = 10. Razões duais: Coluna 1: 12 / |-4| = 3.0. Coluna 3: 10 / |-2| = 5.0. A menor razão é 3.0 na Coluna 1.">
+      <div class="exercise-header">
+        <h3>Questão 19: Active Recall — Teste da Razão Simplex Dual</h3>
+      </div>
+      <div class="question-text">
+        Na linha que sai de um pivô dual ($b_r = -8$), os elementos negativos são $a_{r1} = -4$ e $a_{r3} = -2$ (com $a_{r2} = +1$).<br>
+        Os custos reduzidos correspondentes são $\bar{c}_1 = 12$ e $\bar{c}_3 = 10$.<br><br>
+        Qual é o <strong>valor da menor razão dual $\min (\bar{c}_j / |a_{rj}|)$</strong>?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a razão mínima dual (ex: 3.0)" autocomplete="off">
+        <button class="action-btn">Verificar</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- QUESTÃO 20: PIOR CASO KLEE-MINTY -->
+    <section class="card-exercise" id="sq20">
+      <div class="exercise-header">
+        <h3>Questão 20: Teoria da Complexidade do Simplex</h3>
+      </div>
+      <div class="question-text">
+        O famoso contraexemplo do <strong>Hipercubo de Klee-Minty (1972)</strong> comprova formalmente qual característica sobre a complexidade de pior caso do algoritmo Simplex padrão?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Klee e Minty construíram um poliedro deformado de n dimensões onde a regra clássica de Dantzig visita TODOS os 2ⁿ vértices antes de achar o ótimo, provando que o pior caso do Simplex é EXPONENCIAL O(2ⁿ)!">
+          Comprova que a complexidade de pior caso do Simplex é exponencial O(2ⁿ).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a média empírica é polinomial, mas Klee-Minty é o contraexemplo de PIOR CASO que refuta a garantia polinomial teórica.">
+          Comprova que o Simplex possui tempo estritamente polinomial O(n³).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o problema de Klee-Minty é um LP puro perfeitamente solúvel com ótimo finito.">
+          Comprova que problemas de programação linear são indecidíveis por computadores.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: Klee-Minty trata de tempo assintótico de pior caso, não de erros de ponto flutuante.">
+          Comprova que o método entra inevitavelmente em divisão por zero.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="simplex-06-simplex-dual-e-sensibilidade.html">← Lição 6: Simplex Dual</a>
+      <a href="../index.html">← Painel da Disciplina</a>
+      <a href="../reference/0004-guia-completo-metodo-simplex.html">Ficha Mestra do Simplex &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Estado da Maratona de 20 Questões
+      const examState = {};
+      for (let i = 1; i <= 20; i++) {
+        examState["sq" + i] = null;
+      }
+
+      function updateHUD() {
+        let answered = 0;
+        let correct = 0;
+        Object.keys(examState).forEach(k => {
+          const val = examState[k];
+          const chip = document.getElementById("chip-" + k);
+          if (val === true) {
+            answered++;
+            correct++;
+            if (chip) chip.className = "chip fired";
+          } else if (val === false) {
+            answered++;
+            if (chip) chip.className = "chip pending";
+          }
+        });
+
+        const percent = Math.round((answered / 20) * 100);
+        const scoreBadge = document.getElementById("hud-spx-badge");
+        const barFill = document.getElementById("hud-spx-bar");
+
+        if (scoreBadge) {
+          scoreBadge.textContent = `${answered} / 20 Respondidas (${correct} Acertos • ${percent}%)`;
+        }
+        if (barFill) {
+          barFill.style.width = `${percent}%`;
+        }
+      }
+
+      // Q1: 7
+      initInputExercise("sq1", ["7"], "Variáveis não básicas fixadas em zero: 11 - 4 = 7", (raw, clean) => {
+        const ok = clean.trim() === "7";
+        examState.sq1 = ok; updateHUD(); return ok;
+      });
+
+      // Q2: 8
+      initInputExercise("sq2", ["8", "8.0", "8,0"], "x_B2 = -1*(10) + 1*(18) = 8", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 8) < 0.01;
+        examState.sq2 = ok; updateHUD(); return ok;
+      });
+
+      // Q3: Inviável
+      initMultipleChoice("sq3", "Solução básica com variável negativa é classificada como inviável");
+      document.querySelector("#sq3 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq3 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q4: pi2 = 14
+      initInputExercise("sq4", ["14", "14.0", "14,0"], "pi_2 = 4*(2) + 6*(1) = 14", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 14) < 0.01;
+        examState.sq4 = ok; updateHUD(); return ok;
+      });
+
+      // Q5: c_bar_4 = -7
+      initInputExercise("sq5", ["-7", "-7.0", "-7,0"], "c_bar_4 = 15 - 22 = -7", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - (-7)) < 0.01;
+        examState.sq5 = ok; updateHUD(); return ok;
+      });
+
+      // Q6: x2 entra
+      initMultipleChoice("sq6", "Dantzig escolhe o custo reduzido mais negativo: c_bar_2 = -7.5");
+      document.querySelector("#sq6 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq6 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q7: theta* = 3.0
+      initInputExercise("sq7", ["3", "3.0", "3,0"], "theta* = min(20/4, 18/6) = min(5, 3) = 3.0", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 3) < 0.01;
+        examState.sq7 = ok; updateHUD(); return ok;
+      });
+
+      // Q8: br = 7.0
+      initInputExercise("sq8", ["7", "7.0", "7,0"], "Novo lado direito normalizado: 35 / 5 = 7.0", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 7) < 0.01;
+        examState.sq8 = ok; updateHUD(); return ok;
+      });
+
+      // Q9: b2 = 6.0
+      initInputExercise("sq9", ["6", "6.0", "6,0"], "Eliminação: 20 - 2*(7) = 6.0", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 6) < 0.01;
+        examState.sq9 = ok; updateHUD(); return ok;
+      });
+
+      // Q10: Mais de n hiperplanos
+      initMultipleChoice("sq10", "Degenerescência ocorre quando mais de n hiperplanos cruzam o mesmo vértice");
+      document.querySelector("#sq10 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq10 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q11: Ilimitado
+      initMultipleChoice("sq11", "Coluna com c_bar > 0 em max e d <= 0 indica que o modelo é ilimitado");
+      document.querySelector("#sq11 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq11 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q12: Múltiplos ótimos
+      initMultipleChoice("sq12", "Variável não básica com c_bar = 0 no tableau ótimo revela múltiplos ótimos");
+      document.querySelector("#sq12 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq12 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q13: Regra de Bland x2
+      initMultipleChoice("sq13", "Bland desempata pelo menor índice: entre x4 e x2, escolhe x2");
+      document.querySelector("#sq13 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq13 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q14: Excesso e artificial
+      initMultipleChoice("sq14", "Restrição >= é convertida por -e + a = b com e, a >= 0");
+      document.querySelector("#sq14 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq14 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q15: Objetivo W = a1 + a2
+      initMultipleChoice("sq15", "Fase 1 minimiza a soma das variáveis artificiais: min W = a1 + a2");
+      document.querySelector("#sq15 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq15 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q16: W* = 0 atesta factibilidade
+      initMultipleChoice("sq16", "W* = 0 prova que o problema original é factível e avança para a Fase 2");
+      document.querySelector("#sq16 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq16 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q17: Purgação de artificiais
+      initMultipleChoice("sq17", "Colunas artificiais são purgadas do tableau antes de iniciar a Fase 2");
+      document.querySelector("#sq17 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq17 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q18: Linha 2 com -8
+      initMultipleChoice("sq18", "No Simplex Dual sai a linha com lado direito mais negativo: -8");
+      document.querySelector("#sq18 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq18 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+
+      // Q19: Razão dual = 3.0
+      initInputExercise("sq19", ["3", "3.0", "3,0"], "Menor razão dual: min(12/4, 10/2) = min(3.0, 5.0) = 3.0", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        const ok = Math.abs(num - 3) < 0.01;
+        examState.sq19 = ok; updateHUD(); return ok;
+      });
+
+      // Q20: Klee-Minty exponencial
+      initMultipleChoice("sq20", "Cubo de Klee-Minty prova pior caso exponencial O(2^n) do Simplex");
+      document.querySelector("#sq20 .options-list").addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          examState.sq20 = e.target.getAttribute("data-correct") === "true";
+          updateHUD();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

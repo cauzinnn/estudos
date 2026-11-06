@@ -26,6 +26,7 @@
       <a href="reference/0001-programacao-linear-e-dualidade.html">Ficha: PL & Dualidade</a>
       <a href="reference/0002-programacao-convexa-e-kkt.html">Ficha: Convexa & KKT</a>
       <a href="reference/0003-combinatoria-mip-e-nlp.html">Ficha: MIP & NLP</a>
+      <a href="reference/0004-guia-completo-metodo-simplex.html">Ficha Mestra do Simplex</a>
     </div>
 
     <!-- MÓDULO 1: PROGRAMAÇÃO LINEAR -->
@@ -96,6 +97,94 @@
             </div>
             <small style="color: var(--text-muted); display: block;">
               12 questões avançadas com HUD ao vivo, active recall numérico e análise de pegadinhas de Programação Linear.
+            </small>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- TRILHA ESPECIAL: INTENSIVO DO MÉTODO SIMPLEX -->
+    <section class="card-exercise" style="border: 1px solid var(--accent); background: linear-gradient(to bottom, var(--bg-card), var(--bg-card-hover));">
+      <div class="exercise-header">
+        <h2 style="color: var(--accent);">⚡ Trilha Intensiva: O Método Simplex de Ponta a Ponta</h2>
+      </div>
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Imersão profunda na mecânica matricial, algébrica e geométrica do algoritmo mais famoso da Pesquisa Operacional, com simuladores de pivoteamento e maratona de questões.
+      </p>
+      <div class="options-list">
+        <a href="lessons/simplex-01-fundamentos-e-bfs.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Simplex 1: Soluções Básicas Factíveis (BFS) e Álgebra da Base</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Partição matricial $A = [B \mid N]$, cálculo de $x_B = B^{-1}b$, combinatória de bases e simulador matricial.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/simplex-02-tableau-e-custos-reduzidos.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Simplex 2: Anatomia do Tableau, Custos Reduzidos e Variável Entrante</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Dedução de $\bar{c}_j = c_j - \pi^T A_j$, interpretação econômica de preços-sombra e regra de Dantzig.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/simplex-03-razao-minima-e-pivoteamento.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Simplex 3: Teste da Razão Mínima e Mecânica de Pivoteamento Gauss-Jordan</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Preservação de factibilidade $x_B \ge 0$, passos na linha pivô e simulador de eliminação de Gauss-Jordan.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/simplex-04-degenerescencia-ciclagem-e-ilimitabilidade.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Simplex 4: Degenerescência, Ciclagem, Regra de Bland e Ótimos Múltiplos</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Passos nulos $\theta^* = 0$, contraexemplo de Beale, regra anti-ciclagem de Bland e simulador de múltiplos ótimos.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/simplex-05-metodo-duas-fases-e-big-m.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Simplex 5: O Método das Duas Fases e o Big-M Artificial</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Resolução de restrições $\ge$ e $=$, minimização auxiliar de variáveis artificiais e certificado de inviabilidade.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/simplex-06-simplex-dual-e-sensibilidade.html" class="option-btn" style="text-decoration: none;">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">Simplex 6: Algoritmo Simplex Dual e Análise Pós-Ótima</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Base dual ótima com RHS negativo ($b_i < 0$), teste da razão dual e reotimização de cortes em Branch & Bound.
+            </small>
+          </div>
+        </a>
+
+        <a href="lessons/simplex-intensivo-maratona-de-questoes.html" class="option-btn" style="text-decoration: none; border-left: 3px solid var(--accent); background-color: var(--accent-muted);">
+          <div>
+            <div style="margin-bottom: 0.25rem;">
+              <strong style="color: var(--accent);">🎯 Maratona Intensiva: 20 Questões Práticas do Método Simplex</strong>
+            </div>
+            <small style="color: var(--text-muted); display: block;">
+              Banco exaustivo com 20 questões práticas com HUD ao vivo cobrindo cálculos, tabelas, desempates e patologias.
             </small>
           </div>
         </a>

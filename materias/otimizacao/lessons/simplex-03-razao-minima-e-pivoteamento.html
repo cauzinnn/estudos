@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simplex 3: Razão Mínima e Pivoteamento — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Trilha Simplex • Lição 3 de 6</div>
+      <h1>Teste da Razão Mínima e Mecânica de Pivoteamento</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Critério de saída de base para preservar factibilidade ($x_B \ge 0$), eliminação de Gauss-Jordan e detecção de ilimitabilidade.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="simplex-02-tableau-e-custos-reduzidos.html">← Lição 2: Tableau & Custos Reduzidos</a>
+      <a href="simplex-04-degenerescencia-ciclagem-e-ilimitabilidade.html">Próxima Lição: Degenerescência & Bland &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: TESTE DA RAZÃO MÍNIMA -->
+    <section class="card-theory">
+      <h2>1. Por Que a Razão Mínima Preserva a Factibilidade?</h2>
+      <p>
+        Quando a variável não básica $x_k$ aumenta pelo passo $\theta \ge 0$, as variáveis básicas atuais são atualizadas segundo a direção $d = B^{-1} A_{\cdot k}$:
+      </p>
+      $$x_B(\theta) = x_B - \theta \cdot d$$
+      <ul>
+        <li>Se $d_i \le 0$: Aumentar $\theta$ faz $x_{Bi}$ crescer ou ficar constante. Essa variável <strong>nunca se tornará negativa</strong>!</li>
+        <li>Se $d_i > 0$: A variável $x_{Bi}$ diminui linearmente com taxa $d_i$, atingindo zero exatamente quando $\theta = \frac{x_{Bi}}{d_i}$.</li>
+      </ul>
+      <p>
+        Para garantir que <strong>nenhuma</strong> variável básica se torne estritamente negativa, o passo máximo permitido é a <strong>menor das razões positivas</strong>:
+      </p>
+      $$\theta^* = \min_{i : d_i > 0} \left( \frac{x_{Bi}}{d_i} \right)$$
+      <p>
+        A variável associada à linha $r$ que atinge o mínimo é a <strong>variável que sai da base</strong>.
+      </p>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: OPERAÇÕES ELEMENTARES DE PIVOTEAMENTO -->
+    <div class="interactive-widget" id="pivot-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⚙️ Laboratório: Eliminação de Gauss-Jordan Passo a Passo</span>
+        </div>
+        <span class="widget-badge">Pivoteamento Algorítmico</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        A variável $x_1$ entra e a linha de $s_1$ sai da base. O <strong>elemento pivô é $a_{11} = 4$</strong>. 
+        Clique nos 3 botões sequenciais para assistir à divisão da linha pivô e ao zeramento da coluna de $x_1$ nas demais linhas!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 280px; padding: 1rem;">
+        <div class="trace-table-container" style="width: 100%;">
+          <table class="trace-table">
+            <thead>
+              <tr>
+                <th>Base</th>
+                <th>x₁ (Entrante)</th>
+                <th>x₂</th>
+                <th>s₁ (Saindo)</th>
+                <th>s₂</th>
+                <th>RHS (b)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="row-1">
+                <td id="b-name-1"><strong>s₁</strong></td>
+                <td id="p-11" style="font-weight: bold; background-color: rgba(240, 136, 62, 0.25);">4.0</td>
+                <td id="p-12">2.0</td>
+                <td id="p-13">1.0</td>
+                <td id="p-14">0.0</td>
+                <td id="p-15"><strong>32.0</strong></td>
+              </tr>
+              <tr id="row-2">
+                <td id="b-name-2"><strong>s₂</strong></td>
+                <td id="p-21">1.0</td>
+                <td id="p-22">1.0</td>
+                <td id="p-23">0.0</td>
+                <td id="p-24">1.0</td>
+                <td id="p-25"><strong>10.0</strong></td>
+              </tr>
+              <tr class="highlight-step" id="row-0">
+                <td><strong>(-z)</strong></td>
+                <td id="p-01">-12.0</td>
+                <td id="p-02">-9.0</td>
+                <td id="p-03">0.0</td>
+                <td id="p-04">0.0</td>
+                <td id="p-05"><strong>0.0</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="widget-status-bar" id="pivot-status" style="margin-top: 1rem;">
+          <span>Estado Inicial: Elemento pivô = 4.0. Clique em "1. Normalizar Linha Pivô".</span>
+        </div>
+      </div>
+
+      <div class="game-controls" style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+        <button class="widget-btn" id="btn-piv-step1">1. Dividir Linha Pivô por 4</button>
+        <button class="widget-btn secondary" id="btn-piv-step2" disabled>2. Zerar Linha de s₂ (L₂ - 1·L₁)</button>
+        <button class="widget-btn secondary" id="btn-piv-step3" disabled>3. Zerar Linha (-z) (L₀ + 12·L₁)</button>
+        <button class="widget-btn secondary" id="btn-piv-reset">🔄 Reiniciar</button>
+      </div>
+    </div>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="Apenas linhas com direção estritamente positiva di > 0 entram no teste. Linha 1: d1 = 2 > 0 -> 14 / 2 = 7.0. Linha 2: d2 = -3 <= 0 -> desconsiderada! Linha 3: d3 = 4 > 0 -> 24 / 4 = 6.0. A razão mínima é min(7.0, 6.0) = 6.0.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Exclusão de Coeficientes Negativos na Razão</h3>
+      </div>
+      <div class="question-text">
+        Uma variável entra na base. As variáveis básicas atuais e a coluna de direção $d = B^{-1} A_k$ são:<br>
+        • Linha 1: $x_{B1} = 14$, com $d_1 = 2$<br>
+        • Linha 2: $x_{B2} = 18$, com $d_2 = -3$<br>
+        • Linha 3: $x_{B3} = 24$, com $d_3 = 4$<br><br>
+        Qual é o <strong>valor numérico do passo factível máximo $\theta^*$</strong> permitido pelo teste da razão mínima?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de theta* (ex: 6.0)" autocomplete="off">
+        <button class="action-btn">Calcular Razão Mínima</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2">
+      <div class="exercise-header">
+        <h3>Exercício 2: Detecção Algébrica de Problema Ilimitado</h3>
+      </div>
+      <div class="question-text">
+        Durante uma iteração de minimização do Simplex, a coluna $k$ possui custo reduzido estritamente negativo ($\bar{c}_k = -5 < 0$). Porém, todos os elementos da coluna de direção são menores ou iguais a zero ($d_i \le 0$ para todas as linhas $i$).<br><br>
+        Qual é a conclusão determinística do algoritmo?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Como todos os di ≤ 0, a variável xk pode crescer indefinidamente em direção ao infinito sem que nenhuma variável básica se torne negativa (θ* = +∞). Como seu custo reduzido é negativo (-5), a função objetivo cai para -∞, comprovando que o problema é ILIMITADO!">
+          O problema de programação linear é ILIMITADO (a função objetivo tende a -∞).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a base atual não é ótima, pois existe c̄k = -5 < 0 prometendo melhoria; a impossibilidade de pivotear decorre da ilimitabilidade.">
+          O tableau atingiu a solução ótima finita com valor nulo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: o problema possui solução factível na base atual; o que não existe é um limitante inferior finito para a função objetivo.">
+          O modelo é estritamente INVIÁVEL e não possui nenhuma solução factível.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o algoritmo não entra em ciclagem infinita nesse caso; ele para imediatamente e reporta que o modelo é ilimitado.">
+          O algoritmo entra em ciclagem infinita e exige a aplicação da regra de Bland.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="simplex-02-tableau-e-custos-reduzidos.html">← Lição 2: Tableau & Custos Reduzidos</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="simplex-04-degenerescencia-ciclagem-e-ilimitabilidade.html">Próxima: Lição Simplex 4 (Degenerescência & Bland) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: min(14/2, 24/4) = min(7, 6) = 6
+      initInputExercise("ex1", ["6", "6.0", "6,0"], "Razão mínima theta* = min(14/2, 24/4) = 6.0 (linha com d2 = -3 é ignorada)", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 6) < 0.01;
+      });
+
+      // Ex 2: Problema ilimitado
+      initMultipleChoice("ex2", "Coluna com c_bar < 0 e todos os di <= 0 comprova que o problema é ilimitado");
+
+      // ==========================================
+      // SIMULADOR DE PIVOTEAMENTO GAUSS-JORDAN
+      // ==========================================
+      const bName1 = document.getElementById("b-name-1");
+      const p11 = document.getElementById("p-11");
+      const p12 = document.getElementById("p-12");
+      const p13 = document.getElementById("p-13");
+      const p14 = document.getElementById("p-14");
+      const p15 = document.getElementById("p-15");
+
+      const p21 = document.getElementById("p-21");
+      const p22 = document.getElementById("p-22");
+      const p23 = document.getElementById("p-23");
+      const p24 = document.getElementById("p-24");
+      const p25 = document.getElementById("p-25");
+
+      const p01 = document.getElementById("p-01");
+      const p02 = document.getElementById("p-02");
+      const p03 = document.getElementById("p-03");
+      const p04 = document.getElementById("p-04");
+      const p05 = document.getElementById("p-05");
+
+      const statusBox = document.getElementById("pivot-status");
+      const btnStep1 = document.getElementById("btn-piv-step1");
+      const btnStep2 = document.getElementById("btn-piv-step2");
+      const btnStep3 = document.getElementById("btn-piv-step3");
+      const btnReset = document.getElementById("btn-piv-reset");
+
+      btnStep1.addEventListener("click", () => {
+        // Divide linha 1 por 4
+        bName1.innerHTML = "<strong>x₁</strong>";
+        p11.textContent = "1.0";
+        p11.style.backgroundColor = "rgba(46, 125, 50, 0.25)";
+        p12.textContent = "0.5";
+        p13.textContent = "0.25";
+        p14.textContent = "0.0";
+        p15.innerHTML = "<strong>8.0</strong>";
+
+        statusBox.className = "widget-status-bar";
+        statusBox.innerHTML = `<span>Passo 1 Concluído: Linha pivô normalizada (dividida por 4.0). Pivô agora é 1.0. Avance para o Passo 2!</span>`;
+
+        btnStep1.disabled = true;
+        btnStep2.disabled = false;
+        btnStep2.className = "widget-btn";
+      });
+
+      btnStep2.addEventListener("click", () => {
+        // Linha 2 = Linha 2 - 1 * Linha 1
+        p21.textContent = "0.0";
+        p22.textContent = "0.5";
+        p23.textContent = "-0.25";
+        p24.textContent = "1.0";
+        p25.innerHTML = "<strong>2.0</strong>";
+
+        statusBox.className = "widget-status-bar";
+        statusBox.innerHTML = `<span>Passo 2 Concluído: Coluna x₁ zerada na Linha 2 (10 - 1·8 = 2.0). Avance para o Passo 3!</span>`;
+
+        btnStep2.disabled = true;
+        btnStep3.disabled = false;
+        btnStep3.className = "widget-btn";
+      });
+
+      btnStep3.addEventListener("click", () => {
+        // Linha 0 = Linha 0 - (-12) * Linha 1 = Linha 0 + 12 * Linha 1
+        p01.textContent = "0.0";
+        p02.textContent = "-3.0";
+        p03.textContent = "3.0";
+        p04.textContent = "0.0";
+        p05.innerHTML = "<strong>96.0</strong>";
+
+        statusBox.className = "widget-status-bar success";
+        statusBox.innerHTML = `<span>🏆 <strong>Pivoteamento 100% Concluído!</strong> Nova base {x₁, s₂}. Lucro atual subiu de $0 para <strong>$96.00</strong>. Coluna x₁ agora tem vetor unitário [1, 0, 0]ᵀ!</span>`;
+
+        btnStep3.disabled = true;
+      });
+
+      btnReset.addEventListener("click", () => {
+        bName1.innerHTML = "<strong>s₁</strong>";
+        p11.textContent = "4.0";
+        p11.style.backgroundColor = "rgba(240, 136, 62, 0.25)";
+        p12.textContent = "2.0";
+        p13.textContent = "1.0";
+        p14.textContent = "0.0";
+        p15.innerHTML = "<strong>32.0</strong>";
+
+        p21.textContent = "1.0";
+        p22.textContent = "1.0";
+        p23.textContent = "0.0";
+        p24.textContent = "1.0";
+        p25.innerHTML = "<strong>10.0</strong>";
+
+        p01.textContent = "-12.0";
+        p02.textContent = "-9.0";
+        p03.textContent = "0.0";
+        p04.textContent = "0.0";
+        p05.innerHTML = "<strong>0.0</strong>";
+
+        btnStep1.disabled = false;
+        btnStep1.className = "widget-btn";
+        btnStep2.disabled = true;
+        btnStep2.className = "widget-btn secondary";
+        btnStep3.disabled = true;
+        btnStep3.className = "widget-btn secondary";
+
+        statusBox.className = "widget-status-bar";
+        statusBox.innerHTML = `<span>Estado Inicial: Elemento pivô = 4.0. Clique em "1. Normalizar Linha Pivô".</span>`;
+      });
+    });
+  </script>
+</body>
+</html>

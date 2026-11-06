@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simplex 5: Método das Duas Fases e Big-M — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Trilha Simplex • Lição 5 de 6</div>
+      <h1>O Método das Duas Fases e o Big-M Artificial</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Como encontrar uma base inicial factível quando o modelo possui restrições $\ge$ ou $=$, e o diagnóstico determinístico de inviabilidade.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="simplex-04-degenerescencia-ciclagem-e-ilimitabilidade.html">← Lição 4: Degenerescência & Bland</a>
+      <a href="simplex-06-simplex-dual-e-sensibilidade.html">Próxima Lição: Simplex Dual & Sensibilidade &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: O DILEMA DA BASE INICIAL -->
+    <section class="card-theory">
+      <h2>1. O Dilema da Base Inicial Factível</h2>
+      <p>
+        Se todas as restrições forem do tipo $\le b_i$ (com $b_i \ge 0$), as variáveis de folga $s_i \ge 0$ fornecem uma base identidade inicial imediata em $x = \mathbf{0}$.
+      </p>
+      <p>
+        Porém, se houver restrições de igualdade ($=$) ou de requisito mínimo ($\ge b_i$):
+      </p>
+      $$a_i^T x \ge b_i \iff a_i^T x - e_i = b_i \quad (e_i \ge 0 \text{ é variável de excesso})$$
+      <p>
+        Em $x = \mathbf{0}$, a variável de excesso fica $e_i = -b_i < 0$ (<strong>inviável!</strong>). A origem não pertence à região factível! Para contornar essa barreira, introduzimos uma <strong>variável artificial $a_i \ge 0$</strong>:
+      </p>
+      $$a_i^T x - e_i + a_i = b_i$$
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: FASE 1 E DIAGNÓSTICO DE INVIABILIDADE -->
+    <div class="interactive-widget" id="phase-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🧪 Simulador Interativo: Execução da Fase 1 & Transição para a Fase 2</span>
+        </div>
+        <span class="widget-badge">Duas Fases</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Na <strong>Fase 1</strong>, o Simplex minimiza a soma das variáveis artificiais: $\min W = a_1 + a_2$. 
+        Se $W^* = 0$, as variáveis artificiais saem e avançamos para a <strong>Fase 2</strong> com a função original. 
+        Se $W^* > 0$, o modelo é comprovadamente <strong>INVIÁVEL</strong>!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 260px; padding: 1.25rem;">
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1rem;">
+          <button class="widget-btn" id="btn-case-feasible">Instância Factível (W* = 0)</button>
+          <button class="widget-btn secondary" id="btn-case-infeasible">Instância Inviável (W* > 0)</button>
+        </div>
+
+        <div class="trace-table-container" style="width: 100%;">
+          <table class="trace-table">
+            <thead>
+              <tr>
+                <th>Fase Atual</th>
+                <th>Base Ativa</th>
+                <th>Soma Artificial (W)</th>
+                <th>Objetivo Real (z)</th>
+                <th>Diagnóstico do Solver</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td id="ph-name"><strong>Fase 1 (Início)</strong></td>
+                <td id="ph-base">{a₁, a₂}</td>
+                <td id="ph-w" style="font-weight: bold; color: #f0883e;">W = 12.0</td>
+                <td id="ph-z">Pausado</td>
+                <td id="ph-diag">Buscando vértice factível do problema original...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="widget-status-bar" id="ph-status" style="margin-top: 1rem;">
+          <span>Clique em "Avançar Fase 1" para realizar o pivoteamento das variáveis artificiais.</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: center;">
+        <button class="widget-btn" id="btn-run-phase1">⚡ Executar Pivôs da Fase 1</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: REGRAS FORMAIS DAS DUAS FASES -->
+    <section class="card-theory">
+      <h2>2. O Rito de Passagem entre as Duas Fases</h2>
+      <div class="callout definition">
+        <div class="callout-title">📌 Critério de Sucesso ou Inviabilidade</div>
+        <ul>
+          <li><strong>Caso 1 ($W^* = 0$):</strong> Todas as variáveis artificiais tornaram-se nulas. Encontramos uma Solução Básica Factível (BFS) autêntica do problema original! <strong>Eliminam-se todas as colunas artificiais $a_i$</strong> do tableau, restaura-se a função objetivo original $z = c^T x$ e inicia-se a <strong>Fase 2</strong>.</li>
+          <li><strong>Caso 2 ($W^* > 0$):</strong> O valor ótimo da Fase 1 terminou estritamente positivo. Significa que é fisicamente impossível satisfazer simultaneamente todas as restrições originais: o <strong>modelo primal é 100% INVIÁVEL</strong>!</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1">
+      <div class="exercise-header">
+        <h3>Exercício 1: Diagnóstico de Inviabilidade na Fase 1</h3>
+      </div>
+      <div class="question-text">
+        Ao concluir a Fase 1 do método Simplex para um modelo de transporte, o valor da função objetivo auxiliar atinge o mínimo de $W^* = 4.20$, sem nenhum custo reduzido negativo restante.<br><br>
+        Qual é a conclusão formal sobre o problema original?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="true" data-feedback="Correto! Como W* = 4.20 > 0, foi impossível eliminar todas as variáveis artificiais. Isso é um certificado formal e irrefutável de que o problema de programação linear original é INVIÁVEL (conjunto factível vazio).">
+          O problema original é comprovadamente INVIÁVEL (não possui nenhuma solução factível).
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a Fase 2 só pode ser iniciada se W* = 0 exatamente; com W* > 0, o problema não possui nenhuma base factível.">
+          Avança-se normalmente para a Fase 2 somando 4.20 ao valor da função objetivo.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Atenção: W* > 0 não significa ilimitabilidade; significa que a região factível é vazia (incompatibilidade de restrições).">
+          O modelo é ilimitado e a função objetivo tende a menos infinito.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o solver não entra em ciclagem nesse caso; ele para imediatamente com o diagnóstico de infactibilidade.">
+          Ocorreu um erro de ciclagem que exige reiniciar com a regra de Bland.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="simplex-04-degenerescencia-ciclagem-e-ilimitabilidade.html">← Lição 4: Degenerescência & Bland</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="simplex-06-simplex-dual-e-sensibilidade.html">Próxima: Lição Simplex 6 (Simplex Dual) &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: W* > 0 implica inviável
+      initMultipleChoice("ex1", "W* > 0 ao término da Fase 1 comprova formalmente que o modelo original é inviável");
+
+      // ==========================================
+      // SIMULADOR DE FASE 1 E FASE 2
+      // ==========================================
+      const btnFeasible = document.getElementById("btn-case-feasible");
+      const btnInfeasible = document.getElementById("btn-case-infeasible");
+      const btnRun = document.getElementById("btn-run-phase1");
+
+      const phName = document.getElementById("ph-name");
+      const phBase = document.getElementById("ph-base");
+      const phW = document.getElementById("ph-w");
+      const phZ = document.getElementById("ph-z");
+      const phDiag = document.getElementById("ph-diag");
+      const phStatus = document.getElementById("ph-status");
+
+      let currentMode = "feasible"; // "feasible" ou "infeasible"
+
+      btnFeasible.addEventListener("click", () => {
+        currentMode = "feasible";
+        btnFeasible.className = "widget-btn";
+        btnInfeasible.className = "widget-btn secondary";
+        resetSim();
+      });
+
+      btnInfeasible.addEventListener("click", () => {
+        currentMode = "infeasible";
+        btnInfeasible.className = "widget-btn danger";
+        btnFeasible.className = "widget-btn secondary";
+        resetSim();
+      });
+
+      function resetSim() {
+        phName.innerHTML = "<strong>Fase 1 (Início)</strong>";
+        phBase.textContent = "{a₁, a₂}";
+        phW.textContent = "W = 12.0";
+        phW.style.color = "#f0883e";
+        phZ.textContent = "Pausado";
+        phDiag.textContent = "Buscando vértice factível do problema original...";
+        phStatus.className = "widget-status-bar";
+        phStatus.innerHTML = `<span>Clique em "Executar Pivôs da Fase 1" para rodar o Simplex auxiliar.</span>`;
+        btnRun.disabled = false;
+      }
+
+      btnRun.addEventListener("click", () => {
+        if (currentMode === "feasible") {
+          phName.innerHTML = "<strong>Fase 1 Concluída → Fase 2 Ativa</strong>";
+          phBase.textContent = "{x₁, x₂}";
+          phW.textContent = "W* = 0.00";
+          phW.style.color = "#3fb950";
+          phZ.textContent = "z* = $108.00";
+          phDiag.textContent = "Variáveis artificiais purgadas! Base original factível encontrada.";
+          phStatus.className = "widget-status-bar success";
+          phStatus.innerHTML = `<span>🏆 <strong>Fase 1 Concluída com Sucesso (W* = 0.00)!</strong> As variáveis artificiais zeraram e foram removidas. Fase 2 otimizou o lucro real para $108.00!</span>`;
+        } else {
+          phName.innerHTML = "<strong>Fase 1 Terminada (INVIÁVEL)</strong>";
+          phBase.textContent = "{x₁, a₂}";
+          phW.textContent = "W* = 3.50 > 0";
+          phW.style.color = "#c62828";
+          phZ.textContent = "Inexistente";
+          phDiag.textContent = "A variável artificial a₂ não pode ser zerada (conflito de restrições).";
+          phStatus.className = "widget-status-bar error";
+          phStatus.innerHTML = `<span>⚠️ <strong>Problema Original INVIÁVEL!</strong> A soma das variáveis artificiais estagnou em W* = 3.50 > 0. O conjunto factível do problema é rigorosamente vazio.</span>`;
+        }
+        btnRun.disabled = true;
+      });
+    });
+  </script>
+</body>
+</html>

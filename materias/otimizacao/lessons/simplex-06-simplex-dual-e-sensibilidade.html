@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simplex 6: Algoritmo Simplex Dual e Sensibilidade — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Trilha Simplex • Lição 6 de 6</div>
+      <h1>Algoritmo Simplex Dual e Análise Pós-Ótima</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Quando a base é dualmente ótima ($\bar{c} \ge 0$) mas primalmente inviável ($b_i < 0$), e a adição dinâmica de cortes em Branch & Bound.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="simplex-05-metodo-duas-fases-e-big-m.html">← Lição 5: Duas Fases & Big-M</a>
+      <a href="simplex-intensivo-maratona-de-questoes.html">Maratona de Questões de Simplex &rarr;</a>
+    </div>
+
+    <!-- SEÇÃO 1: POR QUE O SIMPLEX DUAL EXISTE? -->
+    <section class="card-theory">
+      <h2>1. Quando Utilizar o Algoritmo Simplex Dual?</h2>
+      <p>
+        No Simplex Primal clássico, mantemos a <strong>factibilidade primal</strong> ($b_i \ge 0$) em cada passo e caminhamos em busca da <strong>otimalidade dual</strong> ($\bar{c} \ge 0$).
+      </p>
+      <p>
+        O <strong>Algoritmo Simplex Dual (Lemke, 1954)</strong> opera na direção oposta:
+      </p>
+      <ul>
+        <li>A base atual já possui <strong>custos reduzidos ótimos</strong> ($\bar{c}_j \ge 0$ em minimização).</li>
+        <li>Porém, pelo menos uma variável básica é <strong>inviável</strong> no lado direito: $b_i < 0$!</li>
+      </ul>
+      <div class="callout definition">
+        <div class="callout-title">📌 O Motor do Branch & Bound Moderno</div>
+        <p style="margin-bottom: 0;">
+          Quando adicionamos uma nova restrição de corte (ex: $x_1 \le 3$) a um problema que já foi resolvido, o ponto ótimo anterior viola o corte (gerando $b_{\text{novo}} < 0$), mas os custos reduzidos continuam todos ótimos! O Simplex Dual permite <strong>reotimizar a solução em apenas 1 ou 2 pivôs</strong>, sem jamais precisar recomeçar do zero!
+        </p>
+      </div>
+    </section>
+
+    <!-- SIMULADOR INTERATIVO: MÁQUINA DE PIVOTEAMENTO DUAL -->
+    <div class="interactive-widget" id="dual-simplex-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>🔄 Máquina Interativa: O Pivoteamento Simplex Dual Passo a Passo</span>
+        </div>
+        <span class="widget-badge">Simplex Dual</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Observe o tableau abaixo: todos os custos reduzidos são <strong>perfeitos e ótimos ($\bar{c} \ge 0$)</strong>. 
+        Porém, a variável básica <strong>$s_2$ está inviável com $b_2 = -4.0$</strong>! 
+        Clique no botão para executar o teste da razão dual e restaurar a factibilidade primal!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 260px; padding: 1rem;">
+        <div class="trace-table-container" style="width: 100%;">
+          <table class="trace-table">
+            <thead>
+              <tr>
+                <th>Base</th>
+                <th>x₁</th>
+                <th>x₂</th>
+                <th>s₁</th>
+                <th>s₂</th>
+                <th>RHS (b)</th>
+              </tr>
+            </thead>
+            <tbody id="dual-piv-body">
+              <tr>
+                <td><strong>s₁</strong></td>
+                <td>1.0</td>
+                <td>2.0</td>
+                <td>1.0</td>
+                <td>0.0</td>
+                <td><strong>8.0</strong></td>
+              </tr>
+              <tr style="background-color: rgba(198, 40, 40, 0.1);">
+                <td style="color: #c62828;"><strong>s₂ (Sai: mais negativo)</strong></td>
+                <td>-2.0</td>
+                <td>-1.0</td>
+                <td>0.0</td>
+                <td>1.0</td>
+                <td style="color: #c62828; font-weight: bold; font-size: 1.1rem;">-4.0</td>
+              </tr>
+              <tr class="highlight-step">
+                <td><strong>(-z)</strong></td>
+                <td style="color: #3fb950; font-weight: bold;">6.0</td>
+                <td style="color: #3fb950; font-weight: bold;">4.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+                <td><strong>0.0</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="widget-status-bar error" id="dual-piv-status" style="margin-top: 1rem;">
+          <span>Estado Inicial: Base dual viável (c̄ ≥ 0), mas primalmente inviável (s₂ = -4.0 < 0). Linha de s₂ deve sair!</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: center;">
+        <button class="widget-btn" id="btn-run-dual-piv">⚡ Executar Pivô Simplex Dual</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: A MECÂNICA DE ENTRADA E SAÍDA DUAL -->
+    <section class="card-theory">
+      <h2>2. A Regra do Pivô Simplex Dual</h2>
+      <ol>
+        <li><strong>Quem Sai Primeiro (Linha Pivô $r$):</strong> A variável com o valor mais negativo no lado direito:
+          $$r = \arg\min_{i} (b_i < 0)$$
+        </li>
+        <li><strong>Quem Entra (Coluna Pivô $k$ - Teste da Razão Dual):</strong> Apenas colunas com coeficientes negativos na linha $r$ ($a_{rj} < 0$) podem entrar. Escolhe-se a menor razão para manter $\bar{c} \ge 0$:
+          $$k = \arg\min_{j : a_{rj} < 0} \left( \frac{\bar{c}_j}{|a_{rj}|} \right)$$
+        </li>
+        <li>Se $a_{rj} \ge 0$ para todos os $j$ na linha negativa $b_r < 0$, o problema primal é <strong>INVIÁVEL</strong>!</li>
+      </ol>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="Na linha r que sai, temos a_r1 = -2 e a_r2 = -4. Os custos reduzidos correspondentes sao c_bar_1 = 6 e c_bar_2 = 8. As razões duais sao: Coluna 1: 6 / |-2| = 3.0. Coluna 2: 8 / |-4| = 2.0. A menor razão é 2.0 na Coluna 2!">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — Teste da Razão Simplex Dual</h3>
+      </div>
+      <div class="question-text">
+        Em uma iteração do Simplex Dual, a linha que sai da base possui $b_r = -6$.<br>
+        Os elementos negativos nessa linha são $a_{r1} = -2$ e $a_{r2} = -4$ (com $a_{r3} = 3 > 0$).<br>
+        Os custos reduzidos não básicos correspondentes são $\bar{c}_1 = 6$ e $\bar{c}_2 = 8$.<br><br>
+        Qual é o <strong>valor numérico da menor razão dual</strong> que determina a coluna entrante?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a menor razão (ex: 2.0)" autocomplete="off">
+        <button class="action-btn">Verificar Razão Dual</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="lesson-nav">
+      <a href="simplex-05-metodo-duas-fases-e-big-m.html">← Lição 5: Duas Fases & Big-M</a>
+      <a href="../index.html">Disciplina</a>
+      <a href="simplex-intensivo-maratona-de-questoes.html">Avançar para a Maratona de Questões de Simplex &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ex 1: min(6/2, 8/4) = min(3.0, 2.0) = 2.0
+      initInputExercise("ex1", ["2", "2.0", "2,0"], "Menor razão dual: min(6/|-2|, 8/|-4|) = min(3.0, 2.0) = 2.0", (raw, clean) => {
+        const num = parseFloat(clean.replace(",", "."));
+        return Math.abs(num - 2) < 0.01;
+      });
+
+      // ==========================================
+      // SIMULADOR SIMPLEX DUAL
+      // ==========================================
+      const btnDualPiv = document.getElementById("btn-run-dual-piv");
+      const tBody = document.getElementById("dual-piv-body");
+      const statusBox = document.getElementById("dual-piv-status");
+
+      let pivoted = false;
+
+      btnDualPiv.addEventListener("click", () => {
+        if (!pivoted) {
+          // Razão dual: min(6/|-2|, 4/|-1|) = min(3.0, 4.0) = 3.0 na coluna x1!
+          // Elemento pivô = -2.0 na linha s2, coluna x1.
+          // Dividir linha 2 por -2.0: [1.0, 0.5, 0.0, -0.5, 2.0]
+          // Linha 1 = Linha 1 - 1 * Linha 2_nova = [0.0, 1.5, 1.0, 0.5, 6.0]
+          // Linha 0 = Linha 0 - 6 * Linha 2_nova = [0.0, 1.0, 0.0, 3.0, -12.0]
+          tBody.innerHTML = `
+            <tr>
+              <td><strong>s₁</strong></td>
+              <td>0.0</td>
+              <td>1.5</td>
+              <td>1.0</td>
+              <td>0.5</td>
+              <td><strong>6.0</strong></td>
+            </tr>
+            <tr>
+              <td><strong>x₁</strong></td>
+              <td>1.0</td>
+              <td>0.5</td>
+              <td>0.0</td>
+              <td>-0.5</td>
+              <td><strong>2.0</strong></td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>(-z)</strong></td>
+              <td>0.0</td>
+              <td style="color: #3fb950; font-weight: bold;">1.0</td>
+              <td>0.0</td>
+              <td style="color: #3fb950; font-weight: bold;">3.0</td>
+              <td><strong>-12.0</strong></td>
+            </tr>
+          `;
+          statusBox.className = "widget-status-bar success";
+          statusBox.innerHTML = `<span>🏆 <strong>Factibilidade Primal Restaurada!</strong> Todos os lados direitos são não negativos (s₁=6.0, x₁=2.0) e todos os custos reduzidos continuam ótimos (c̄ ≥ 0). Solução ótima encontrada em 1 pivô!</span>`;
+          btnDualPiv.textContent = "🔄 Restaurar Estado Inicial";
+          pivoted = true;
+        } else {
+          tBody.innerHTML = `
+            <tr>
+              <td><strong>s₁</strong></td>
+              <td>1.0</td>
+              <td>2.0</td>
+              <td>1.0</td>
+              <td>0.0</td>
+              <td><strong>8.0</strong></td>
+            </tr>
+            <tr style="background-color: rgba(198, 40, 40, 0.1);">
+              <td style="color: #c62828;"><strong>s₂ (Sai: mais negativo)</strong></td>
+              <td>-2.0</td>
+              <td>-1.0</td>
+              <td>0.0</td>
+              <td>1.0</td>
+              <td style="color: #c62828; font-weight: bold; font-size: 1.1rem;">-4.0</td>
+            </tr>
+            <tr class="highlight-step">
+              <td><strong>(-z)</strong></td>
+              <td style="color: #3fb950; font-weight: bold;">6.0</td>
+              <td style="color: #3fb950; font-weight: bold;">4.0</td>
+              <td>0.0</td>
+              <td>0.0</td>
+              <td><strong>0.0</strong></td>
+            </tr>
+          `;
+          statusBox.className = "widget-status-bar error";
+          statusBox.innerHTML = `<span>Estado Inicial: Base dual viável (c̄ ≥ 0), mas primalmente inviável (s₂ = -4.0 < 0). Linha de s₂ deve sair!</span>`;
+          btnDualPiv.textContent = "⚡ Executar Pivô Simplex Dual";
+          pivoted = false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
