@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 0023: Algoritmo Simplex Passo a Passo Completo — Otimização</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <script src="../assets/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="lesson-meta">Módulo 1 • Masterclass Especial (Lição 0023)</div>
+      <h1>Algoritmo Simplex Passo a Passo Completo</h1>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        Do poliedro à álgebra de matrizes: forma padrão, montagem de tableau, teste da razão mínima, pivoteamento de Gauss-Jordan, duas fases, Big-M, degenerescência e simplex dual.
+      </p>
+    </header>
+
+    <div class="nav-links">
+      <a href="../index.html">← Disciplina</a>
+      <a href="0005-simplex-tableau-e-fluxos-duais.html">← Lição 0005</a>
+      <a href="../reference/0001-programacao-linear-e-dualidade.html">Ficha: PL & Dualidade</a>
+      <a href="simulado-modulo-1-programacao-linear.html">Simulado Módulo 1 &rarr;</a>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 1: INTUIÇÃO GEOMÉTRICA E O PROBLEMA COMBINATÓRIO                   -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>1. Por que o Simplex Existe? Vértices vs. Explosão Combinatória</h2>
+      <p>
+        O <strong>Teorema Fundamental da Programação Linear</strong> prova que a solução ótima de qualquer problema linear factível e limitado reside em pelo menos um <strong>vértice (ponto extremo)</strong> do poliedro de restrições.
+      </p>
+      <p>
+        Em um sistema na forma padrão com $m$ restrições lineares e $n$ variáveis ($m < n$), cada vértice é formado ao escolher $m$ variáveis para serem <em>básicas</em> e fixar as outras $n - m$ variáveis em zero. O número total de combinações de vértices possíveis é dado pelo coeficiente binomial:
+      </p>
+      $$\binom{n}{m} = \frac{n!}{m! \, (n-m)!}$$
+      <p>
+        Em vez de inspecionar cegamente todos os vértices (o que levaria séculos em computadores reais), George Dantzig (1947) criou o <strong>Simplex</strong>: um método que caminha <em>apenas pelas arestas vizinhas</em> que estritamente melhoram a função objetivo, alcançando o ótimo após inspecionar uma minúscula fração dos vértices!
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 1 -->
+    <section class="card-exercise" id="ex1" data-hint="Use a fórmula binomial C(n, m) = n! / (m! * (n - m)!). Para n = 10 e m = 4: (10 × 9 × 8 × 7) / (4 × 3 × 2 × 1) = 5040 / 24 = 210.">
+      <div class="exercise-header">
+        <h3>Exercício 1: Active Recall Numérico — A Explosão Combinatória dos Vértices</h3>
+      </div>
+      <div class="question-text">
+        Um modelo de planejamento florestal possui $m = 4$ restrições estruturais de corte e $n = 10$ variáveis totais após a introdução de folgas.<br><br>
+        Quantas bases candidatas (combinações de colunas $\binom{10}{4}$) um algoritmo de força bruta ingênuo precisaria testar no pior caso para encontrar o vértice ótimo?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a quantidade de bases (ex: 120)" autocomplete="off">
+        <button class="action-btn">Verificar Quantidade</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 2: A FORMA PADRÃO CANÔNICA DE PROGRAMAÇÃO LINEAR                   -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>2. A Forma Padrão: Preparando o Sistema para o Simplex</h2>
+      <p>
+        O motor do Simplex exige que todas as restrições sejam <strong>equações de igualdade estrita</strong> e que todas as variáveis e termos independentes sejam <strong>não negativos</strong> ($Ax = b, x \ge 0, b \ge 0$).
+      </p>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Situação Original</th>
+              <th>Transformação Algébrica</th>
+              <th>Efeito nas Variáveis</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Restrição $\le b_i$ ($b_i \ge 0$)</td>
+              <td>Soma-se uma variável de <strong>folga</strong> $s_i \ge 0$: $\; a_i^T x + s_i = b_i$</td>
+              <td>Gera imediatamente uma coluna da identidade $+1$.</td>
+            </tr>
+            <tr>
+              <td>Restrição $\ge b_i$ ($b_i \ge 0$)</td>
+              <td>Subtrai-se uma variável de <strong>excesso</strong> $e_i \ge 0$: $\; a_i^T x - e_i = b_i$</td>
+              <td>Gera $-1$; <em>não</em> serve de base inicial imediata.</td>
+            </tr>
+            <tr>
+              <td>Lado direito negativo ($b_i < 0$)</td>
+              <td>Multiplica-se toda a inequação por $-1$ e <strong>inverte-se o sinal</strong></td>
+              <td>Ex: $2x_1 - x_2 \le -5 \iff -2x_1 + x_2 \ge 5$.</td>
+            </tr>
+            <tr>
+              <td>Variável irrestrita em sinal ($x_j \in \mathbb{R}$)</td>
+              <td>Substitui-se por duas variáveis: $x_j = x_j^+ - x_j^-$</td>
+              <td>Onde $x_j^+ \ge 0$ e $x_j^- \ge 0$.</td>
+            </tr>
+            <tr>
+              <td>Maximização vs. Minimização</td>
+              <td>$\max c^T x \iff -\min (-c^T x)$</td>
+              <td>O mesmo algoritmo pode operar em ambos os sentidos.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 2 -->
+    <section class="card-exercise" id="ex2" data-hint="Conte todas as variáveis: originais (x1, x2), a variável livre x3 dividida em (x3+ e x3-) são 2 variáveis, a folga s1 da restrição <= (1 variável) e o excesso e2 da restrição >= (1 variável). Total: 2 + 2 + 1 + 1 = 6 variáveis.">
+      <div class="exercise-header">
+        <h3>Exercício 2: Active Recall Numérico — Contagem de Variáveis na Forma Padrão</h3>
+      </div>
+      <div class="question-text">
+        Considere o seguinte modelo linear:<br>
+        $$\max \; 3x_1 - 2x_2 + 5x_3$$
+        sujeito a:<br>
+        $$x_1 + 4x_2 \le 12$$
+        $$2x_1 - x_2 + 3x_3 \ge 8$$
+        $$x_1 \ge 0, \quad x_2 \ge 0, \quad x_3 \in \mathbb{R} \text{ (livre em sinal)}$$
+        Após converter o problema rigorosamente para a <strong>forma padrão de igualdades ($Ax = b, x \ge 0$)</strong>, quantas variáveis não-negativas escalares o novo vetor de incógnitas $x$ conterá no total?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o total de variáveis (ex: 5)" autocomplete="off">
+        <button class="action-btn">Verificar Dimensão</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 3: A ÁLGEBRA DA BASE E SOLUÇÕES BÁSICAS FACTÍVEIS                  -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>3. Partição Básica: Variáveis Básicas ($x_B$) vs. Não Básicas ($x_N$)</h2>
+      <p>
+        Com o sistema $Ax = b$ onde $A \in \mathbb{R}^{m \times n}$ e $m < n$, dividimos as colunas de $A$ em:
+      </p>
+      <ul>
+        <li><strong>Matriz Base ($B \in \mathbb{R}^{m \times m}$):</strong> $m$ colunas linearmente independentes.</li>
+        <li><strong>Matriz Não Básica ($N \in \mathbb{R}^{m \times (n-m)}$):</strong> as $n - m$ colunas restantes.</li>
+      </ul>
+      <p>
+        O sistema de restrições torna-se:
+      </p>
+      $$B x_B + N x_N = b \implies x_B = B^{-1}b - B^{-1}N x_N$$
+      <p>
+        A regra do Simplex fixa <strong>$x_N = 0$</strong>. Assim, o valor das variáveis básicas é unicamente determinado por:
+      </p>
+      $$x_B = B^{-1}b$$
+      <div class="callout definition">
+        <div class="callout-title">📌 Classificação Fundamental de Soluções</div>
+        <p style="margin-bottom: 0;">
+          • <strong>Solução Básica:</strong> qualquer partição onde $x_N = 0$ e $x_B = B^{-1}b$.<br>
+          • <strong>Solução Básica Factível (SBF):</strong> se e somente se $x_B \ge 0$ (nenhuma variável básica é estritamente negativa). Corresponde exatamente a um <em>vértice do poliedro</em>.<br>
+          • <strong>Solução Básica Inviável:</strong> se pelo menos uma variável em $x_B$ for estritamente menor que zero ($x_{Bi} < 0$).
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 3 -->
+    <section class="card-exercise" id="ex3" data-hint="Se xN = 0, então x1 = 0. O sistema vira: 2*x2 + s1 = 14 e x2 + s2 = 8. Com base {x2, s1}, s2 é não básica (s2 = 0). Logo, da 2ª equação: x2 = 8. Da 1ª equação: 2(8) + s1 = 14 => 16 + s1 = 14 => s1 = -2. Como s1 = -2 < 0, a solução é BÁSICA INVIÁVEL.">
+      <div class="exercise-header">
+        <h3>Exercício 3: Teste de Factibilidade de Solução Básica</h3>
+      </div>
+      <div class="question-text">
+        Considere as restrições já com variáveis de folga $s_1, s_2 \ge 0$:<br>
+        $$x_1 + 2x_2 + s_1 = 14$$
+        $$3x_1 + x_2 + s_2 = 8$$
+        Escolhemos como variáveis básicas o conjunto <strong>$x_B = \{x_2, s_1\}$</strong> (o que significa que $x_1 = 0$ e $s_2 = 0$).<br><br>
+        Calculando os valores de $x_2$ e $s_1$, essa partição básica é uma <strong>Solução Básica Factível (SBF)</strong>?
+      </div>
+      <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        <button class="option-btn btn-true" style="flex: 1; padding: 0.8rem;">Verdadeiro (Factível, todas variáveis básicas ≥ 0)</button>
+        <button class="option-btn btn-false" style="flex: 1; padding: 0.8rem;">Falso (Inviável, pelo menos uma variável básica < 0)</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 4: A ANATOMIA DO TABLEAU SIMPLEX                                   -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>4. Anatomia do Tableau Simplex Canônico</h2>
+      <p>
+        O <strong>Tableau Simplex</strong> é uma matriz compacta que organiza as equações de modo que possamos realizar eliminações de Gauss-Jordan diretamente nas linhas.
+      </p>
+      <p>
+        Para um problema de maximização com função objetivo escrita na forma canônica zero:
+        $$z - c_1 x_1 - c_2 x_2 - \dots - c_n x_n = 0$$
+        o tableau assume o formato padrão:
+      </p>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Base</th>
+              <th>Linha</th>
+              <th>x₁</th>
+              <th>x₂</th>
+              <th>s₁</th>
+              <th>s₂</th>
+              <th>Lado Direito (b)</th>
+              <th>Significado Algébrico</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: var(--accent-muted); font-weight: bold;">
+              <td>$z$</td>
+              <td>0</td>
+              <td>$-c_1$</td>
+              <td>$-c_2$</td>
+              <td>$0$</td>
+              <td>$0$</td>
+              <td>$0$ (Lucro atual)</td>
+              <td>Linha da Função Objetivo ($z - c^T x = 0$)</td>
+            </tr>
+            <tr>
+              <td>$s_1$</td>
+              <td>1</td>
+              <td>$a_{11}$</td>
+              <td>$a_{12}$</td>
+              <td>$1$</td>
+              <td>$0$</td>
+              <td>$b_1$</td>
+              <td>Restrição 1 (folga $s_1$ na base com valor $b_1$)</td>
+            </tr>
+            <tr>
+              <td>$s_2$</td>
+              <td>2</td>
+              <td>$a_{21}$</td>
+              <td>$a_{22}$</td>
+              <td>$0$</td>
+              <td>$1$</td>
+              <td>$b_2$</td>
+              <td>Restrição 2 (folga $s_2$ na base com valor $b_2$)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <strong>Propriedade Crítica:</strong> As colunas das variáveis que estão na base <em>sempre</em> formam uma matriz identidade (com $1$ na linha da variável e $0$ nas outras, inclusive na linha $z$).
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 4 -->
+    <section class="card-exercise" id="ex4" data-hint="Regra de leitura direta de tableau: toda variável NÃO BÁSICA possui valor fixado estritamente em zero por definição. Se ela não aparece na coluna 'Base', seu valor é 0.">
+      <div class="exercise-header">
+        <h3>Exercício 4: Active Recall Numérico — Leitura Imediata de Valores do Tableau</h3>
+      </div>
+      <div class="question-text">
+        Observe o tableau abaixo referente a um modelo com variáveis $x_1, x_2, s_1, s_2$:<br>
+        <div class="trace-table-container" style="margin: 0.8rem 0;">
+          <table class="trace-table">
+            <thead>
+              <tr><th>Base</th><th>z</th><th>x₁</th><th>x₂</th><th>s₁</th><th>s₂</th><th>Lado Direito</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>z</td><td>1</td><td>0</td><td>-3</td><td>2</td><td>0</td><td>48</td></tr>
+              <tr><td>x₁</td><td>0</td><td>1</td><td>0.5</td><td>0.5</td><td>0</td><td>6</td></tr>
+              <tr><td>s₂</td><td>0</td><td>0</td><td>1.5</td><td>-0.5</td><td>1</td><td>9</td></tr>
+            </tbody>
+          </table>
+        </div>
+        Qual é o <strong>valor numérico da variável $x_2$</strong> no vértice representado por este tableau?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor numérico de x2 (ex: 6)" autocomplete="off">
+        <button class="action-btn">Verificar Valor</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 5: CUSTOS REDUZIDOS E A REGRA DE ENTRADA NA BASE                   -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>5. Custos Reduzidos ($\bar{c}_j$) e a Variável Entrante</h2>
+      <p>
+        O <strong>custo reduzido</strong> $\bar{c}_j$ mede a derivada direcional da função objetivo em relação à variável não básica $x_j$:
+      </p>
+      $$\bar{c}_N^T = c_N^T - c_B^T B^{-1} N = c_N^T - \pi^T N$$
+      <div class="callout definition">
+        <div class="callout-title">📌 Critério de Otimalidade e Regra de Entrada de Dantzig</div>
+        <p>
+          • <strong>Em Maximização</strong> (quando a linha $z$ do tableau armazena $z - \sum (c_j - z_j)x_j$ com coeficientes $-c_j$):<br>
+          Cada coeficiente <strong>negativo</strong> na linha $z$ indica que aumentar aquela variável aumentará o lucro. A <strong>Regra de Dantzig</strong> escolhe a variável com o <em>coeficiente mais negativo</em> (maior taxa marginal de ganho). Se todos os coeficientes na linha $z$ forem $\ge 0$, o tableau é <strong>ÓTIMO</strong>!<br><br>
+          • <strong>Em Minimização</strong>: Escolhe-se a variável com custo reduzido mais negativo $\bar{c}_j < 0$. Se todos $\bar{c}_j \ge 0$, o ponto é o mínimo global.
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 5 -->
+    <section class="card-exercise" id="ex5" data-hint="Na linha z de maximização (formato canônico z - sum = 0), a variável entrante pela regra de Dantzig é aquela com o coeficiente MAIS NEGATIVO. Entre -8 (x1), -14 (x2) e 3 (s1), o mais negativo é -14. Logo, x2 entra na base.">
+      <div class="exercise-header">
+        <h3>Exercício 5: Active Recall — Seleção da Variável Entrante pela Regra de Dantzig</h3>
+      </div>
+      <div class="question-text">
+        Em um problema de <strong>maximização de lucro</strong>, a linha $0$ (linha $z$) do tableau atual apresenta os seguintes coeficientes para as variáveis não básicas:<br>
+        • Coluna $x_1$: $-8$<br>
+        • Coluna $x_2$: $-14$<br>
+        • Coluna $s_1$: $+3$<br>
+        • Coluna $s_2$: $0$<br><br>
+        De acordo com a regra clássica de Dantzig, <strong>qual variável deve entrar na base</strong> nesta iteração?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a variável entrante (ex: x1 ou x2)" autocomplete="off">
+        <button class="action-btn">Confirmar Variável</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 6: O TESTE DA RAZÃO MÍNIMA E A SAÍDA DA BASE                       -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>6. O Teste da Razão Mínima (Min-Ratio Test): Quem Sai da Base?</h2>
+      <p>
+        Uma vez escolhida a coluna entrante $k$, precisamos saber até quanto podemos aumentar $x_k$ sem que nenhuma variável básica se torne negativa.
+      </p>
+      <p>
+        Conforme $x_k$ sobe de $0$ para um valor $\theta > 0$, as variáveis básicas atuais variam segundo:
+      </p>
+      $$x_{Bi} = \bar{b}_i - a_{ik} \, \theta \ge 0$$
+      <ul>
+        <li>Se $a_{ik} \le 0$: Conforme $\theta$ cresce, $x_{Bi}$ permanece inalterado ou <em>aumenta</em>. Portanto, essa restrição <strong>nunca impõe limite</strong> à entrada de $x_k$!</li>
+        <li>Se $a_{ik} > 0$: Conforme $\theta$ cresce, $x_{Bi}$ diminui até bater em zero quando $\theta = \frac{\bar{b}_i}{a_{ik}}$.</li>
+      </ul>
+      <p>
+        Para que nenhuma variável básica viole a não-negatividade ($x_{Bi} \ge 0$), o avanço máximo permitido é a <strong>menor das razões positivas</strong>:
+      </p>
+      $$\theta^* = \min_{i: a_{ik} > 0} \left( \frac{\bar{b}_i}{a_{ik}} \right)$$
+      <p>
+        A linha $r$ que atinge esse valor mínimo define a <strong>variável básica que sai da base</strong> (cujo valor cai para zero). O elemento na interseção da linha sainte com a coluna entrante ($a_{rk}$) é o <strong>Elemento Pivô</strong>.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 6 -->
+    <section class="card-exercise" id="ex6" data-hint="Calcule bi / aik apenas para aik > 0: Linha 1: 30 / 3 = 10.0; Linha 2: o coeficiente é -2 <= 0, portanto IGNORE; Linha 3: 28 / 4 = 7.0. A menor razão positiva é min(10.0, 7.0) = 7.0.">
+      <div class="exercise-header">
+        <h3>Exercício 6: Active Recall Numérico — Cálculo da Razão Mínima</h3>
+      </div>
+      <div class="question-text">
+        A coluna da variável $x_2$ foi selecionada para entrar na base. A tabela apresenta as 3 restrições com seus lados direitos e coeficientes na coluna de $x_2$:<br>
+        • Linha 1 (base $s_1$): Lado direito $\bar{b}_1 = 30$, coeficiente $a_{12} = 3$<br>
+        • Linha 2 (base $s_2$): Lado direito $\bar{b}_2 = 16$, coeficiente $a_{22} = -2$<br>
+        • Linha 3 (base $s_3$): Lado direito $\bar{b}_3 = 28$, coeficiente $a_{32} = 4$<br><br>
+        Qual é o <strong>valor numérico exato do passo máximo factível $\theta^*$</strong> permitido pelo teste da razão mínima?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor de theta* (ex: 8.0)" autocomplete="off">
+        <button class="action-btn">Calcular Razão Mínima</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 7: PIVOTEAMENTO DE GAUSS-JORDAN PASSO A PASSO                      -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>7. Eliminação de Gauss-Jordan: A Mecânica do Pivoteamento</h2>
+      <p>
+        Após identificar o <strong>elemento pivô $p = a_{rk}$</strong> na linha $r$ e coluna $k$, transformamos a coluna $k$ em um vetor canônico da matriz identidade (com $1$ na posição pivô e $0$ em todas as outras linhas, incluindo a linha $z$).
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 O Algoritmo de 3 Passos de Eliminação Gaussiana</div>
+        <p>
+          <strong>Passo 1 (Normalização da Linha Pivô):</strong> Divide-se toda a linha pivô $r$ pelo valor do elemento pivô $p$:
+          $$L_r^{\text{novo}} = \frac{L_r}{p}$$
+          <em>(O elemento pivô se torna exatamente $1$).</em><br><br>
+          <strong>Passo 2 (Eliminação nas Demais Linhas de Restrição $i \ne r$):</strong> Subtrai-se de cada linha $i$ um múltiplo da linha pivô nova:
+          $$L_i^{\text{novo}} = L_i - a_{ik} \cdot L_r^{\text{novo}}$$
+          <em>(O elemento na coluna $k$ da linha $i$ se torna exatamente $0$).</em><br><br>
+          <strong>Passo 3 (Atualização da Linha da Função Objetivo $z$):</strong>
+          $$L_0^{\text{novo}} = L_0 - a_{0k} \cdot L_r^{\text{novo}}$$
+          <em>(O termo independente do lado direito da linha $z$ passa a refletir o novo lucro obtido!).</em>
+        </p>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 7 -->
+    <section class="card-exercise" id="ex7" data-hint="Primeiro, normalize a linha pivô: L2_novo = [0, 4/2, 2/2, 12/2] = [0, 2, 1, 6]. Agora, atualize a linha 1 onde a1k = 3: L1_novo = L1 - 3 * L2_novo. Para o lado direito: b1_novo = 26 - 3 * (6) = 26 - 18 = 8.">
+      <div class="exercise-header">
+        <h3>Exercício 7: Active Recall Numérico — Operação de Linha Elementar</h3>
+      </div>
+      <div class="question-text">
+        Dada a Linha 1 atual: $[x_1: 5, \quad x_2: 3, \quad s_1: 1, \quad b: 26]$<br>
+        E a Linha Pivô 2 atual: $[x_1: 4, \quad x_2: 2, \quad s_2: 1, \quad b: 12]$, onde o elemento pivô é $p = a_{22} = 2$.<br><br>
+        Após normalizar a linha pivô ($L_2^{\text{novo}} = L_2 / 2$) e eliminar a coluna $x_2$ na Linha 1 ($L_1^{\text{novo}} = L_1 - 3 \cdot L_2^{\text{novo}}$), qual será o <strong>novo valor do lado direito ($b$) da Linha 1</strong>?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o novo valor de b da Linha 1 (ex: 10)" autocomplete="off">
+        <button class="action-btn">Executar Operação</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 8: SIMULADOR INTERATIVO COMPLETO DO TABLEAU SIMPLEX                -->
+    <!-- ========================================================================= -->
+
+    <div class="interactive-widget" id="simplex-master-widget">
+      <div class="widget-header">
+        <div class="widget-title">
+          <span>⚙️ Laboratório Interativo: Máquina de Pivoteamento Simplex</span>
+        </div>
+        <span class="widget-badge">Simulador Dinâmico</span>
+      </div>
+
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin: 0;">
+        Acompanhe a resolução completa do problema de produção: $\max z = 3x_1 + 5x_2$ sujeito a $x_1 \le 4$, $2x_2 \le 12$ e $3x_1 + 2x_2 \le 18$.
+        Observe a <strong>coluna pivô destacada em verde</strong>, a <strong>linha sainte em vermelho</strong> e o <strong>elemento pivô em dourado</strong>.
+        Clique nos botões para avançar e ver as operações de Gauss-Jordan em ação!
+      </p>
+
+      <div class="widget-canvas" style="min-height: 280px; padding: 1rem; align-items: stretch;">
+        <div class="trace-table-container">
+          <table class="trace-table" id="master-tableau">
+            <thead>
+              <tr>
+                <th>Base</th>
+                <th>x₁</th>
+                <th>x₂</th>
+                <th>s₁</th>
+                <th>s₂</th>
+                <th>s₃</th>
+                <th>Lado Direito (b)</th>
+                <th>Razão Mínima ($b_i / a_{ik}$)</th>
+              </tr>
+            </thead>
+            <tbody id="master-tableau-body">
+              <!-- Preenchido via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="widget-status-bar" id="master-simplex-status" style="margin-top: 0.8rem;">
+          <!-- Status dinâmico -->
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: space-between; flex-wrap: wrap;">
+        <button class="widget-btn secondary" id="btn-master-prev">⏮️ Iteração Anterior</button>
+        <button class="widget-btn" id="btn-master-next">⏭️ Executar Próximo Pivô</button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 9: OS 4 CASOS ESPECIAIS DO SIMPLEX (DIAGNÓSTICO DE ANOMALIAS)      -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>8. Os Quatro Casos Especiais do Simplex</h2>
+      <p>
+        Nem todo problema de Programação Linear termina em um único vértice ótimo bem comportado. O Simplex detecta perfeitamente todas as anomalias geométricas:
+      </p>
+      <div class="trace-table-container">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Cenário Especial</th>
+              <th>Assinatura Visual no Tableau</th>
+              <th>Interpretação Geométrica</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Múltiplas Soluções Ótimas (Infinitas)</strong></td>
+              <td>O tableau já é ótimo (todos $\bar{c} \ge 0$), mas existe uma variável <em>não básica</em> com $\bar{c}_j = 0$.</td>
+              <td>A função objetivo é paralela a uma aresta ou face do poliedro. Pivoteando nessa variável, encontramos outro vértice ótimo com o mesmo $z^*$.</td>
+            </tr>
+            <tr>
+              <td><strong>2. Solução Ilimitada ($z \to \infty$)</strong></td>
+              <td>Uma variável $x_k$ quer entrar na base ($\bar{c}_k < 0$), mas <strong>todos</strong> os coeficientes na sua coluna são $a_{ik} \le 0$.</td>
+              <td>O poliedro não é limitado naquela direção. O passo $\theta^* \to \infty$ e o lucro pode crescer infinitamente sem violar nenhuma restrição.</td>
+            </tr>
+            <tr>
+              <td><strong>3. Degenerescência e Ciclagem</strong></td>
+              <td>Um empate no teste da razão mínima deixa uma variável básica com valor zero ($\bar{b}_i = 0$) na próxima iteração.</td>
+              <td>Mais de $m$ hiperplanos se interceptam no mesmo vértice. O Simplex troca a base mas o passo $\theta^* = 0$, podendo entrar em <em>loop infinito</em>. Solução: <strong>Regra de Bland</strong> (desempate pelo menor índice).</td>
+            </tr>
+            <tr>
+              <td><strong>4. Inviabilidade ($\mathcal{P} = \emptyset$)</strong></td>
+              <td>Ao término da Fase 1, pelo menos uma variável artificial permanece na base com valor estritamente positivo ($a_i > 0$).</td>
+              <td>As restrições são mutualmente contraditórias; não existe nenhum ponto no espaço que satisfaça todas as restrições simultaneamente.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXERCÍCIO 8 -->
+    <section class="card-exercise" id="ex8" data-hint="Se a variável quer entrar na base (coeficiente negativo na linha z), mas todos os elementos da coluna são <= 0 (0, -3, -1), a razão bi / aik não pode ser calculada para nenhum elemento positivo. Logo, theta pode crescer infinitamente: o problema é ILIMITADO.">
+      <div class="exercise-header">
+        <h3>Exercício 8: Diagnóstico de Comportamento Especial no Tableau</h3>
+      </div>
+      <div class="question-text">
+        Em um tableau de maximização, a variável $x_3$ possui coeficiente $-7$ na linha $z$ (deseja entrar na base).<br>
+        Os coeficientes de suas restrições são: Linha 1 = $0$, Linha 2 = $-3$, Linha 3 = $-1$.<br><br>
+        Qual é a <strong>classificação teórica exata</strong> deste problema de Programação Linear?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o problema não é inviável, pois já possuímos um vértice factível inicial representado pelo tableau atual.">
+          O modelo é estritamente inviável pois não admite nenhuma solução factível.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como todos os elementos da coluna da variável entrante são menores ou iguais a zero (aik ≤ 0), não há nenhum limitante superior para o teste da razão mínima (θ* → ∞). Portanto, o problema é ilimitado!">
+          O modelo possui solução ilimitada, permitindo que a função objetivo cresça indefinidamente até o infinito.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: múltiplas soluções ótimas ocorrem quando o tableau já é ótimo e há custo reduzido zero em variável não básica. Aqui o tableau ainda não é ótimo.">
+          O modelo admite infinitas soluções ótimas situadas sobre uma aresta de custos reduzidos nulos.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: a degenerescência ocorre quando o lado direito possui bi = 0, e não quando os coeficientes da coluna pivô são todos não positivos.">
+          O modelo sofre de degenerescência geométrica e fatalmente entrará em ciclagem perpétua de bases.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 10: O MÉTODO DAS DUAS FASES E O BIG-M                              -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>9. Quando a Origem é Inviável: Método das Duas Fases & Big-M</h2>
+      <p>
+        Quando o problema tem restrições do tipo $\ge$ ou $=$, a origem $x = 0$ não é uma solução viável (a folga de excesso tem coeficiente $-1$, violando a matriz identidade).
+        Para iniciar o Simplex, adicionamos <strong>variáveis artificiais $a_i \ge 0$</strong>.
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Mecânica do Método das Duas Fases</div>
+        <p>
+          • <strong>Fase 1:</strong> Ignora temporariamente a função objetivo original e resolve o problema auxiliar:
+          $$\min W = \sum_{i} a_i$$
+          Se $\min W = 0$: todas as variáveis artificiais saíram da base (foram zeradas). <em>Encontramos uma Solução Básica Factível inicial legítima!</em><br>
+          Se $\min W > 0$: é impossível zerar as variáveis artificiais. <em>O problema original é rigorosamente INVIÁVEL.</em><br><br>
+          • <strong>Fase 2:</strong> Elimina todas as colunas das variáveis artificiais, restaura a função objetivo original $z$, recalcula a linha $z$ (para zerar os coeficientes das variáveis básicas) e executa o Simplex normal até o ótimo!
+        </p>
+      </div>
+      <p>
+        No <strong>Método do Grande M</strong>, em vez de duas fases separadas, adiciona-se uma penalidade enorme $M \gg 0$ diretamente na função objetivo:
+        $$\max z = c^T x - M \sum a_i \quad \text{ou} \quad \min z = c^T x + M \sum a_i$$
+        Antes de iniciar o Simplex, subtrai-se $M$ vezes as linhas das restrições para zerar os coeficientes de $a_i$ na linha $z$.
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 9 -->
+    <section class="card-exercise" id="ex9" data-hint="No final da Fase 1, o critério de parada é atingido quando todos os custos reduzidos são ótimos. O valor ótimo da função da Fase 1 é W*. Se W* > 0 (ou seja, sobrou artificial na base com valor > 0), o problema original é INVIÁVEL. Se W* = 0, ele é factível.">
+      <div class="exercise-header">
+        <h3>Exercício 9: Diagnóstico de Fim de Fase 1</h3>
+      </div>
+      <div class="question-text">
+        Ao concluir a Fase 1 do algoritmo Simplex, o valor ótimo da função auxiliar atingiu <strong>$W^* = 3.5$</strong>, mantendo a variável artificial $a_2 = 3.5$ na base final.<br><br>
+        O que o engenheiro de otimização deve concluir sobre o problema de programação linear original?
+      </div>
+      <div class="options-list">
+        <button class="option-btn" data-correct="false" data-feedback="Cuidado: a Fase 2 só pode ser iniciada se W* = 0, indicando que todas as artificiais puderam ser removidas da base sem violar as restrições originais.">
+          Deve descartar a artificial a2 e prosseguir normalmente para a Fase 2 a partir do vértice encontrado.
+        </button>
+        <button class="option-btn" data-correct="true" data-feedback="Exato! Como o valor mínimo da soma das variáveis artificiais foi estritamente maior que zero (W* = 3.5 > 0), não existe nenhum ponto que satisfaça simultaneamente todas as restrições originais. O problema é matematicamente INVIÁVEL.">
+          O problema original é comprovadamente inviável, pois a região factível é vazia e as restrições são incompatíveis.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: o fato de W* > 0 não tem relação com solução ilimitada. Ilimitada significa que a função objetivo pode crescer ao infinito dentro de uma região factível não vazia.">
+          O problema possui solução ilimitada, pois a função artificial continuará crescendo infinitamente na Fase 2.
+        </button>
+        <button class="option-btn" data-correct="false" data-feedback="Incorreto: este resultado não é fruto de ciclagem nem degenerescência, mas de incompatibilidade analítica das restrições.">
+          O algoritmo sofreu ciclagem e deve ser reiniciado aplicando estritamente a Regra de Bland para convergir.
+        </button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 11: O ALGORITMO SIMPLEX DUAL                                       -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>10. O Algoritmo Simplex Dual: Começando pelo Ótimo Inviável</h2>
+      <p>
+        O <strong>Simplex Primal</strong> caminha por soluções <em>factíveis</em> ($b \ge 0$) até atingir a <em>otimalidade</em> ($\bar{c} \ge 0$).
+        O <strong>Simplex Dual</strong> faz exatamente o inverso: começa em uma solução <strong>dualmente viável / ótima</strong> ($\bar{c} \ge 0$), mas <strong>primalmente inviável</strong> (algum termo do lado direito $b_i < 0$), e caminha recuperando a factibilidade!
+      </p>
+      <div class="callout definition">
+        <div class="callout-title">📌 Passos do Simplex Dual</div>
+        <p>
+          <strong>1. Variável que Sai da Base (Linha $r$):</strong> Escolhe-se a restrição com o valor de $b_i$ <em>mais negativo</em>:
+          $$r = \arg\min_i \{b_i \mid b_i < 0\}$$
+          <strong>2. Teste da Razão Mínima Dual (Coluna Entrante $k$):</strong> Analisam-se apenas os elementos <em>estritamente negativos</em> da linha pivô ($a_{rj} < 0$):
+          $$k = \arg\min_{j: a_{rj} < 0} \left( \frac{\bar{c}_j}{|a_{rj}|} \right)$$
+          <strong>3. Pivoteamento:</strong> Aplica-se Gauss-Jordan normal no elemento $a_{rk}$. O processo repete-se até que todos os $b_i \ge 0$.
+        </p>
+      </div>
+      <p>
+        <em>Onde o Simplex Dual brilha?</em> Em <strong>Branch and Bound</strong> (ao adicionar novas restrições de corte, a solução anterior permanece ótima nos custos reduzidos, mas viola a nova restrição; o Simplex Dual reconverge em 1 ou 2 iterações!).
+      </p>
+    </section>
+
+    <!-- EXERCÍCIO 10 -->
+    <section class="card-exercise" id="ex10" data-hint="No Simplex Dual, olhe apenas para os coeficientes estritamente negativos da linha sainte (Linha 2): a21 = -2 e a23 = -4 (a22 = 1 > 0 é ignorado!). Razões duais: para x1: 6 / |-2| = 3.0; para x3: 8 / |-4| = 2.0. A menor razão é 2.0 (coluna x3). Logo, x3 entra na base.">
+      <div class="exercise-header">
+        <h3>Exercício 10: Active Recall — Seleção da Variável Entrante no Simplex Dual</h3>
+      </div>
+      <div class="question-text">
+        Em uma iteração do Simplex Dual, a Linha 2 foi selecionada para sair da base porque seu lado direito é o mais negativo ($b_2 = -10$).<br>
+        A linha $z$ e a Linha 2 possuem os seguintes coeficientes para as variáveis não básicas:<br>
+        • Variável $x_1$: custo reduzido $\bar{c}_1 = 6$, coeficiente na Linha 2 $a_{21} = -2$<br>
+        • Variável $x_2$: custo reduzido $\bar{c}_2 = 5$, coeficiente na Linha 2 $a_{22} = +1$<br>
+        • Variável $x_3$: custo reduzido $\bar{c}_3 = 8$, coeficiente na Linha 2 $a_{23} = -4$<br><br>
+        Aplicando o <strong>teste da razão mínima dual</strong> ($\min_{j: a_{2j} < 0} \frac{\bar{c}_j}{|a_{2j}|}$), qual variável deve <strong>entrar na base</strong>?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a variável entrante dual (ex: x1 ou x3)" autocomplete="off">
+        <button class="action-btn">Verificar Variável Dual</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PARTE 12: ROTEIRO PRÁTICO INTEGRADO PASSO A PASSO                        -->
+    <!-- ========================================================================= -->
+
+    <section class="card-theory">
+      <h2>11. Roteiro Prático Integrado: Resolução Completa de Ponta a Ponta</h2>
+      <p>
+        Considere a fábrica de móveis de luxo que produz <strong>Mesas ($x_1$)</strong> e <strong>Cadeiras ($x_2$)</strong>:
+      </p>
+      $$\max \; z = 50x_1 + 40x_2$$
+      sujeito a:
+      $$2x_1 + 3x_2 \le 18 \quad (\text{Madeira em metros quadrados})$$
+      $$2x_1 + x_2 \le 10 \quad (\text{Horas de Usinagem})$$
+      $$x_1 \ge 0, \quad x_2 \ge 0$$
+      <p>
+        Vamos resolver este problema executando passo a passo a rota de vértices do Simplex:
+      </p>
+      <ol>
+        <li><strong>Forma Padrão:</strong> Adicionam-se as folgas $s_1, s_2 \ge 0$. Base inicial: $\{s_1 = 18, s_2 = 10\}$, Lucro $z = 0$. Vértice $(0, 0)$.</li>
+        <li><strong>Iteração 1:</strong> Linha $z$: coeficientes $-50$ ($x_1$) e $-40$ ($x_2$). Entra $x_1$ (mais negativo). Razões: Linha 1: $18 / 2 = 9$; Linha 2: $10 / 2 = 5$. Menor razão é $5$ (Linha 2 sai $s_2$). Pivô $a_{21} = 2$. Vértice novo: $(5, 0)$, Lucro $z = 250$.</li>
+        <li><strong>Iteração 2:</strong> Linha $z$ atualizada: coeficiente de $x_2$ é $-15$. Entra $x_2$. Razões: Linha 1: $8 / 2 = 4$; Linha 2: $5 / 0.5 = 10$. Menor razão é $4$ (Linha 1 sai $s_1$). Pivô $a_{12} = 2$. Vértice novo: $(3, 4)$, Lucro $z = 310$.</li>
+        <li><strong>Otimalidade:</strong> Todos os custos reduzidos na linha $z$ tornam-se estritamente positivos ($+7.5$ para $s_1$ e $+17.5$ para $s_2$). O algoritmo para!</li>
+      </ol>
+    </section>
+
+    <!-- EXERCÍCIO 11 -->
+    <section class="card-exercise" id="ex11" data-hint="No vértice ótimo (x1* = 3 mesas, x2* = 4 cadeiras): z* = 50(3) + 40(4) = 150 + 160 = 310.">
+      <div class="exercise-header">
+        <h3>Exercício 11: Active Recall Numérico — Lucro Máximo Ótimo</h3>
+      </div>
+      <div class="question-text">
+        Qual é o <strong>valor numérico exato do lucro ótimo $z^*$</strong> obtido na solução ótima final deste modelo?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite o valor numérico de z* (ex: 280)" autocomplete="off">
+        <button class="action-btn">Verificar Lucro Ótimo</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 12 -->
+    <section class="card-exercise" id="ex12" data-hint="Calculando a solução do sistema 2x1 + 3x2 = 18 e 2x1 + x2 = 10: subtraindo as equações temos 2x2 = 8 => x2* = 4. Substituindo na segunda: 2x1 + 4 = 10 => 2x1 = 6 => x1* = 3.">
+      <div class="exercise-header">
+        <h3>Exercício 12: Active Recall Numérico — Quantidade Ótima de Mesas</h3>
+      </div>
+      <div class="question-text">
+        Quantas <strong>unidades de mesas ($x_1^*$)</strong> a fábrica deve produzir no ponto ótimo de produção?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a quantidade ótima de mesas (ex: 2)" autocomplete="off">
+        <button class="action-btn">Verificar Quantidade</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- EXERCÍCIO 13 -->
+    <section class="card-exercise" id="ex13" data-hint="Ambas as restrições foram atingidas com igualdade estrita: 2(3) + 3(4) = 6 + 12 = 18 (sobra de madeira = 0) e 2(3) + 1(4) = 6 + 4 = 10 (sobra de horas = 0). Logo, as variáveis de folga s1 e s2 são ambas não básicas (s1* = 0, s2* = 0).">
+      <div class="exercise-header">
+        <h3>Exercício 13: Active Recall Numérico — Folga de Recursos no Ótimo</h3>
+      </div>
+      <div class="question-text">
+        No ponto ótimo $(x_1^* = 3, x_2^* = 4)$, qual é a <strong>folga residual de madeira ($s_1^*$)</strong> que sobrou sem uso no estoque?
+      </div>
+      <div class="input-row">
+        <input type="text" class="text-input" placeholder="Digite a folga de madeira s1* (ex: 0)" autocomplete="off">
+        <button class="action-btn">Verificar Folga</button>
+      </div>
+      <div class="feedback-box"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO FINAL -->
+    <div class="lesson-nav" style="margin-top: 3rem;">
+      <a href="0005-simplex-tableau-e-fluxos-duais.html">← Lição 0005: Simplex e Redes</a>
+      <a href="../index.html">Índice da Disciplina</a>
+      <a href="simulado-modulo-1-programacao-linear.html">Simulado Diagnóstico: Módulo 1 &rarr;</a>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT ESPECÍFICO DO SIMULADOR MASTER TABLEAU -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Inicializar exercícios nativos do app.js
+      if (typeof initInputExercise === "function") {
+        initInputExercise("ex1", ["210"], "Explosão Combinatória");
+        initInputExercise("ex2", ["6"], "Dimensão da Forma Padrão");
+        initTrueFalse("ex3", false, "Factibilidade de Solução Básica", 
+          "Incorreto: calculando s1 = 14 - 2(8) = -2, que é menor que zero!",
+          "Exato! s1 = 14 - 2(8) = -2. Como s1 é estritamente negativo, viola s1 ≥ 0 e a solução é BÁSICA INVIÁVEL.");
+        initInputExercise("ex4", ["0", "0.0"], "Leitura de Tableau");
+        initInputExercise("ex5", ["x2", "x_2"], "Variável Entrante");
+        initInputExercise("ex6", ["7", "7.0"], "Razão Mínima");
+        initInputExercise("ex7", ["8"], "Operação Elementar de Linha");
+        initMultipleChoice("ex8", "Casos Especiais");
+        initMultipleChoice("ex9", "Duas Fases e Inviabilidade");
+        initInputExercise("ex10", ["x3", "x_3"], "Simplex Dual");
+        initInputExercise("ex11", ["310"], "Lucro Máximo Ótimo");
+        initInputExercise("ex12", ["3"], "Quantidade Ótima x1");
+        initInputExercise("ex13", ["0"], "Folga de Madeira s1");
+      }
+
+      // -------------------------------------------------------------
+      // Simulador da Máquina de Tableau Simplex (Passo a Passo)
+      // Max z = 3x1 + 5x2
+      // s.a. x1 <= 4; 2x2 <= 12; 3x1 + 2x2 <= 18
+      // -------------------------------------------------------------
+      const iterations = [
+        {
+          iter: 0,
+          status: "Iteração 0: Base inicial {s₁, s₂, s₃} na origem (0, 0). Lucro z = $0. Variável entrante com custo mais negativo é x₂ (-5).",
+          pivotRow: 2, // Linha 2 (s2)
+          pivotCol: 2, // Coluna x2
+          table: [
+            { base: "z", vals: ["1", "-3", "-5", "0", "0", "0", "0"], ratio: "—" },
+            { base: "s₁", vals: ["0", "1", "0", "1", "0", "0", "4"], ratio: "— (aik = 0)" },
+            { base: "s₂", vals: ["0", "0", "2", "0", "1", "0", "12"], ratio: "12 / 2 = 6.0 ★ Mínimo" },
+            { base: "s₃", vals: ["0", "3", "2", "0", "0", "1", "18"], ratio: "18 / 2 = 9.0" }
+          ]
+        },
+        {
+          iter: 1,
+          status: "Iteração 1: x₂ entrou no lugar de s₂. Vértice atual: (0, 6), Lucro z = $30. Agora a variável mais negativa na linha z é x₁ (-3).",
+          pivotRow: 3, // Linha 3 (s3)
+          pivotCol: 1, // Coluna x1
+          table: [
+            { base: "z", vals: ["1", "-3", "0", "0", "2.5", "0", "30"], ratio: "—" },
+            { base: "s₁", vals: ["0", "1", "0", "1", "0", "0", "4"], ratio: "4 / 1 = 4.0" },
+            { base: "x₂", vals: ["0", "0", "1", "0", "0.5", "0", "6"], ratio: "— (aik = 0)" },
+            { base: "s₃", vals: ["0", "3", "0", "0", "-1.0", "1", "6"], ratio: "6 / 3 = 2.0 ★ Mínimo" }
+          ]
+        },
+        {
+          iter: 2,
+          status: "Iteração 2: x₁ entrou no lugar de s₃. Vértice atual: (2, 6), Lucro z = $36. Todos os coeficientes da linha z são ≥ 0. SOLUÇÃO ÓTIMA GLOBAL!",
+          pivotRow: null,
+          pivotCol: null,
+          table: [
+            { base: "z", vals: ["1", "0", "0", "0", "1.5", "1.0", "36"], ratio: "— Ótimo atingido" },
+            { base: "s₁", vals: ["0", "0", "0", "1", "0.33", "-0.33", "2"], ratio: "—" },
+            { base: "x₂", vals: ["0", "0", "1", "0", "0.5", "0", "6"], ratio: "—" },
+            { base: "x₁", vals: ["0", "1", "0", "0", "-0.33", "0.33", "2"], ratio: "—" }
+          ]
+        }
+      ];
+
+      let currentStep = 0;
+
+      function renderMasterTableau() {
+        const step = iterations[currentStep];
+        const tbody = document.getElementById("master-tableau-body");
+        const statusEl = document.getElementById("master-simplex-status");
+        if (!tbody || !statusEl) return;
+
+        tbody.innerHTML = "";
+        statusEl.innerHTML = `<strong>${step.status}</strong>`;
+
+        step.table.forEach((row, rIdx) => {
+          const tr = document.createElement("tr");
+          if (rIdx === 0) tr.style.background = "var(--accent-muted)";
+
+          // Coluna Base
+          const tdBase = document.createElement("td");
+          tdBase.innerHTML = `<strong>${row.base}</strong>`;
+          tr.appendChild(tdBase);
+
+          // Colunas de Valores (x1, x2, s1, s2, s3, b)
+          // vals: [z, x1, x2, s1, s2, s3, b] -> pulamos z na exibição ou mostramos
+          const displayVals = [row.vals[1], row.vals[2], row.vals[3], row.vals[4], row.vals[5], row.vals[6]];
+          displayVals.forEach((val, cIdx) => {
+            const td = document.createElement("td");
+            td.textContent = val;
+
+            const actualCol = cIdx + 1; // 1: x1, 2: x2, etc.
+            const isPivotCell = (step.pivotRow === rIdx && step.pivotCol === actualCol);
+            const isPivotCol = (step.pivotCol === actualCol && rIdx > 0);
+            const isPivotRow = (step.pivotRow === rIdx && cIdx < 5);
+
+            if (isPivotCell) {
+              td.style.background = "var(--warning-bg)";
+              td.style.color = "var(--warning)";
+              td.style.fontWeight = "bold";
+              td.style.border = "2px solid var(--warning)";
+            } else if (isPivotCol) {
+              td.style.background = "var(--success-bg)";
+            } else if (isPivotRow) {
+              td.style.background = "var(--error-bg)";
+            }
+
+            tr.appendChild(td);
+          });
+
+          // Coluna de Razão Mínima
+          const tdRatio = document.createElement("td");
+          tdRatio.textContent = row.ratio;
+          if (row.ratio.includes("★")) {
+            tdRatio.style.fontWeight = "bold";
+            tdRatio.style.color = "var(--error)";
+          }
+          tr.appendChild(tdRatio);
+
+          tbody.appendChild(tr);
+        });
+
+        const prevBtn = document.getElementById("btn-master-prev");
+        const nextBtn = document.getElementById("btn-master-next");
+        if (prevBtn) prevBtn.disabled = (currentStep === 0);
+        if (nextBtn) nextBtn.disabled = (currentStep === iterations.length - 1);
+      }
+
+      const prevBtn = document.getElementById("btn-master-prev");
+      const nextBtn = document.getElementById("btn-master-next");
+
+      if (prevBtn) {
+        prevBtn.addEventListener("click", function() {
+          if (currentStep > 0) {
+            currentStep--;
+            renderMasterTableau();
+          }
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener("click", function() {
+          if (currentStep < iterations.length - 1) {
+            currentStep++;
+            renderMasterTableau();
+          }
+        });
+      }
+
+      renderMasterTableau();
+    });
+  </script>
+</body>
+</html>
